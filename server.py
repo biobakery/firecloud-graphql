@@ -56,6 +56,10 @@ def main():
     def get_version():
         return flask.jsonify(const.VERSION)
 
+    # add end point for graphql gui
+    app.add_url_rule('/test', view_func=flask_graphql.GraphQLView.as_view(
+        'test', schema=graphene.Schema(query=schema.Query), graphiql=True))
+
     # start the app
     app.run(host=HOST, port=PORT)
 

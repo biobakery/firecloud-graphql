@@ -12,9 +12,9 @@ To run:
 * Also if using install with virtual env source it first.
 * `$ source ~/firecloud-tools/.firecloud-tools/venv/bin/activate `
 
-Examples (prior to stub for gcd changes):
+Examples:
 
-* An example query is
+* An example query is from site `http://IP:5000/test` (IP might be something like `34.73.242.142`)
 ```
 { entitiesWithType(namespace:"biom-mass-firecloud-lauren",workspace:"test_api") {
   attributes 
@@ -24,7 +24,7 @@ Examples (prior to stub for gcd changes):
 
 * Get example with url
 ```
-$ wget "http://34.73.242.142:5000/graphql?query=%7B%20entitiesWithType(namespace%3A%22biom-mass-firecloud-lauren%22%2Cworkspace%3A%22test_api%22)%20%7B%0A%20%20attributes%20%0A%20%7D%0A%7D"
+$ wget "http://34.73.242.142:5000/test?query=%7B%20entitiesWithType(namespace%3A%22biom-mass-firecloud-lauren%22%2Cworkspace%3A%22test_api%22)%20%7B%0A%20%20attributes%20%0A%20%7D%0A%7D"
 ```
 
 * Example output is
