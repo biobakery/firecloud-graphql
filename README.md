@@ -12,7 +12,7 @@ To run:
 * Also if using install with virtual env source it first.
 * `$ source ~/firecloud-tools/.firecloud-tools/venv/bin/activate `
 
-Examples:
+Examples (prior to stub for gcd changes):
 
 * An example query is
 ```
