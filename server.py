@@ -15,8 +15,16 @@ import utilities
 HOST = "0.0.0.0"
 PORT = "5000"
 
+VERSION = {
+  "commit": "abcde",
+  "data_release": "Data Release 0.1 - January 17, 2019",
+  "status": "OK",
+  "tag": "0.1",
+  "version": 0.1
+}
+
 def main():
-    app=utilities.create_graphql_flask_app("firecloud_graphql", schema.Query)
+    app=utilities.create_graphql_flask_app("firecloud_graphql", schema.Query, VERSION)
     utilities.run_app(app, HOST, PORT)
 
 if __name__ == '__main__':
