@@ -31,7 +31,6 @@ class Query(graphene.ObjectType):
     entities_with_type = graphene.List(entitiesWithType, namespace=graphene.ID(required=True), workspace=graphene.ID(required=True))
 
     samples = graphene.List(entity, namespace=graphene.ID(required=True), workspace=graphene.ID(required=True))
-    status = graphene.List(Status)
 
     def resolve_entities_with_type(self, info, namespace, workspace):
         url = "workspaces/{0}/{1}/entities_with_type".format(namespace, workspace)
@@ -45,5 +44,3 @@ class Query(graphene.ObjectType):
         obj_result = utilities.json2obj(json.dumps(json_result))
         return obj_result
      
-        reviews = List(Review, id=Int(required=True))
-
