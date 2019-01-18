@@ -8,7 +8,7 @@ To run:
 `` $ python server.py ``
 
 * Remember to set the env variable to the service account key location.
-* `$ export GOOGLE_APPLICATION_CREDENTIALS=~/compute_engine_service_account_key/biom-mass-8dc9ab934396.json
+* `$ export GOOGLE_APPLICATION_CREDENTIALS=~/compute_engine_service_account_key/biom-mass-8dc9ab934396.json`
 * Also if using install with virtual env source it first.
 * `$ source ~/firecloud-tools/.firecloud-tools/venv/bin/activate `
 
