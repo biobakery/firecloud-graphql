@@ -38,18 +38,37 @@ def main():
     # add the root graphql queries
     @app.route('/graphql', methods=["POST"])
     def get_root_schema():
-        json_result = process_query(flask.request, schema.Query)
+
+        # json_result = process_query(flask.request, schema.Query)
 
         # temp use null response (later use json_result)
-        return flask.jsonify(const.NULL)
+        query = data_body_query=flask.request.get_json()['query']
+        if "projects" in query:
+            temp_response = flask.jsonify(const.ROOT_PROJECTS)
+        else:
+            temp_response = flask.jsonify(const.NULL)
+
+        return temp_response
 
     # add subdirectories to identify schema
     @app.route('/graphql/<name>', methods=["POST"])
     def get_schema(name):
-        json_result = process_query(flask.request, schema.Query)
+        
+        #json_result = process_query(flask.request, schema.Query)
 
         # temp use const response (later use json_result)
-        return flask.jsonify(const.PROJECTS)
+        if "PortalSummary" in name:
+            temp_response = flask.jsonify(const.PROJECTS)
+        elif "GenesAndCases" in name:
+            temp_response = flask.jsonify(const.GENES_CASES)
+        elif "ProjectsTable" in name:
+            temp_response = flask.jsonify(const.PROJECT_TABLE)
+        elif "ProjectsCharts" in name:
+            temp_response = flask.jsonify(const.PROJECT_CHARTS)
+        elif "TopCasesCountByGenes" in name:
+            temp_response = flask.jsonify(const.TOP_CASES_GENES)
+
+        return temp_response
 
     # add static endpoint for version/status
     @app.route('/status', methods=["GET"])
