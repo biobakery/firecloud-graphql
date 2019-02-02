@@ -45,6 +45,8 @@ def main():
         query = data_body_query=flask.request.get_json()['query']
         if "projects" in query:
             temp_response = flask.jsonify(const.ROOT_PROJECTS)
+        elif "CaseAggregations" in query:
+            temp_response = flask.jsonify(const.ROOT_REPOS)
         else:
             temp_response = flask.jsonify(const.NULL)
 
@@ -67,6 +69,10 @@ def main():
             temp_response = flask.jsonify(const.PROJECT_CHARTS)
         elif "TopCasesCountByGenes" in name:
             temp_response = flask.jsonify(const.TOP_CASES_GENES)
+        elif "FileAggregations" in name:
+            temp_response = flask.jsonify(const.FILE_AGGREGATIONS)
+        elif "FilesTable" in name:
+            temp_response = flask.jsonify(const.FILE_TABLE)
 
         return temp_response
 

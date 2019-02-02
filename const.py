@@ -139,6 +139,374 @@ ROOT_PROJECTS = {
   }
 }
 
+# First value is total sum of all file sizes
+
+ROOT_REPOS = {
+  "data": {
+    "viewer": {
+      "cart_summary": {
+        "_aggregations1TAxVJ": {
+          "fs": {
+            "value": 650606999096554.0
+          }
+        }
+      },
+      "repository": {
+        "cases": {
+          "_aggregations2LbddX": {
+            "demographic__ethnicity": {
+              "buckets": [
+                {
+                  "doc_count": 21424,
+                  "key": "not reported"
+                },
+                {
+                  "doc_count": 10436,
+                  "key": "not hispanic or latino"
+                },
+                {
+                  "doc_count": 779,
+                  "key": "hispanic or latino"
+                },
+                {
+                  "doc_count": 163,
+                  "key": "Unknown"
+                }
+              ]
+            },
+            "demographic__gender": {
+              "buckets": [
+                {
+                  "doc_count": 17700,
+                  "key": "female"
+                },
+                {
+                  "doc_count": 15087,
+                  "key": "male"
+                },
+                {
+                  "doc_count": 10,
+                  "key": "unknown"
+                },
+                {
+                  "doc_count": 5,
+                  "key": "not reported"
+                }
+              ]
+            },
+            "demographic__race": {
+              "buckets": [
+                {
+                  "doc_count": 20156,
+                  "key": "not reported"
+                },
+                {
+                  "doc_count": 10381,
+                  "key": "white"
+                },
+                {
+                  "doc_count": 1336,
+                  "key": "black or african american"
+                },
+                {
+                  "doc_count": 789,
+                  "key": "asian"
+                },
+                {
+                  "doc_count": 74,
+                  "key": "other"
+                },
+                {
+                  "doc_count": 37,
+                  "key": "american indian or alaska native"
+                },
+                {
+                  "doc_count": 29,
+                  "key": "native hawaiian or other pacific islander"
+                }
+              ]
+            },
+            "diagnoses__vital_status": {
+              "buckets": [
+                {
+                  "doc_count": 18032,
+                  "key": "not reported"
+                },
+                {
+                  "doc_count": 9967,
+                  "key": "alive"
+                },
+                {
+                  "doc_count": 4767,
+                  "key": "dead"
+                },
+                {
+                  "doc_count": 36,
+                  "key": "unknown"
+                }
+              ]
+            },
+            "disease_type": {
+              "buckets": [
+                {
+                  "doc_count": 12492,
+                  "key": "Adenomas and Adenocarcinomas"
+                },
+                {
+                  "doc_count": 3202,
+                  "key": "Epithelial Neoplasms, NOS"
+                },
+                {
+                  "doc_count": 3025,
+                  "key": "Ductal and Lobular Neoplasms"
+                },
+                {
+                  "doc_count": 2635,
+                  "key": "Squamous Cell Neoplasms"
+                },
+              ]
+            },
+            "primary_site": {
+              "buckets": [
+                {
+                  "doc_count": 4866,
+                  "key": "Bronchus and lung"
+                },
+                {
+                  "doc_count": 3682,
+                  "key": "Breast"
+                },
+                {
+                  "doc_count": 2301,
+                  "key": "Colon"
+                },
+                {
+                  "doc_count": 2091,
+                  "key": "Kidney"
+                },
+              ]
+            },
+            "project__program__name": {
+              "buckets": [
+                {
+                  "doc_count": 18004,
+                  "key": "FM"
+                },
+                {
+                  "doc_count": 11315,
+                  "key": "TCGA"
+                },
+                {
+                  "doc_count": 3236,
+                  "key": "TARGET"
+                },
+                {
+                  "doc_count": 489,
+                  "key": "NCICCR"
+                },
+                {
+                  "doc_count": 45,
+                  "key": "CTSP"
+                },
+                {
+                  "doc_count": 7,
+                  "key": "VAREPOP"
+                }
+              ]
+            },
+            "project__project_id": {
+              "buckets": [
+                {
+                  "doc_count": 18004,
+                  "key": "FM-AD"
+                },
+                {
+                  "doc_count": 1127,
+                  "key": "TARGET-NBL"
+                },
+                {
+                  "doc_count": 1098,
+                  "key": "TCGA-BRCA"
+                },
+                {
+                  "doc_count": 988,
+                  "key": "TARGET-AML"
+                },
+                {
+                  "doc_count": 652,
+                  "key": "TARGET-WT"
+                },
+              ]
+            }
+          },
+          "_hits1ATaID": {
+            "total": 33096
+          }
+        },
+        "files": {
+          "_aggregations2LbddX": {
+            "access": {
+              "buckets": [
+                {
+                  "doc_count": 183549,
+                  "key": "open"
+                },
+                {
+                  "doc_count": 175130,
+                  "key": "controlled"
+                }
+              ]
+            },
+            "cases__primary_site": {
+              "buckets": [
+                {
+                  "doc_count": 39977,
+                  "key": "Bronchus and lung"
+                },
+                {
+                  "doc_count": 36745,
+                  "key": "Breast"
+                },
+                {
+                  "doc_count": 26803,
+                  "key": "Brain"
+                },
+              ]
+            },
+            "cases__project__project_id": {
+              "buckets": [
+                {
+                  "doc_count": 36134,
+                  "key": "FM-AD"
+                },
+                {
+                  "doc_count": 31524,
+                  "key": "TCGA-BRCA"
+                },
+                {
+                  "doc_count": 17052,
+                  "key": "TCGA-LUAD"
+                },
+                {
+                  "doc_count": 16174,
+                  "key": "TCGA-UCEC"
+                },
+                {
+                  "doc_count": 15289,
+                  "key": "TCGA-HNSC"
+                },
+              ]
+            },
+            "data_category": {
+              "buckets": [
+                {
+                  "doc_count": 127390,
+                  "key": "Simple Nucleotide Variation"
+                },
+                {
+                  "doc_count": 58047,
+                  "key": "Transcriptome Profiling"
+                },
+                {
+                  "doc_count": 55224,
+                  "key": "Biospecimen"
+                },
+                {
+                  "doc_count": 47437,
+                  "key": "Sequencing Reads"
+                },
+                {
+                  "doc_count": 45291,
+                  "key": "Copy Number Variation"
+                },
+                {
+                  "doc_count": 12496,
+                  "key": "Clinical"
+                },
+                {
+                  "doc_count": 12359,
+                  "key": "DNA Methylation"
+                },
+                {
+                  "doc_count": 435,
+                  "key": "Combined Nucleotide Variation"
+                }
+              ]
+            },
+            "data_format": {
+              "buckets": [
+                {
+                  "doc_count": 127507,
+                  "key": "VCF"
+                },
+                {
+                  "doc_count": 115697,
+                  "key": "TXT"
+                },
+                {
+                  "doc_count": 47437,
+                  "key": "BAM"
+                },
+                {
+                  "doc_count": 30072,
+                  "key": "SVS"
+                },
+              ]
+            },
+            "data_type": {
+              "buckets": [
+                {
+                  "doc_count": 63536,
+                  "key": "Annotated Somatic Mutation"
+                },
+                {
+                  "doc_count": 63536,
+                  "key": "Raw Simple Somatic Mutation"
+                },
+                {
+                  "doc_count": 47437,
+                  "key": "Aligned Reads"
+                },
+                {
+                  "doc_count": 34713,
+                  "key": "Gene Expression Quantification"
+                },
+                {
+                  "doc_count": 30072,
+                  "key": "Slide Image"
+                },
+              ]
+            },
+            "experimental_strategy": {
+              "buckets": [
+                {
+                  "doc_count": 114727,
+                  "key": "WXS"
+                },
+                {
+                  "doc_count": 46317,
+                  "key": "RNA-Seq"
+                },
+                {
+                  "doc_count": 45291,
+                  "key": "Genotyping Array"
+                },
+                {
+                  "doc_count": 36587,
+                  "key": "Targeted Sequencing"
+                },
+              ]
+            }
+          },
+          "_hits2bK9cM": {
+            "total": 358679
+          }
+        }
+      }
+    }
+  }
+}
+
 PROJECTS = {
   "data": {
     "viewer": {
@@ -510,6 +878,376 @@ PROJECT_CHARTS = {
   }
 }
 
+FILE_AGGREGATIONS = {
+  "data": {
+    "viewer": {
+      "repository": {
+        "files": {
+          "aggregations": {
+            "access": {
+              "buckets": [
+                {
+                  "doc_count": 183549,
+                  "key": "open"
+                },
+                {
+                  "doc_count": 175130,
+                  "key": "controlled"
+                }
+              ]
+            },
+            "analysis__workflow_type": {
+              "buckets": [
+                {
+                  "doc_count": 45258,
+                  "key": "DNAcopy"
+                },
+                {
+                  "doc_count": 23334,
+                  "key": "BCGSC miRNA Profiling"
+                },
+                {
+                  "doc_count": 22871,
+                  "key": "BWA with Mark Duplicates and Cocleaning"
+                },
+                {
+                  "doc_count": 18004,
+                  "key": "FM Simple Somatic Mutation"
+                }
+              ]
+            },
+            "data_category": {
+              "buckets": [
+                {
+                  "doc_count": 127390,
+                  "key": "Simple Nucleotide Variation"
+                },
+                {
+                  "doc_count": 58047,
+                  "key": "Transcriptome Profiling"
+                },
+                {
+                  "doc_count": 55224,
+                  "key": "Biospecimen"
+                },
+                {
+                  "doc_count": 47437,
+                  "key": "Sequencing Reads"
+                },
+                {
+                  "doc_count": 45291,
+                  "key": "Copy Number Variation"
+                },
+                {
+                  "doc_count": 12496,
+                  "key": "Clinical"
+                },
+                {
+                  "doc_count": 12359,
+                  "key": "DNA Methylation"
+                },
+                {
+                  "doc_count": 435,
+                  "key": "Combined Nucleotide Variation"
+                }
+              ]
+            },
+            "data_format": {
+              "buckets": [
+                {
+                  "doc_count": 127507,
+                  "key": "VCF"
+                },
+                {
+                  "doc_count": 115697,
+                  "key": "TXT"
+                },
+                {
+                  "doc_count": 47437,
+                  "key": "BAM"
+                },
+                {
+                  "doc_count": 30072,
+                  "key": "SVS"
+                }
+              ]
+            },
+            "data_type": {
+              "buckets": [
+                {
+                  "doc_count": 63536,
+                  "key": "Annotated Somatic Mutation"
+                },
+                {
+                  "doc_count": 63536,
+                  "key": "Raw Simple Somatic Mutation"
+                },
+                {
+                  "doc_count": 47437,
+                  "key": "Aligned Reads"
+                }
+              ]
+            },
+            "experimental_strategy": {
+              "buckets": [
+                {
+                  "doc_count": 114727,
+                  "key": "WXS"
+                },
+                {
+                  "doc_count": 46317,
+                  "key": "RNA-Seq"
+                },
+                {
+                  "doc_count": 45291,
+                  "key": "Genotyping Array"
+                }
+              ]
+            },
+            "platform": {
+              "buckets": [
+                {
+                  "doc_count": 47437,
+                  "key": "Illumina"
+                },
+                {
+                  "doc_count": 45291,
+                  "key": "Affymetrix SNP 6.0"
+                },
+                {
+                  "doc_count": 9756,
+                  "key": "Illumina Human Methylation 450"
+                },
+                {
+                  "doc_count": 2603,
+                  "key": "Illumina Human Methylation 27"
+                }
+              ]
+            }
+          },
+          "facets": 'null'
+        }
+      }
+    }
+  }
+}
+
+FILE_TABLE = {
+  "data": {
+    "viewer": {
+      "repository": {
+        "files": {
+          "hits": {
+            "edges": [
+              {
+                "node": {
+                  "access": "open",
+                  "acl": [
+                    "open"
+                  ],
+                  "annotations": {
+                    "hits": {
+                      "total": 0
+                    }
+                  },
+                  "cases": {
+                    "hits": {
+                      "edges": [
+                        {
+                          "node": {
+                            "case_id": "34f545ab-d420-4dd2-8db4-3159896efd23",
+                            "id": "RmlsZUNhc2U6NDQwZTllYzUtOGU2MS00Zjc1LWIxZDEtNjE2OTQxZDk0NTZkOjM0ZjU0NWFiLWQ0MjAtNGRkMi04ZGI0LTMxNTk4OTZlZmQyMw==",
+                            "project": {
+                              "id": "UHJvamVjdDo0NDBlOWVjNS04ZTYxLTRmNzUtYjFkMS02MTY5NDFkOTQ1NmQ6MzRmNTQ1YWItZDQyMC00ZGQyLThkYjQtMzE1OTg5NmVmZDIzOl8=",
+                              "project_id": "TCGA-OV"
+                            }
+                          }
+                        }
+                      ],
+                      "total": 1
+                    }
+                  },
+                  "data_category": "Copy Number Variation",
+                  "data_format": "TXT",
+                  "data_type": "Masked Copy Number Segment",
+                  "experimental_strategy": "Genotyping Array",
+                  "file_id": "440e9ec5-8e61-4f75-b1d1-616941d9456d",
+                  "file_name": "THETA_p_TCGA_Batch14_SNP_N_GenomeWideSNP_6_C03_455318.nocnv_grch38.seg.v2.txt",
+                  "file_size": 27158.0,
+                  "id": "RmlsZTo0NDBlOWVjNS04ZTYxLTRmNzUtYjFkMS02MTY5NDFkOTQ1NmQ=",
+                  "platform": "Affymetrix SNP 6.0",
+                  "state": "released"
+                }
+              },
+              {
+                "node": {
+                  "access": "controlled",
+                  "acl": [
+                    "phs000178"
+                  ],
+                  "annotations": {
+                    "hits": {
+                      "total": 0
+                    }
+                  },
+                  "cases": {
+                    "hits": {
+                      "edges": [
+                        {
+                          "node": {
+                            "case_id": "e5a329ec-e50e-4786-901d-b58474f8ea65",
+                            "id": "RmlsZUNhc2U6OTc4ZDEyNGQtYWUzOS00ZmJiLTk3OTYtNThiYWJjOTQ4YWNiOmU1YTMyOWVjLWU1MGUtNDc4Ni05MDFkLWI1ODQ3NGY4ZWE2NQ==",
+                            "project": {
+                              "id": "UHJvamVjdDo5NzhkMTI0ZC1hZTM5LTRmYmItOTc5Ni01OGJhYmM5NDhhY2I6ZTVhMzI5ZWMtZTUwZS00Nzg2LTkwMWQtYjU4NDc0ZjhlYTY1Ol8=",
+                              "project_id": "TCGA-OV"
+                            }
+                          }
+                        }
+                      ],
+                      "total": 1
+                    }
+                  },
+                  "data_category": "Simple Nucleotide Variation",
+                  "data_format": "VCF",
+                  "data_type": "Annotated Somatic Mutation",
+                  "experimental_strategy": "WXS",
+                  "file_id": "978d124d-ae39-4fbb-9796-58babc948acb",
+                  "file_name": "978d124d-ae39-4fbb-9796-58babc948acb.vep.vcf.gz",
+                  "file_size": 115844.0,
+                  "id": "RmlsZTo5NzhkMTI0ZC1hZTM5LTRmYmItOTc5Ni01OGJhYmM5NDhhY2I=",
+                  "platform": "Illumina",
+                  "state": "released"
+                }
+              },
+              {
+                "node": {
+                  "access": "controlled",
+                  "acl": [
+                    "phs000178"
+                  ],
+                  "annotations": {
+                    "hits": {
+                      "total": 0
+                    }
+                  },
+                  "cases": {
+                    "hits": {
+                      "edges": [
+                        {
+                          "node": {
+                            "case_id": "0ba7b6cc-e5f5-47d7-859a-24e31aa336ab",
+                            "id": "RmlsZUNhc2U6M2IxM2IwMjMtMDMyNS00ZDZjLTg1MGYtMGY1NTM0ZjdkNDJiOjBiYTdiNmNjLWU1ZjUtNDdkNy04NTlhLTI0ZTMxYWEzMzZhYg==",
+                            "project": {
+                              "id": "UHJvamVjdDozYjEzYjAyMy0wMzI1LTRkNmMtODUwZi0wZjU1MzRmN2Q0MmI6MGJhN2I2Y2MtZTVmNS00N2Q3LTg1OWEtMjRlMzFhYTMzNmFiOl8=",
+                              "project_id": "TCGA-OV"
+                            }
+                          }
+                        }
+                      ],
+                      "total": 1
+                    }
+                  },
+                  "data_category": "Sequencing Reads",
+                  "data_format": "BAM",
+                  "data_type": "Aligned Reads",
+                  "experimental_strategy": "WXS",
+                  "file_id": "3b13b023-0325-4d6c-850f-0f5534f7d42b",
+                  "file_name": "C239.TCGA-13-0908-10A-01W.7_gdc_realn.bam",
+                  "file_size": 44297789827.0,
+                  "id": "RmlsZTozYjEzYjAyMy0wMzI1LTRkNmMtODUwZi0wZjU1MzRmN2Q0MmI=",
+                  "platform": "Illumina",
+                  "state": "released"
+                }
+              },
+              {
+                "node": {
+                  "access": "open",
+                  "acl": [
+                    "open"
+                  ],
+                  "annotations": {
+                    "hits": {
+                      "total": 0
+                    }
+                  },
+                  "cases": {
+                    "hits": {
+                      "edges": [
+                        {
+                          "node": {
+                            "case_id": "47681e4b-01e8-4779-b966-ce57aff4b712",
+                            "id": "RmlsZUNhc2U6MjI4ZjYwMWMtYjY1Ny00NzliLWJjZjQtZjI1YmIyYzgyM2U0OjQ3NjgxZTRiLTAxZTgtNDc3OS1iOTY2LWNlNTdhZmY0YjcxMg==",
+                            "project": {
+                              "id": "UHJvamVjdDoyMjhmNjAxYy1iNjU3LTQ3OWItYmNmNC1mMjViYjJjODIzZTQ6NDc2ODFlNGItMDFlOC00Nzc5LWI5NjYtY2U1N2FmZjRiNzEyOl8=",
+                              "project_id": "TCGA-OV"
+                            }
+                          }
+                        }
+                      ],
+                      "total": 1
+                    }
+                  },
+                  "data_category": "Transcriptome Profiling",
+                  "data_format": "TXT",
+                  "data_type": "Gene Expression Quantification",
+                  "experimental_strategy": "RNA-Seq",
+                  "file_id": "228f601c-b657-479b-bcf4-f25bb2c823e4",
+                  "file_name": "16417d82-1ae0-4097-85c1-5e2df313fd35.htseq.counts.gz",
+                  "file_size": 251840.0,
+                  "id": "RmlsZToyMjhmNjAxYy1iNjU3LTQ3OWItYmNmNC1mMjViYjJjODIzZTQ=",
+                  "platform": "Illumina",
+                  "state": "released"
+                }
+              },
+              {
+                "node": {
+                  "access": "controlled",
+                  "acl": [
+                    "phs000178"
+                  ],
+                  "annotations": {
+                    "hits": {
+                      "total": 0
+                    }
+                  },
+                  "cases": {
+                    "hits": {
+                      "edges": [
+                        {
+                          "node": {
+                            "case_id": "565d06a1-3640-4274-8fb3-8cad7e578876",
+                            "id": "RmlsZUNhc2U6YjI0NWJkYWItYTU4NS00YTU1LThmYjMtZDkyZTFkMTJmYjZiOjU2NWQwNmExLTM2NDAtNDI3NC04ZmIzLThjYWQ3ZTU3ODg3Ng==",
+                            "project": {
+                              "id": "UHJvamVjdDpiMjQ1YmRhYi1hNTg1LTRhNTUtOGZiMy1kOTJlMWQxMmZiNmI6NTY1ZDA2YTEtMzY0MC00Mjc0LThmYjMtOGNhZDdlNTc4ODc2Ol8=",
+                              "project_id": "TCGA-OV"
+                            }
+                          }
+                        }
+                      ],
+                      "total": 1
+                    }
+                  },
+                  "data_category": "Simple Nucleotide Variation",
+                  "data_format": "VCF",
+                  "data_type": "Raw Simple Somatic Mutation",
+                  "experimental_strategy": "WXS",
+                  "file_id": "b245bdab-a585-4a55-8fb3-d92e1d12fb6b",
+                  "file_name": "b245bdab-a585-4a55-8fb3-d92e1d12fb6b.vcf.gz",
+                  "file_size": 92669.0,
+                  "id": "RmlsZTpiMjQ1YmRhYi1hNTg1LTRhNTUtOGZiMy1kOTJlMWQxMmZiNmI=",
+                  "platform": "Illumina",
+                  "state": "released"
+                }
+              }
+            ],
+            "total": 5
+          }
+        }
+      }
+    }
+  }
+}
+
 # TopCasesCountByGenes
 TOP_CASES_GENES = {
   "data": {
@@ -522,3 +1260,5 @@ TOP_CASES_GENES = {
     }
   }
 }
+
+
