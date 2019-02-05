@@ -27,7 +27,7 @@ def process_query(request, schema):
 
     firecloud_schema=graphene.Schema(query=schema)
     result=firecloud_schema.execute(data_body_query)
-    json_result=flask.jsonify(result.data)
+    json_result=flask.jsonify({"data": result.data})
 
     return json_result
 
@@ -48,7 +48,7 @@ def main():
         elif "CaseAggregations" in query:
             temp_response = flask.jsonify(const.ROOT_REPOS)
         else:
-            temp_response = flask.jsonify(const.NULL)
+            temp_response = process_query(flask.request, schema.Query)
 
         return temp_response
 

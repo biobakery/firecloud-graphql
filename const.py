@@ -10,16 +10,6 @@ VERSION = {
 }
 
 
-NULL = {
-  "data": {
-    "viewer": {
-      "user": {
-        "username": 'null'
-      }
-    }
-  }
-}
-
 ROOT_PROJECTS = {
   "data": {
     "viewer": {
