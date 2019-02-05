@@ -503,12 +503,12 @@ PROJECTS = {
       "explore": {
         "genes": {
           "hits": {
-            "total": 200
+            "total": "200"
           }
         },
         "ssms": {
           "hits": {
-            "total": 300
+            "total": "300"
           }
         }
       },
@@ -526,18 +526,18 @@ PROJECTS = {
           }
         },
         "hits": {
-          "total": 40
+          "total": "40"
         }
       },
       "repository": {
         "cases": {
           "hits": {
-            "total": 3100
+            "total": "100"
           }
         },
         "files": {
           "hits": {
-            "total": 3500
+            "total": "500"
           }
         }
       }
