@@ -43,12 +43,6 @@ class Root(graphene.ObjectType):
     def resolve_user(self, info):
         return User(self, info)
 
-class Viewer(graphene.ObjectType):
-    class Meta:
-        interfaces = (graphene.relay.Node,)
-
-    Root = graphene.Field(Root)
-
 def query_firecloud(url):
     """ Use the api to query firecloud """
 
@@ -58,11 +52,11 @@ def query_firecloud(url):
 
 class Query(graphene.ObjectType):
 
-    viewer = graphene.Field(Viewer)
+    viewer = graphene.Field(Root)
     node = graphene.relay.Node.Field()
 
     def resolve_viewer(self, info):
-        return Viewer(self,info)
+        return Root(self,info)
 
     entities_with_type = graphene.List(entitiesWithType, namespace=graphene.ID(required=True), workspace=graphene.ID(required=True))
 
