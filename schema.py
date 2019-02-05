@@ -20,6 +20,35 @@ class entity(graphene.ObjectType):
     entityType = graphene.String()
     attributes = graphene.String()
 
+class User(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    username = graphene.String()
+
+    def resolve_username(self, info):
+        return "null"
+
+    @classmethod
+    def get_node(cls, info, id):
+        # not currently used (needed if query is by node number)
+        return User(id="1",username="null")
+
+class Root(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    user = graphene.Field(User)
+
+    def resolve_user(self, info):
+        return User(self, info)
+
+class Viewer(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    Root = graphene.Field(Root)
+
 def query_firecloud(url):
     """ Use the api to query firecloud """
 
@@ -28,6 +57,13 @@ def query_firecloud(url):
     return result.json()
 
 class Query(graphene.ObjectType):
+
+    viewer = graphene.Field(Viewer)
+    node = graphene.relay.Node.Field()
+
+    def resolve_viewer(self, info):
+        return Viewer(self,info)
+
     entities_with_type = graphene.List(entitiesWithType, namespace=graphene.ID(required=True), workspace=graphene.ID(required=True))
 
     samples = graphene.List(entity, namespace=graphene.ID(required=True), workspace=graphene.ID(required=True))
