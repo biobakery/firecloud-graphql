@@ -60,7 +60,7 @@ def main():
 
         # temp use const response (later use json_result)
         if "PortalSummary" in name:
-            temp_response = flask.jsonify(const.PROJECTS)
+            temp_response = process_query(flask.request, schema.Query)
         elif "GenesAndCases" in name:
             temp_response = flask.jsonify(const.GENES_CASES)
         elif "ProjectsTable" in name:

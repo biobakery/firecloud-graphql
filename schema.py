@@ -20,6 +20,30 @@ class entity(graphene.ObjectType):
     entityType = graphene.String()
     attributes = graphene.String()
 
+class Count(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    projects = graphene.String()
+    genes = graphene.String()
+    ssms = graphene.String()
+    cases = graphene.String()
+    files = graphene.String()
+    primarySite = graphene.String()
+
+    def resolve_projects(self, info):
+        return "101"
+    def resolve_genes(self, info):
+        return "102"
+    def resolve_ssms(self, info):
+        return "103"
+    def resolve_cases(self, info):
+        return "104"
+    def resolve_files(self, info):
+        return "105"
+    def resolve_primarySite(self, info):
+        return "106"
+
 class User(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
@@ -39,9 +63,13 @@ class Root(graphene.ObjectType):
         interfaces = (graphene.relay.Node,)
 
     user = graphene.Field(User)
+    count = graphene.Field(Count)
 
     def resolve_user(self, info):
         return User(self, info)
+
+    def resolve_count(self, info):
+        return Count(self, info)
 
 def query_firecloud(url):
     """ Use the api to query firecloud """
