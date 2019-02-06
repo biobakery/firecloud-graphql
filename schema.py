@@ -25,24 +25,24 @@ class Count(graphene.ObjectType):
         interfaces = (graphene.relay.Node,)
 
     projects = graphene.String()
-    genes = graphene.String()
-    ssms = graphene.String()
-    cases = graphene.String()
-    files = graphene.String()
-    primarySite = graphene.String()
+    participants = graphene.String()
+    samples = graphene.String()
+    dataFormats = graphene.String()
+    rawFiles = graphene.String()
+    processedFiles = graphene.String()
 
     def resolve_projects(self, info):
-        return "101"
-    def resolve_genes(self, info):
-        return "102"
-    def resolve_ssms(self, info):
-        return "103"
-    def resolve_cases(self, info):
-        return "104"
-    def resolve_files(self, info):
-        return "105"
-    def resolve_primarySite(self, info):
-        return "106"
+        return "2"
+    def resolve_participants(self, info):
+        return "10"
+    def resolve_samples(self, info):
+        return "30"
+    def resolve_dataFormats(self, info):
+        return "2"
+    def resolve_rawFiles(self, info):
+        return "30"
+    def resolve_processedFiles(self, info):
+        return "90"
 
 class User(graphene.ObjectType):
     class Meta:
