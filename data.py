@@ -17,8 +17,11 @@ class Project(object):
             participants = list(set([file.participant for file in self.files]))
         return participants
 
-    def get_samples(self):
-        samples = list(set([file.sample for file in self.files]))
+    def get_samples(self, ids_only=True):
+        if ids_only:
+            samples = list(set([file.sample.id for file in self.files]))
+        else:
+            samples = list(set([file.sample for file in self.files]))
         return samples
 
 class File(object):
@@ -45,9 +48,9 @@ class Participant(object):
         self.project = project
 
 class Sample(object):
-    """ Holds information about each sample including participant and type """
+    """ Holds information about each sample including participant """
 
-    def __init__(self, id, participant, type):
+    def __init__(self, id, participant):
         self.id = id
         self.participant = participant
         self.type = type
@@ -63,39 +66,54 @@ PARTICIPANTS = [
     Participant("participant_C2", "53", "M", "white", "NHSII-demo_C"),
 ]
 
+SAMPLES = [
+    Sample("sample_P0_A1",PARTICIPANTS[0]),
+    Sample("sample_P0_A2",PARTICIPANTS[0]),
+    Sample("sample_P1_A1",PARTICIPANTS[1]),
+    Sample("sample_P1_A2",PARTICIPANTS[1]),
+    Sample("sample_P2_B1",PARTICIPANTS[2]),
+    Sample("sample_P2_B2",PARTICIPANTS[2]),
+    Sample("sample_P3_B1",PARTICIPANTS[3]),
+    Sample("sample_P3_B2",PARTICIPANTS[3]),
+    Sample("sample_P4_C1",PARTICIPANTS[4]),
+    Sample("sample_P4_C2",PARTICIPANTS[4]),
+    Sample("sample_P5_C1",PARTICIPANTS[5]),
+    Sample("sample_P5_C2",PARTICIPANTS[5])
+]
+
 PROJECTS = [
     Project(name="NHSII-demo_A",
         files=[
-            File("demo_A1.fastq",PARTICIPANTS[0],"sample_A1","fastq", open_access=False),
-            File("demo_A2.fastq",PARTICIPANTS[0],"sample_A2","fastq", open_access=False),
-            File("demo_A3.fastq",PARTICIPANTS[1],"sample_A1","fastq", open_access=False),
-            File("demo_A4.fastq",PARTICIPANTS[1],"sample_A2","fastq", open_access=False),
-            File("demo_A1.tsv",PARTICIPANTS[0],"sample_A1","tsv", raw=False),
-            File("demo_A2.tsv",PARTICIPANTS[0],"sample_A2","tsv", raw=False),
-            File("demo_A3.tsv",PARTICIPANTS[1],"sample_A1","tsv", raw=False),
-            File("demo_A4.tsv",PARTICIPANTS[1],"sample_A2","tsv", raw=False)
+            File("demo_A1.fastq",PARTICIPANTS[0],SAMPLES[0],"fastq", open_access=False),
+            File("demo_A2.fastq",PARTICIPANTS[0],SAMPLES[1],"fastq", open_access=False),
+            File("demo_A3.fastq",PARTICIPANTS[1],SAMPLES[2],"fastq", open_access=False),
+            File("demo_A4.fastq",PARTICIPANTS[1],SAMPLES[3],"fastq", open_access=False),
+            File("demo_A1.tsv",PARTICIPANTS[0],SAMPLES[0],"tsv", raw=False),
+            File("demo_A2.tsv",PARTICIPANTS[0],SAMPLES[1],"tsv", raw=False),
+            File("demo_A3.tsv",PARTICIPANTS[1],SAMPLES[2],"tsv", raw=False),
+            File("demo_A4.tsv",PARTICIPANTS[1],SAMPLES[3],"tsv", raw=False)
         ]),
     Project(name="NHSII-demo_B",
         files=[
-            File("demo_B1.fastq",PARTICIPANTS[2],"sample_B1","fastq"),
-            File("demo_B2.fastq",PARTICIPANTS[2],"sample_B2","fastq"),
-            File("demo_B3.fastq",PARTICIPANTS[3],"sample_B1","fastq"),
-            File("demo_B4.fastq",PARTICIPANTS[3],"sample_B2","fastq"),
-            File("demo_B1.tsv",PARTICIPANTS[2],"sample_B1","tsv", raw=False),
-            File("demo_B2.tsv",PARTICIPANTS[2],"sample_B2","tsv", raw=False),
-            File("demo_B3.tsv",PARTICIPANTS[3],"sample_B1","tsv", raw=False),
-            File("demo_B4.tsv",PARTICIPANTS[3],"sample_B2","tsv", raw=False)
+            File("demo_B1.fastq",PARTICIPANTS[2],SAMPLES[4],"fastq"),
+            File("demo_B2.fastq",PARTICIPANTS[2],SAMPLES[5],"fastq"),
+            File("demo_B3.fastq",PARTICIPANTS[3],SAMPLES[6],"fastq"),
+            File("demo_B4.fastq",PARTICIPANTS[3],SAMPLES[7],"fastq"),
+            File("demo_B1.tsv",PARTICIPANTS[2],SAMPLES[4],"tsv", raw=False),
+            File("demo_B2.tsv",PARTICIPANTS[2],SAMPLES[5],"tsv", raw=False),
+            File("demo_B3.tsv",PARTICIPANTS[3],SAMPLES[6],"tsv", raw=False),
+            File("demo_B4.tsv",PARTICIPANTS[3],SAMPLES[7],"tsv", raw=False)
         ]),
     Project(name="NHSII-demo_C",
         files=[
-            File("demo_C1.fastq",PARTICIPANTS[4],"sample_C1","fastq"),
-            File("demo_C2.fastq",PARTICIPANTS[4],"sample_C2","fastq"),
-            File("demo_C3.fastq",PARTICIPANTS[5],"sample_C1","fastq"),
-            File("demo_C4.fastq",PARTICIPANTS[5],"sample_C2","fastq"),
-            File("demo_C1.tsv",PARTICIPANTS[4],"sample_C1","tsv", raw=False),
-            File("demo_C2.tsv",PARTICIPANTS[4],"sample_C2","tsv", raw=False),
-            File("demo_C3.tsv",PARTICIPANTS[5],"sample_C1","tsv", raw=False),
-            File("demo_C4.tsv",PARTICIPANTS[5],"sample_C2","tsv", raw=False)
+            File("demo_C1.fastq",PARTICIPANTS[4],SAMPLES[8],"fastq"),
+            File("demo_C2.fastq",PARTICIPANTS[4],SAMPLES[9],"fastq"),
+            File("demo_C3.fastq",PARTICIPANTS[5],SAMPLES[10],"fastq"),
+            File("demo_C4.fastq",PARTICIPANTS[5],SAMPLES[11],"fastq"),
+            File("demo_C1.tsv",PARTICIPANTS[4],SAMPLES[8],"tsv", raw=False),
+            File("demo_C2.tsv",PARTICIPANTS[4],SAMPLES[9],"tsv", raw=False),
+            File("demo_C3.tsv",PARTICIPANTS[5],SAMPLES[10],"tsv", raw=False),
+            File("demo_C4.tsv",PARTICIPANTS[5],SAMPLES[11],"tsv", raw=False)
         ])
 ]
 
