@@ -7,6 +7,7 @@ import graphene
 from firecloud import api
 
 import utilities
+import data
 
 class entitiesWithType(graphene.ObjectType):
     namespace = graphene.ID()
@@ -32,17 +33,17 @@ class Count(graphene.ObjectType):
     processedFiles = graphene.String()
 
     def resolve_projects(self, info):
-        return "2"
+        return data.get_count("projects")
     def resolve_participants(self, info):
-        return "10"
+        return data.get_count("participants")
     def resolve_samples(self, info):
-        return "30"
+        return data.get_count("samples")
     def resolve_dataFormats(self, info):
-        return "2"
+        return data.get_count("dataFormats")
     def resolve_rawFiles(self, info):
-        return "30"
+        return data.get_count("rawFiles")
     def resolve_processedFiles(self, info):
-        return "90"
+        return data.get_count("processedFiles")
 
 class User(graphene.ObjectType):
     class Meta:
@@ -51,7 +52,7 @@ class User(graphene.ObjectType):
     username = graphene.String()
 
     def resolve_username(self, info):
-        return "null"
+        return data.get_username()
 
     @classmethod
     def get_node(cls, info, id):
