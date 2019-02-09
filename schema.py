@@ -58,7 +58,10 @@ class File(graphene.ObjectType):
 
     @classmethod
     def get_node(cls, info, id):
-        return TEST_FILES(id)
+        return get_file(id)
+
+def get_file(id):
+    return TEST_FILES[id]
 
 TEST_FILES = {
     "1": File(1, "demo_A1.fastq","person1","sample1","fastq", "raw", "open"),
