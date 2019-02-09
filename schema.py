@@ -84,9 +84,13 @@ class FileConnection(graphene.relay.Connection):
         node = File
 
 class Files(graphene.ObjectType):
-    hits = graphene.relay.ConnectionField(FileConnection)
+    hits = graphene.relay.ConnectionField(FileConnection, 
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        sort=graphene.String(),
+        filters=graphene.String())
 
-    def resolve_hits(self, info):
+    def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
         return [get_file(file_id) for file_id in self.hits]
 
 class Repository(graphene.ObjectType):
