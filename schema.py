@@ -9,6 +9,7 @@ from firecloud import api
 import utilities
 import data
 
+## Firecloud API ##
 
 class entitiesWithType(graphene.ObjectType):
     namespace = graphene.ID()
@@ -22,8 +23,15 @@ class entity(graphene.ObjectType):
     entityType = graphene.String()
     attributes = graphene.String()
 
-class Count(graphene.ObjectType):
+def query_firecloud(url):
+    """ Use the firecloud api module to query firecloud """
+    result = api.__get(url)
+    api._check_response_code(result, 200)
+    return result.json()
 
+## Portal API ##
+
+class Count(graphene.ObjectType):
     projects = graphene.String()
     participants = graphene.String()
     samples = graphene.String()
@@ -32,12 +40,10 @@ class Count(graphene.ObjectType):
     processedFiles = graphene.String()
 
 class User(graphene.ObjectType):
-
     username = graphene.String()
 
     def resolve_username(self, info):
         return data.get_username()
-
 
 class File(graphene.ObjectType):
     class Meta:
@@ -52,7 +58,7 @@ class File(graphene.ObjectType):
 
     @classmethod
     def get_node(cls, info, id):
-        return get_file(id)
+        return TEST_FILES(id)
 
 TEST_FILES = {
     "1": File(1, "demo_A1.fastq","person1","sample1","fastq", "raw", "open"),
@@ -70,22 +76,17 @@ CURRENT_COUNTS = Count(
     processedFiles=data.get_count("processedFiles")
 )
 
-def get_file(id):
-    return TEST_FILES[id]
-
 class FileConnection(graphene.relay.Connection):
     class Meta:
         node = File
 
 class Repository(graphene.ObjectType):
-    
     files = graphene.relay.ConnectionField(FileConnection)
 
     def resolve_files(self, info):
         return [get_file(file_id) for file_id in self.files]
 
 class Root(graphene.ObjectType):
-
     user = graphene.Field(User)
     count = graphene.Field(Count)
     repository = graphene.Field(Repository)
@@ -99,21 +100,17 @@ class Root(graphene.ObjectType):
     def resolve_repository(self, info):
         return Repository(files=["1","2","3","4"])
 
-def query_firecloud(url):
-    """ Use the api to query firecloud """
-
-    result = api.__get(url)
-    api._check_response_code(result, 200)
-    return result.json()
 
 class Query(graphene.ObjectType):
 
+    ## Portal API ##
     viewer = graphene.Field(Root)
     node = graphene.relay.Node.Field()
 
     def resolve_viewer(self, info):
         return Root(self,info)
 
+    ## Firecloud API ##
     entities_with_type = graphene.List(entitiesWithType, namespace=graphene.ID(required=True), workspace=graphene.ID(required=True))
 
     samples = graphene.List(entity, namespace=graphene.ID(required=True), workspace=graphene.ID(required=True))
