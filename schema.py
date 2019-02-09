@@ -83,11 +83,17 @@ class FileConnection(graphene.relay.Connection):
     class Meta:
         node = File
 
+class Files(graphene.ObjectType):
+    hits = graphene.relay.ConnectionField(FileConnection)
+
+    def resolve_hits(self, info):
+        return [get_file(file_id) for file_id in self.hits]
+
 class Repository(graphene.ObjectType):
-    files = graphene.relay.ConnectionField(FileConnection)
+    files = graphene.Field(Files)
 
     def resolve_files(self, info):
-        return [get_file(file_id) for file_id in self.files]
+        return Files(hits=["1","2","3","4"])
 
 class Root(graphene.ObjectType):
     user = graphene.Field(User)
@@ -101,7 +107,7 @@ class Root(graphene.ObjectType):
         return CURRENT_COUNTS
 
     def resolve_repository(self, info):
-        return Repository(files=["1","2","3","4"])
+        return Repository(self)
 
 
 class Query(graphene.ObjectType):
