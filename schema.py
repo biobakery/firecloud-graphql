@@ -9,6 +9,7 @@ from firecloud import api
 import utilities
 import data
 
+
 class entitiesWithType(graphene.ObjectType):
     namespace = graphene.ID()
     workspace = graphene.ID()
@@ -59,18 +60,56 @@ class User(graphene.ObjectType):
         # not currently used (needed if query is by node number)
         return User(id="1",username="null")
 
-class Root(graphene.ObjectType):
+class File(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
 
+    name = graphene.String()
+    participant = graphene.String()
+    sample = graphene.String()
+    type = graphene.String()
+    raw = graphene.String()
+    access = graphene.String()
+
+    @classmethod
+    def get_node(cls, info, id):
+        return get_file(id)
+
+TEST_FILES = {
+    "1": File(1, "demo_A1.fastq","person1","sample1","fastq", "raw", "open"),
+    "2": File(2, "demo_A2.fastq","person2","sample2","fastq", "raw", "open"),
+    "3": File(3, "demo_B1.fastq","person1B","sample1B","fastq", "raw", "open"),
+    "4": File(4, "demo_B2.fastq","person2B","sample2B","fastq", "raw", "open")
+}
+
+def get_file(id):
+    return TEST_FILES[id]
+
+class FileConnection(graphene.relay.Connection):
+    class Meta:
+        node = File
+
+class Repository(graphene.ObjectType):
+    
+    files = graphene.relay.ConnectionField(FileConnection)
+
+    def resolve_files(self, info):
+        return [get_file(file_id) for file_id in self.files]
+
+class Root(graphene.ObjectType):
+
     user = graphene.Field(User)
     count = graphene.Field(Count)
+    repository = graphene.Field(Repository)
 
     def resolve_user(self, info):
         return User(self, info)
 
     def resolve_count(self, info):
         return Count(self, info)
+
+    def resolve_repository(self, info):
+        return Repository(files=["1","2","3","4"])
 
 def query_firecloud(url):
     """ Use the api to query firecloud """
