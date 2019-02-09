@@ -23,8 +23,6 @@ class entity(graphene.ObjectType):
     attributes = graphene.String()
 
 class Count(graphene.ObjectType):
-    class Meta:
-        interfaces = (graphene.relay.Node,)
 
     projects = graphene.String()
     participants = graphene.String()
@@ -33,32 +31,13 @@ class Count(graphene.ObjectType):
     rawFiles = graphene.String()
     processedFiles = graphene.String()
 
-    def resolve_projects(self, info):
-        return data.get_count("projects")
-    def resolve_participants(self, info):
-        return data.get_count("participants")
-    def resolve_samples(self, info):
-        return data.get_count("samples")
-    def resolve_dataFormats(self, info):
-        return data.get_count("dataFormats")
-    def resolve_rawFiles(self, info):
-        return data.get_count("rawFiles")
-    def resolve_processedFiles(self, info):
-        return data.get_count("processedFiles")
-
 class User(graphene.ObjectType):
-    class Meta:
-        interfaces = (graphene.relay.Node,)
 
     username = graphene.String()
 
     def resolve_username(self, info):
         return data.get_username()
 
-    @classmethod
-    def get_node(cls, info, id):
-        # not currently used (needed if query is by node number)
-        return User(id="1",username="null")
 
 class File(graphene.ObjectType):
     class Meta:
@@ -81,6 +60,15 @@ TEST_FILES = {
     "3": File(3, "demo_B1.fastq","person1B","sample1B","fastq", "raw", "open"),
     "4": File(4, "demo_B2.fastq","person2B","sample2B","fastq", "raw", "open")
 }
+
+CURRENT_COUNTS = Count(
+    projects=data.get_count("projects"),
+    participants=data.get_count("participants"),
+    samples=data.get_count("samples"),
+    dataFormats=data.get_count("dataFormats"),
+    rawFiles=data.get_count("rawFiles"),
+    processedFiles=data.get_count("processedFiles")
+)
 
 def get_file(id):
     return TEST_FILES[id]
@@ -106,7 +94,7 @@ class Root(graphene.ObjectType):
         return User(self, info)
 
     def resolve_count(self, info):
-        return Count(self, info)
+        return CURRENT_COUNTS
 
     def resolve_repository(self, info):
         return Repository(files=["1","2","3","4"])
