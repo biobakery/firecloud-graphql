@@ -18,7 +18,7 @@ ROOT_PROJECTS = {
           "primary_site": {
             "buckets": [
               {
-                "doc_count": 15,
+                "doc_count": 45,
                 "key": "Stool"
               }
             ]
@@ -26,7 +26,7 @@ ROOT_PROJECTS = {
           "program__name": {
             "buckets": [
               {
-                "doc_count": 15,
+                "doc_count": 45,
                 "key": "NHSII"
               }
             ]
@@ -34,15 +34,15 @@ ROOT_PROJECTS = {
           "project_id": {
             "buckets": [
               {
-                "doc_count": 5,
+                "doc_count": 15,
                 "key": "NHSII-DemoA"
               },
               {
-                "doc_count": 5,
+                "doc_count": 15,
                 "key": "NHSII-DemoB"
               },
               {
-                "doc_count": 5,
+                "doc_count": 15,
                 "key": "NHSII-DemoC"
               }
             ]
@@ -66,11 +66,11 @@ ROOT_PROJECTS = {
           "summary__experimental_strategies__experimental_strategy": {
             "buckets": [
               {
-                "doc_count": 10,
+                "doc_count": 30,
                 "key": "WXS"
               },
               {
-                "doc_count": 5,
+                "doc_count": 15,
                 "key": "16S"
               }
             ]
