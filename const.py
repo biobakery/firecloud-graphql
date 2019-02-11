@@ -1049,8 +1049,12 @@ FILE_AGGREGATIONS = {
             "platform": {
               "buckets": [
                 {
-                  "doc_count": 45,
-                  "key": "Illumina"
+                  "doc_count": 30,
+                  "key": "Illumina HiSeq"
+                },
+                {
+                  "doc_count": 15,
+                  "key": "Illumina MiSeq"
                 },
               ]
             }
@@ -1096,27 +1100,30 @@ for i in range(1, 46):
         demo = "demoB"
         project = "NHSII-DemoB"
         exp = "WMGX"
+        platform = "Illumina MiSeq"
     if i > 25:
         demo = "demoC"
         project = "NHSII-DemoC"
         exp = "WMGX"
+        platform = "Illumina HiSeq"
     else:
         demo = "demoA"
         project = "NHSII-DemoA"
         exp = "WMGX"
+        platform = "Illumina HiSeq"
   
     if sample > 14:
         sample = 1
 
     if i % 2 == 0:
        FILES+= temp.substitute(cat="Gene Families", format="TSV", exp=exp, project=project, access="open",
-           id=str(i), name=demo+"_sample"+str(sample)+"_gene_families.tsv", size="300000000", plat="Illumina")
+           id=str(i), name=demo+"_sample"+str(sample)+"_gene_families.tsv", size="300000000", plat=platform)
     elif i % 3 == 0:
        FILES+= temp.substitute(cat="Taxonomic Profile", format="TSV", exp=exp, project=project, access="open",
-           id=str(i), name=demo+"_sample"+str(sample)+"_taxonomic_profile.tsv", size="200000000", plat="Illumina")
+           id=str(i), name=demo+"_sample"+str(sample)+"_taxonomic_profile.tsv", size="200000000", plat=platform)
     else:
-       FILES+= temp.substitute(cat="Raw Reads", format="Fastq", exp=exp, project=project, access="closed",
-           id=str(i), name=demo+"_sample"+str(sample)+".fastq.gz", size="5000000000", plat="Illumina")
+       FILES+= temp.substitute(cat="Raw Reads", format="Fastq", exp=exp, project=project, access="controlled",
+           id=str(i), name=demo+"_sample"+str(sample)+".fastq.gz", size="5000000000", plat=platform)
 
     sample +=1
 
