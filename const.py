@@ -916,60 +916,6 @@ CASE_AGGREGATIONS = {
                 }
               ]
             },
-            "diagnoses__age_at_diagnosis": {
-              "stats": {
-                "count": 32677,
-                "max": 32872.0,
-                "min": 0.0
-              }
-            },
-            "diagnoses__days_to_death": {
-              "stats": {
-                "count": 4198,
-                "max": 10870.0,
-                "min": 0.0
-              }
-            },
-            "diagnoses__vital_status": {
-              "buckets": [
-                {
-                  "doc_count": 18032,
-                  "key": "not reported"
-                },
-                {
-                  "doc_count": 9967,
-                  "key": "alive"
-                },
-                {
-                  "doc_count": 4767,
-                  "key": "dead"
-                },
-                {
-                  "doc_count": 36,
-                  "key": "unknown"
-                }
-              ]
-            },
-            "disease_type": {
-              "buckets": [
-                {
-                  "doc_count": 12492,
-                  "key": "Adenomas and Adenocarcinomas"
-                },
-                {
-                  "doc_count": 3202,
-                  "key": "Epithelial Neoplasms, NOS"
-                },
-                {
-                  "doc_count": 3025,
-                  "key": "Ductal and Lobular Neoplasms"
-                },
-                {
-                  "doc_count": 2635,
-                  "key": "Squamous Cell Neoplasms"
-                }
-              ]
-            },
             "primary_site": {
               "buckets": [
                 {
