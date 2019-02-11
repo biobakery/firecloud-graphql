@@ -1206,205 +1206,62 @@ FILE_TABLE = {
               {
                 "node": {
                   "access": "open",
-                  "acl": [
-                    "open"
-                  ],
-                  "annotations": {
-                    "hits": {
-                      "total": 0
-                    }
-                  },
                   "cases": {
                     "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "case_id": "34f545ab-d420-4dd2-8db4-3159896efd23",
-                            "id": "RmlsZUNhc2U6NDQwZTllYzUtOGU2MS00Zjc1LWIxZDEtNjE2OTQxZDk0NTZkOjM0ZjU0NWFiLWQ0MjAtNGRkMi04ZGI0LTMxNTk4OTZlZmQyMw==",
-                            "project": {
-                              "id": "UHJvamVjdDo0NDBlOWVjNS04ZTYxLTRmNzUtYjFkMS02MTY5NDFkOTQ1NmQ6MzRmNTQ1YWItZDQyMC00ZGQyLThkYjQtMzE1OTg5NmVmZDIzOl8=",
-                              "project_id": "TCGA-OV"
-                            }
-                          }
-                        }
-                      ],
+                      "edges": [ { "node": { "case_id": "1", "id": "1A", "project": { "id": "1", "project_id": "NHSII-DemoA" } } } ],
                       "total": 1
                     }
                   },
-                  "data_category": "Copy Number Variation",
-                  "data_format": "TXT",
-                  "data_type": "Masked Copy Number Segment",
-                  "experimental_strategy": "Genotyping Array",
-                  "file_id": "440e9ec5-8e61-4f75-b1d1-616941d9456d",
-                  "file_name": "THETA_p_TCGA_Batch14_SNP_N_GenomeWideSNP_6_C03_455318.nocnv_grch38.seg.v2.txt",
-                  "file_size": 27158.0,
-                  "id": "RmlsZTo0NDBlOWVjNS04ZTYxLTRmNzUtYjFkMS02MTY5NDFkOTQ1NmQ=",
-                  "platform": "Affymetrix SNP 6.0",
-                  "state": "released"
-                }
-              },
-              {
-                "node": {
-                  "access": "controlled",
-                  "acl": [
-                    "phs000178"
-                  ],
-                  "annotations": {
-                    "hits": {
-                      "total": 0
-                    }
-                  },
-                  "cases": {
-                    "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "case_id": "e5a329ec-e50e-4786-901d-b58474f8ea65",
-                            "id": "RmlsZUNhc2U6OTc4ZDEyNGQtYWUzOS00ZmJiLTk3OTYtNThiYWJjOTQ4YWNiOmU1YTMyOWVjLWU1MGUtNDc4Ni05MDFkLWI1ODQ3NGY4ZWE2NQ==",
-                            "project": {
-                              "id": "UHJvamVjdDo5NzhkMTI0ZC1hZTM5LTRmYmItOTc5Ni01OGJhYmM5NDhhY2I6ZTVhMzI5ZWMtZTUwZS00Nzg2LTkwMWQtYjU4NDc0ZjhlYTY1Ol8=",
-                              "project_id": "TCGA-OV"
-                            }
-                          }
-                        }
-                      ],
-                      "total": 1
-                    }
-                  },
-                  "data_category": "Simple Nucleotide Variation",
-                  "data_format": "VCF",
-                  "data_type": "Annotated Somatic Mutation",
-                  "experimental_strategy": "WXS",
-                  "file_id": "978d124d-ae39-4fbb-9796-58babc948acb",
-                  "file_name": "978d124d-ae39-4fbb-9796-58babc948acb.vep.vcf.gz",
-                  "file_size": 115844.0,
-                  "id": "RmlsZTo5NzhkMTI0ZC1hZTM5LTRmYmItOTc5Ni01OGJhYmM5NDhhY2I=",
+                  "data_category": "Raw Reads",
+                  "data_format": "Fastq",
+                  "experimental_strategy": "WMGX",
+                  "file_id": "1",
+                  "file_name": "demo1_sample1.fastq.gz",
+                  "file_size": 100.0,
+                  "id": "1",
                   "platform": "Illumina",
-                  "state": "released"
-                }
-              },
-              {
-                "node": {
-                  "access": "controlled",
-                  "acl": [
-                    "phs000178"
-                  ],
-                  "annotations": {
-                    "hits": {
-                      "total": 0
-                    }
-                  },
-                  "cases": {
-                    "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "case_id": "0ba7b6cc-e5f5-47d7-859a-24e31aa336ab",
-                            "id": "RmlsZUNhc2U6M2IxM2IwMjMtMDMyNS00ZDZjLTg1MGYtMGY1NTM0ZjdkNDJiOjBiYTdiNmNjLWU1ZjUtNDdkNy04NTlhLTI0ZTMxYWEzMzZhYg==",
-                            "project": {
-                              "id": "UHJvamVjdDozYjEzYjAyMy0wMzI1LTRkNmMtODUwZi0wZjU1MzRmN2Q0MmI6MGJhN2I2Y2MtZTVmNS00N2Q3LTg1OWEtMjRlMzFhYTMzNmFiOl8=",
-                              "project_id": "TCGA-OV"
-                            }
-                          }
-                        }
-                      ],
-                      "total": 1
-                    }
-                  },
-                  "data_category": "Sequencing Reads",
-                  "data_format": "BAM",
-                  "data_type": "Aligned Reads",
-                  "experimental_strategy": "WXS",
-                  "file_id": "3b13b023-0325-4d6c-850f-0f5534f7d42b",
-                  "file_name": "C239.TCGA-13-0908-10A-01W.7_gdc_realn.bam",
-                  "file_size": 44297789827.0,
-                  "id": "RmlsZTozYjEzYjAyMy0wMzI1LTRkNmMtODUwZi0wZjU1MzRmN2Q0MmI=",
-                  "platform": "Illumina",
-                  "state": "released"
                 }
               },
               {
                 "node": {
                   "access": "open",
-                  "acl": [
-                    "open"
-                  ],
-                  "annotations": {
-                    "hits": {
-                      "total": 0
-                    }
-                  },
                   "cases": {
                     "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "case_id": "47681e4b-01e8-4779-b966-ce57aff4b712",
-                            "id": "RmlsZUNhc2U6MjI4ZjYwMWMtYjY1Ny00NzliLWJjZjQtZjI1YmIyYzgyM2U0OjQ3NjgxZTRiLTAxZTgtNDc3OS1iOTY2LWNlNTdhZmY0YjcxMg==",
-                            "project": {
-                              "id": "UHJvamVjdDoyMjhmNjAxYy1iNjU3LTQ3OWItYmNmNC1mMjViYjJjODIzZTQ6NDc2ODFlNGItMDFlOC00Nzc5LWI5NjYtY2U1N2FmZjRiNzEyOl8=",
-                              "project_id": "TCGA-OV"
-                            }
-                          }
-                        }
-                      ],
+                      "edges": [ { "node": { "case_id": "1", "id": "1A", "project": { "id": "1", "project_id": "NHSII-DemoA" } } } ],
                       "total": 1
                     }
                   },
-                  "data_category": "Transcriptome Profiling",
-                  "data_format": "TXT",
-                  "data_type": "Gene Expression Quantification",
-                  "experimental_strategy": "RNA-Seq",
-                  "file_id": "228f601c-b657-479b-bcf4-f25bb2c823e4",
-                  "file_name": "16417d82-1ae0-4097-85c1-5e2df313fd35.htseq.counts.gz",
-                  "file_size": 251840.0,
-                  "id": "RmlsZToyMjhmNjAxYy1iNjU3LTQ3OWItYmNmNC1mMjViYjJjODIzZTQ=",
+                  "data_category": "Gene Families",
+                  "data_format": "TSV",
+                  "experimental_strategy": "WMGX",
+                  "file_id": "2",
+                  "file_name": "demo1_sample1_gene_families.tsv",
+                  "file_size": 50.0,
+                  "id": "2",
                   "platform": "Illumina",
-                  "state": "released"
                 }
               },
               {
                 "node": {
-                  "access": "controlled",
-                  "acl": [
-                    "phs000178"
-                  ],
-                  "annotations": {
-                    "hits": {
-                      "total": 0
-                    }
-                  },
+                  "access": "open",
                   "cases": {
                     "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "case_id": "565d06a1-3640-4274-8fb3-8cad7e578876",
-                            "id": "RmlsZUNhc2U6YjI0NWJkYWItYTU4NS00YTU1LThmYjMtZDkyZTFkMTJmYjZiOjU2NWQwNmExLTM2NDAtNDI3NC04ZmIzLThjYWQ3ZTU3ODg3Ng==",
-                            "project": {
-                              "id": "UHJvamVjdDpiMjQ1YmRhYi1hNTg1LTRhNTUtOGZiMy1kOTJlMWQxMmZiNmI6NTY1ZDA2YTEtMzY0MC00Mjc0LThmYjMtOGNhZDdlNTc4ODc2Ol8=",
-                              "project_id": "TCGA-OV"
-                            }
-                          }
-                        }
-                      ],
+                      "edges": [ { "node": { "case_id": "1", "id": "1A", "project": { "id": "1", "project_id": "NHSII-DemoA" } } } ],
                       "total": 1
                     }
                   },
-                  "data_category": "Simple Nucleotide Variation",
-                  "data_format": "VCF",
-                  "data_type": "Raw Simple Somatic Mutation",
-                  "experimental_strategy": "WXS",
-                  "file_id": "b245bdab-a585-4a55-8fb3-d92e1d12fb6b",
-                  "file_name": "b245bdab-a585-4a55-8fb3-d92e1d12fb6b.vcf.gz",
-                  "file_size": 92669.0,
-                  "id": "RmlsZTpiMjQ1YmRhYi1hNTg1LTRhNTUtOGZiMy1kOTJlMWQxMmZiNmI=",
+                  "data_category": "Taxonomic Profile",
+                  "data_format": "TSV",
+                  "experimental_strategy": "WMGX",
+                  "file_id": "3",
+                  "file_name": "demo1_sample1_taxonomic_profile.tsv",
+                  "file_size": 30.0,
+                  "id": "3",
                   "platform": "Illumina",
-                  "state": "released"
                 }
-              }
+              },
             ],
-            "total": 5
+            "total": 45
           }
         }
       }
