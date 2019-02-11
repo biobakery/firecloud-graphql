@@ -1200,10 +1200,10 @@ FILE_AGGREGATIONS = {
 
 FILE_NODE_TEMPLATE = """{
                 "node": {
-                  "access": "open",
+                  "access": "$access",
                   "cases": {
                     "hits": {
-                      "edges": [ { "node": { "case_id": "1", "id": "1A", "project": { "id": "1", "project_id": "NHSII" } } } ],
+                      "edges": [ { "node": { "case_id": "1", "id": "1A", "project": { "id": "1", "project_id": "$project" } } } ],
                       "total": 1
                     }
                   },
@@ -1227,26 +1227,29 @@ temp = Template(FILE_NODE_TEMPLATE)
 sample = 1
 for i in range(1, 46):
     if i > 15:
-        demo = "NHSII-DemoB"
+        demo = "demoB"
+        project = "NHSII-DemoB"
         exp = "WMGX"
     if i > 25:
-        demo = "NHSII-DemoC"
+        demo = "demoC"
+        project = "NHSII-DemoC"
         exp = "WMGX"
     else:
-        demo = "NHSII-DemoA"
+        demo = "demoA"
+        project = "NHSII-DemoA"
         exp = "WMGX"
   
     if sample > 14:
         sample = 1
 
     if i % 2 == 0:
-       FILES+= temp.substitute(cat="Gene Families", format="TSV", exp=exp,
+       FILES+= temp.substitute(cat="Gene Families", format="TSV", exp=exp, project=project, access="open",
            id=str(i), name=demo+"_sample"+str(sample)+"_gene_families.tsv", size="300000000", plat="Illumina")
     elif i % 3 == 0:
-       FILES+= temp.substitute(cat="Taxonomic Profile", format="TSV", exp=exp,
+       FILES+= temp.substitute(cat="Taxonomic Profile", format="TSV", exp=exp, project=project, access="open",
            id=str(i), name=demo+"_sample"+str(sample)+"_taxonomic_profile.tsv", size="200000000", plat="Illumina")
     else:
-       FILES+= temp.substitute(cat="Raw Reads", format="Fastq", exp=exp,
+       FILES+= temp.substitute(cat="Raw Reads", format="Fastq", exp=exp, project=project, access="closed",
            id=str(i), name=demo+"_sample"+str(sample)+".fastq.gz", size="5000000000", plat="Illumina")
 
     sample +=1
@@ -1263,86 +1266,13 @@ FILE_TABLE = {
         "files": {
           "hits": {
             "edges":  FILES_LIT ,
-             "total" : 4
+             "total" : "45"
              }
            }
          }
        }
     }
  }
-
-FILE_TABLE1 = {
-  "data": {
-    "viewer": {
-      "repository": {
-        "files": {
-          "hits": {
-            "edges": [
-              {
-                "node": {
-                  "access": "open",
-                  "cases": {
-                    "hits": {
-                      "edges": [ { "node": { "case_id": "1", "id": "1A", "project": { "id": "1", "project_id": "NHSII-DemoA" } } } ],
-                      "total": 1
-                    }
-                  },
-                  "data_category": "Raw Reads",
-                  "data_format": "Fastq",
-                  "experimental_strategy": "WMGX",
-                  "file_id": "1",
-                  "file_name": "demo1_sample1.fastq.gz",
-                  "file_size": 100.0,
-                  "id": "1",
-                  "platform": "Illumina",
-                }
-              },
-              {
-                "node": {
-                  "access": "open",
-                  "cases": {
-                    "hits": {
-                      "edges": [ { "node": { "case_id": "1", "id": "1A", "project": { "id": "1", "project_id": "NHSII-DemoA" } } } ],
-                      "total": 1
-                    }
-                  },
-                  "data_category": "Gene Families",
-                  "data_format": "TSV",
-                  "experimental_strategy": "WMGX",
-                  "file_id": "2",
-                  "file_name": "demo1_sample1_gene_families.tsv",
-                  "file_size": 50.0,
-                  "id": "2",
-                  "platform": "Illumina",
-                }
-              },
-              {
-                "node": {
-                  "access": "open",
-                  "cases": {
-                    "hits": {
-                      "edges": [ { "node": { "case_id": "1", "id": "1A", "project": { "id": "1", "project_id": "NHSII-DemoA" } } } ],
-                      "total": 1
-                    }
-                  },
-                  "data_category": "Taxonomic Profile",
-                  "data_format": "TSV",
-                  "experimental_strategy": "WMGX",
-                  "file_id": "3",
-                  "file_name": "demo1_sample1_taxonomic_profile.tsv",
-                  "file_size": 30.0,
-                  "id": "3",
-                  "platform": "Illumina",
-                }
-              },
-            ],
-            "total": 45
-          }
-        }
-      }
-    }
-  }
-}
 
 # TopCasesCountByGenes
 TOP_CASES_GENES = {
