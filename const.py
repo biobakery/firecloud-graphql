@@ -1051,11 +1051,11 @@ FILE_AGGREGATIONS = {
             "access": {
               "buckets": [
                 {
-                  "doc_count": 183549,
+                  "doc_count": 30,
                   "key": "open"
                 },
                 {
-                  "doc_count": 175130,
+                  "doc_count": 15,
                   "key": "controlled"
                 }
               ]
@@ -1063,109 +1063,49 @@ FILE_AGGREGATIONS = {
             "data_category": {
               "buckets": [
                 {
-                  "doc_count": 127390,
-                  "key": "Simple Nucleotide Variation"
+                  "doc_count": 15,
+                  "key": "Raw Reads"
                 },
                 {
-                  "doc_count": 58047,
-                  "key": "Transcriptome Profiling"
+                  "doc_count": 15,
+                  "key": "Gene Families"
                 },
                 {
-                  "doc_count": 55224,
-                  "key": "Biospecimen"
+                  "doc_count": 15,
+                  "key": "Taxonomic Profiles"
                 },
-                {
-                  "doc_count": 47437,
-                  "key": "Sequencing Reads"
-                },
-                {
-                  "doc_count": 45291,
-                  "key": "Copy Number Variation"
-                },
-                {
-                  "doc_count": 12496,
-                  "key": "Clinical"
-                },
-                {
-                  "doc_count": 12359,
-                  "key": "DNA Methylation"
-                },
-                {
-                  "doc_count": 435,
-                  "key": "Combined Nucleotide Variation"
-                }
               ]
             },
             "data_format": {
               "buckets": [
                 {
-                  "doc_count": 127507,
-                  "key": "VCF"
+                  "doc_count": 15,
+                  "key": "Fastq"
                 },
                 {
-                  "doc_count": 115697,
-                  "key": "TXT"
+                  "doc_count": 30,
+                  "key": "TSV"
                 },
-                {
-                  "doc_count": 47437,
-                  "key": "BAM"
-                },
-                {
-                  "doc_count": 30072,
-                  "key": "SVS"
-                }
-              ]
-            },
-            "data_type": {
-              "buckets": [
-                {
-                  "doc_count": 63536,
-                  "key": "Annotated Somatic Mutation"
-                },
-                {
-                  "doc_count": 63536,
-                  "key": "Raw Simple Somatic Mutation"
-                },
-                {
-                  "doc_count": 47437,
-                  "key": "Aligned Reads"
-                }
               ]
             },
             "experimental_strategy": {
               "buckets": [
                 {
-                  "doc_count": 114727,
+                  "doc_count": 30,
                   "key": "WXS"
                 },
                 {
-                  "doc_count": 46317,
-                  "key": "RNA-Seq"
+                  "doc_count": 15,
+                  "key": "16S"
                 },
-                {
-                  "doc_count": 45291,
-                  "key": "Genotyping Array"
-                }
               ]
             },
             "platform": {
               "buckets": [
                 {
-                  "doc_count": 47437,
+                  "doc_count": 45,
                   "key": "Illumina"
                 },
-                {
-                  "doc_count": 45291,
-                  "key": "Affymetrix SNP 6.0"
-                },
-                {
-                  "doc_count": 9756,
-                  "key": "Illumina Human Methylation 450"
-                },
-                {
-                  "doc_count": 2603,
-                  "key": "Illumina Human Methylation 27"
-                }
               ]
             }
           },
