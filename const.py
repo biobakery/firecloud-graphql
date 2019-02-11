@@ -585,72 +585,94 @@ PROJECT_TABLE = {
           "edges": [
             {
               "node": {
-                "disease_type": [
-                  "Germ Cell Neoplasms",
-                  "Acinar Cell Neoplasms",
-                ],
                 "id": "UHJvamVjdDpGTS1BRA==",
                 "primary_site": [
-                  "Testis",
-                  "Gallbladder",
-                  "Unknown",
+                  "Stool",
                 ],
                 "program": {
-                  "name": "FM"
+                  "name": "NHSII"
                 },
-                "project_id": "FM-AD",
+                "project_id": "NHSII-DemoA",
                 "summary": {
-                  "case_count": 18004.0,
+                  "case_count": 5,
                   "data_categories": [
                     {
-                      "case_count": 18004.0,
-                      "data_category": "Simple Nucleotide Variation"
+                      "case_count": 5,
+                      "data_category": "Raw Reads"
                     },
                     {
-                      "case_count": 18004.0,
-                      "data_category": "Clinical"
+                      "case_count": 5,
+                      "data_category": "Gene Families"
                     },
                     {
-                      "case_count": 18004.0,
-                      "data_category": "Biospecimen"
+                      "case_count": 5,
+                      "data_category": "Taxonomic Profiles"
                     }
                   ],
-                  "file_count": 36134.0,
-                  "file_size": 188564761.0
+                  "file_count": 15,
+                  "file_size": 100
                 }
               }
             },
             {
               "node": {
-                "disease_type": [
-                  "Neuroblastoma"
-                ],
-                "id": "UHJvamVjdDpUQVJHRVQtTkJM",
+                "id": "UHJvamVjdDpGTS1DDA==",
                 "primary_site": [
-                  "Nervous System"
+                  "Stool",
                 ],
                 "program": {
-                  "name": "TARGET"
+                  "name": "NHSII"
                 },
-                "project_id": "TARGET-NBL",
+                "project_id": "NHSII-DemoB",
                 "summary": {
-                  "case_count": 1127.0,
+                  "case_count": 5,
                   "data_categories": [
                     {
-                      "case_count": 216.0,
-                      "data_category": "Simple Nucleotide Variation"
+                      "case_count": 5,
+                      "data_category": "Raw Reads"
                     },
                     {
-                      "case_count": 277.0,
-                      "data_category": "Sequencing Reads"
+                      "case_count": 5,
+                      "data_category": "Gene Families"
                     },
                     {
-                      "case_count": 152.0,
-                      "data_category": "Transcriptome Profiling"
-                    },
+                      "case_count": 5,
+                      "data_category": "Taxonomic Profiles"
+                    }
                   ],
-                  "file_count": 2809.0,
-                  "file_size": 11301459288767.0
+                  "file_count": 15,
+                  "file_size": 100
+                }
+              }
+            },
+            {
+              "node": {
+                "id": "UHJvamVjdDpGTS1CDS==",
+                "primary_site": [
+                  "Stool",
+                ],
+                "program": {
+                  "name": "NHSII"
+                },
+                "project_id": "NHSII-DemoC",
+                "summary": {
+                  "case_count": 5,
+                  "data_categories": [
+                    {
+                      "case_count": 5,
+                      "data_category": "Raw Reads"
+                    },
+                    {
+                      "case_count": 5,
+                      "data_category": "Gene Families"
+                    },
+                    {
+                      "case_count": 5,
+                      "data_category": "Taxonomic Profiles"
+                    }
+                  ],
+                  "file_count": 15,
+                  "file_size": 100
                 }
               }
             },
