@@ -71,12 +71,12 @@ TEST_FILES = {
 }
 
 CURRENT_COUNTS = Count(
-    projects=data.get_count("projects"),
-    participants=data.get_count("participants"),
-    samples=data.get_count("samples"),
-    dataFormats=data.get_count("dataFormats"),
-    rawFiles=data.get_count("rawFiles"),
-    processedFiles=data.get_count("processedFiles")
+    projects="3",
+    participants="15",
+    samples="15",
+    dataFormats="3",
+    rawFiles="15",
+    processedFiles="30"
 )
 
 class FileConnection(graphene.relay.Connection):
