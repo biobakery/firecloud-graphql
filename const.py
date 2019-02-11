@@ -1060,26 +1060,6 @@ FILE_AGGREGATIONS = {
                 }
               ]
             },
-            "analysis__workflow_type": {
-              "buckets": [
-                {
-                  "doc_count": 45258,
-                  "key": "DNAcopy"
-                },
-                {
-                  "doc_count": 23334,
-                  "key": "BCGSC miRNA Profiling"
-                },
-                {
-                  "doc_count": 22871,
-                  "key": "BWA with Mark Duplicates and Cocleaning"
-                },
-                {
-                  "doc_count": 18004,
-                  "key": "FM Simple Somatic Mutation"
-                }
-              ]
-            },
             "data_category": {
               "buckets": [
                 {
