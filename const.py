@@ -1196,7 +1196,82 @@ FILE_AGGREGATIONS = {
   }
 }
 
+# generate temp files list
+
+FILE_NODE_TEMPLATE = """{
+                "node": {
+                  "access": "open",
+                  "cases": {
+                    "hits": {
+                      "edges": [ { "node": { "case_id": "1", "id": "1A", "project": { "id": "1", "project_id": "NHSII" } } } ],
+                      "total": 1
+                    }
+                  },
+                  "data_category": "$cat",
+                  "data_format": "$format",
+                  "experimental_strategy": "$exp",
+                  "file_id": "$id",
+                  "file_name": "$name",
+                  "file_size": $size,
+                  "id": "$id",
+                  "platform": "$plat",
+                }
+              },"""
+
+FILES = ""
+
+from string import Template
+
+temp = Template(FILE_NODE_TEMPLATE)
+
+sample = 1
+for i in range(1, 46):
+    if i > 15:
+        demo = "NHSII-DemoB"
+        exp = "WMGX"
+    if i > 25:
+        demo = "NHSII-DemoC"
+        exp = "WMGX"
+    else:
+        demo = "NHSII-DemoA"
+        exp = "WMGX"
+  
+    if sample > 14:
+        sample = 1
+
+    if i % 2 == 0:
+       FILES+= temp.substitute(cat="Gene Families", format="TSV", exp=exp,
+           id=str(i), name=demo+"_sample"+str(sample)+"_gene_families.tsv", size="300000000", plat="Illumina")
+    elif i % 3 == 0:
+       FILES+= temp.substitute(cat="Taxonomic Profile", format="TSV", exp=exp,
+           id=str(i), name=demo+"_sample"+str(sample)+"_taxonomic_profile.tsv", size="200000000", plat="Illumina")
+    else:
+       FILES+= temp.substitute(cat="Raw Reads", format="Fastq", exp=exp,
+           id=str(i), name=demo+"_sample"+str(sample)+".fastq.gz", size="5000000000", plat="Illumina")
+
+    sample +=1
+
+
+import ast
+
+FILES_LIT = ast.literal_eval(FILES)
+
 FILE_TABLE = {
+  "data": {
+    "viewer": {
+      "repository": {
+        "files": {
+          "hits": {
+            "edges":  FILES_LIT ,
+             "total" : 4
+             }
+           }
+         }
+       }
+    }
+ }
+
+FILE_TABLE1 = {
   "data": {
     "viewer": {
       "repository": {
