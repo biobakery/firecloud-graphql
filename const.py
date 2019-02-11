@@ -15,112 +15,64 @@ ROOT_PROJECTS = {
     "viewer": {
       "projects": {
         "_aggregationsEJDan": {
-          "disease_type": {
-            "buckets": [
-              {
-                "doc_count": 19,
-                "key": "Adenomas and Adenocarcinomas"
-              },
-              {
-                "doc_count": 12,
-                "key": "Cystic, Mucinous and Serous Neoplasms"
-              },
-              {
-                "doc_count": 8,
-                "key": "Epithelial Neoplasms, NOS"
-              },
-            ]
-          },
           "primary_site": {
             "buckets": [
               {
-                "doc_count": 8,
-                "key": "Kidney"
-              },
-              {
-                "doc_count": 5,
-                "key": "Bronchus and lung"
-              },
-              {
-                "doc_count": 5,
-                "key": "Colon"
-              },
-              {
-                "doc_count": 5,
-                "key": "Heart, mediastinum, and pleura"
-              },
+                "doc_count": 15,
+                "key": "Stool"
+              }
             ]
           },
           "program__name": {
             "buckets": [
               {
-                "doc_count": 33,
-                "key": "TCGA"
-              },
-              {
-                "doc_count": 6,
-                "key": "TARGET"
-              },
-              {
-                "doc_count": 1,
-                "key": "CTSP"
-              },
+                "doc_count": 15,
+                "key": "NHSII"
+              }
             ]
           },
           "project_id": {
             "buckets": [
               {
-                "doc_count": 1,
-                "key": "CTSP-DLBCL1"
+                "doc_count": 5,
+                "key": "NHSII-DemoA"
               },
               {
-                "doc_count": 1,
-                "key": "FM-AD"
+                "doc_count": 5,
+                "key": "NHSII-DemoB"
               },
               {
-                "doc_count": 1,
-                "key": "NCICCR-DLBCL"
-              },
+                "doc_count": 5,
+                "key": "NHSII-DemoC"
+              }
             ]
           },
           "summary__data_categories__data_category": {
             "buckets": [
               {
-                "doc_count": 41,
-                "key": "Sequencing Reads"
+                "doc_count": 15,
+                "key": "Raw Reads"
               },
               {
-                "doc_count": 40,
-                "key": "Biospecimen"
+                "doc_count": 15,
+                "key": "Gene Families"
               },
               {
-                "doc_count": 40,
-                "key": "Clinical"
-              },
-              {
-                "doc_count": 37,
-                "key": "Simple Nucleotide Variation"
-              },
+                "doc_count": 15,
+                "key": "Taxonomic Profiles"
+              }
             ]
           },
           "summary__experimental_strategies__experimental_strategy": {
             "buckets": [
               {
-                "doc_count": 38,
+                "doc_count": 10,
                 "key": "WXS"
               },
               {
-                "doc_count": 37,
-                "key": "RNA-Seq"
-              },
-              {
-                "doc_count": 36,
-                "key": "miRNA-Seq"
-              },
-              {
-                "doc_count": 33,
-                "key": "Genotyping Array"
-              },
+                "doc_count": 5,
+                "key": "16S"
+              }
             ]
           }
         }
