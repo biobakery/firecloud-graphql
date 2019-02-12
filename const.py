@@ -455,43 +455,43 @@ PROJECT_CHARTS = {
           "edges": [
             {
               "node": {
-                "id": "UHJvamVjdDpGTS1BRA==",
-                "name": "Foundation Medicine Adult Cancer Clinical Dataset (FM-AD)",
+                "id": "1",
+                "name": "NHSII-DemoA",
                 "program": {
-                  "name": "FM"
+                  "name": "NHSII"
                 },
-                "project_id": "FM-AD",
+                "project_id": "NHSII-DemoA",
                 "summary": {
-                  "case_count": 18004.0,
-                  "file_count": 36134.0
+                  "case_count": 5,
+                  "file_count": 15
                 }
               }
             },
             {
               "node": {
-                "id": "UHJvamVjdDpUQVJHRVQtTkJM",
-                "name": "Neuroblastoma",
+                "id": "2",
+                "name": "NHSII-DemoB",
                 "program": {
-                  "name": "TARGET"
+                  "name": "NHSII"
                 },
-                "project_id": "TARGET-NBL",
+                "project_id": "NHSII-DemoB",
                 "summary": {
-                  "case_count": 1127.0,
-                  "file_count": 2809.0
+                  "case_count": 5,
+                  "file_count": 15
                 }
               }
             },
             {
               "node": {
-                "id": "UHJvamVjdDpUQ0dBLUJSQ0E=",
-                "name": "Breast Invasive Carcinoma",
+                "id": "3",
+                "name": "NHSII-DemoC",
                 "program": {
-                  "name": "TCGA"
+                  "name": "NHSII"
                 },
-                "project_id": "TCGA-BRCA",
+                "project_id": "NHSII-DemoC",
                 "summary": {
-                  "case_count": 1098.0,
-                  "file_count": 31524.0
+                  "case_count": 5,
+                  "file_count": 15
                 }
               }
             },
