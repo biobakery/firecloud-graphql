@@ -75,6 +75,8 @@ def main():
             temp_response = flask.jsonify(const.FILE_TABLE)
         elif "CaseAggregations" in name:
             temp_response = flask.jsonify(const.CASE_AGGREGATIONS)
+        elif "CasesTable" in name:
+            temp_response = flask.jsonify(const.CASES_TABLE)
 
         return temp_response
 
