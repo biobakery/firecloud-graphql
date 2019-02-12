@@ -178,11 +178,11 @@ ROOT_REPOS = {
             "access": {
               "buckets": [
                 {
-                  "doc_count": 183549,
+                  "doc_count": 30,
                   "key": "open"
                 },
                 {
-                  "doc_count": 175130,
+                  "doc_count": 15,
                   "key": "controlled"
                 }
               ]
@@ -190,16 +190,8 @@ ROOT_REPOS = {
             "cases__primary_site": {
               "buckets": [
                 {
-                  "doc_count": 39977,
-                  "key": "Bronchus and lung"
-                },
-                {
-                  "doc_count": 36745,
-                  "key": "Breast"
-                },
-                {
-                  "doc_count": 26803,
-                  "key": "Brain"
+                  "doc_count": 45,
+                  "key": "Stool"
                 },
               ]
             },
@@ -222,76 +214,40 @@ ROOT_REPOS = {
             "data_category": {
               "buckets": [
                 {
-                  "doc_count": 127390,
-                  "key": "Simple Nucleotide Variation"
+                  "doc_count": 15,
+                  "key": "Raw Reads"
                 },
                 {
-                  "doc_count": 58047,
-                  "key": "Transcriptome Profiling"
+                  "doc_count": 15,
+                  "key": "Gene Families"
                 },
                 {
-                  "doc_count": 55224,
-                  "key": "Biospecimen"
+                  "doc_count": 15,
+                  "key": "Taxonomic Profiles"
                 },
-                {
-                  "doc_count": 47437,
-                  "key": "Sequencing Reads"
-                },
-                {
-                  "doc_count": 45291,
-                  "key": "Copy Number Variation"
-                },
-                {
-                  "doc_count": 12496,
-                  "key": "Clinical"
-                },
-                {
-                  "doc_count": 12359,
-                  "key": "DNA Methylation"
-                },
-                {
-                  "doc_count": 435,
-                  "key": "Combined Nucleotide Variation"
-                }
               ]
             },
             "data_format": {
               "buckets": [
                 {
-                  "doc_count": 127507,
-                  "key": "VCF"
+                  "doc_count": 30,
+                  "key": "TSV"
                 },
                 {
-                  "doc_count": 115697,
-                  "key": "TXT"
-                },
-                {
-                  "doc_count": 47437,
-                  "key": "BAM"
-                },
-                {
-                  "doc_count": 30072,
-                  "key": "SVS"
+                  "doc_count": 15,
+                  "key": "Fastq"
                 },
               ]
             },
             "experimental_strategy": {
               "buckets": [
                 {
-                  "doc_count": 114727,
-                  "key": "WXS"
+                  "doc_count": 30,
+                  "key": "WMGS"
                 },
                 {
-                  "doc_count": 46317,
-                  "key": "RNA-Seq"
-                },
-                {
-                  "doc_count": 45291,
-                  "key": "Genotyping Array"
-                },
-                {
-                  "doc_count": 36587,
-                  "key": "Targeted Sequencing"
+                  "doc_count": 15,
+                  "key": "16S"
                 },
               ]
             }
