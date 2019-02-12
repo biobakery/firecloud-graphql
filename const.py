@@ -1152,12 +1152,6 @@ CASES_TABLE = {
                     "gender": 'null',
                     "race": 'null'
                   },
-                  "diagnoses": {
-                    "hits": {
-                      "edges": []
-                    }
-                  },
-                  "disease_type": "Adenomas and Adenocarcinomas",
                   "id": "Q2FzZTphNGZhZjUxNC01MGFmLTQzZWQtYjI5NC0zNTBlZTA3NTYyNTAjN2NhNDQ1NzY3MTRlNWRmNWZjYjY1N2QxYWRjODM4ZDIj",
                   "primary_site": "Rectosigmoid junction",
                   "project": {
@@ -1204,22 +1198,6 @@ CASES_TABLE = {
                     "gender": "male",
                     "race": "white"
                   },
-                  "diagnoses": {
-                    "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "age_at_diagnosis": 17367.0,
-                            "days_to_death": 'null',
-                            "id": "RGlhZ25vc2lzOjk0MmMwMDg4LWM5YTAtNDI4Yy1hODc5LWUxNmY4YzViZmRiODo5OTQ0NzlhNy00OTM3LTU5YjktYTAwMS1kNGViNDMzMTU0MDA=",
-                            "primary_diagnosis": "Clear cell adenocarcinoma, NOS",
-                            "vital_status": "alive"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "disease_type": "Adenomas and Adenocarcinomas",
                   "id": "Q2FzZTo5NDJjMDA4OC1jOWEwLTQyOGMtYTg3OS1lMTZmOGM1YmZkYjgjN2NhNDQ1NzY3MTRlNWRmNWZjYjY1N2QxYWRjODM4ZDIj",
                   "primary_site": "Kidney",
                   "project": {
@@ -1282,22 +1260,6 @@ CASES_TABLE = {
                     "gender": "female",
                     "race": "white"
                   },
-                  "diagnoses": {
-                    "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "age_at_diagnosis": 16536.0,
-                            "days_to_death": 1134.0,
-                            "id": "RGlhZ25vc2lzOjRiZmJjZTJiLTlkMGItNGU4YS05NTBmLWZkOGUwYmEzZTA1YTo1ODVkZDk4Yy1lODIxLTU3MjUtYTI2Zi0zZjk0ZjZkYWJjNjk=",
-                            "primary_diagnosis": "Squamous cell carcinoma, NOS",
-                            "vital_status": "dead"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "disease_type": "Squamous Cell Neoplasms",
                   "id": "Q2FzZTo0YmZiY2UyYi05ZDBiLTRlOGEtOTUwZi1mZDhlMGJhM2UwNWEjN2NhNDQ1NzY3MTRlNWRmNWZjYjY1N2QxYWRjODM4ZDIj",
                   "primary_site": "Other and unspecified parts of tongue",
                   "project": {
@@ -1364,22 +1326,6 @@ CASES_TABLE = {
                     "gender": "male",
                     "race": "not reported"
                   },
-                  "diagnoses": {
-                    "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "age_at_diagnosis": 31718.0,
-                            "days_to_death": 'null',
-                            "id": "RGlhZ25vc2lzOjUxYzM3NDQ5LTZhMmUtNGMzZC1hN2NjLTA2ZjkwMWUxMjI0Zjo2Mjg5NzBhNC00NjdiLTVmZTItOWVkNi02OTUyMmQxMzI4YTc=",
-                            "primary_diagnosis": "Adenocarcinoma, NOS",
-                            "vital_status": "alive"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "disease_type": "Adenomas and Adenocarcinomas",
                   "id": "Q2FzZTo1MWMzNzQ0OS02YTJlLTRjM2QtYTdjYy0wNmY5MDFlMTIyNGYjN2NhNDQ1NzY3MTRlNWRmNWZjYjY1N2QxYWRjODM4ZDIj",
                   "primary_site": "Rectum",
                   "project": {
@@ -1446,22 +1392,6 @@ CASES_TABLE = {
                     "gender": "male",
                     "race": "white"
                   },
-                  "diagnoses": {
-                    "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "age_at_diagnosis": 27877.0,
-                            "days_to_death": 232.0,
-                            "id": "RGlhZ25vc2lzOmE3OTVhODQxLTlmZDYtNGVhYy1iODcxLWE4YzcwMjQ4NzAwZjplN2I1NmVjMy04ZDIzLTViNDUtYjhhNC0xYjhiMGY5YmQ3ZGU=",
-                            "primary_diagnosis": "Glioblastoma",
-                            "vital_status": "dead"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "disease_type": "Gliomas",
                   "id": "Q2FzZTphNzk1YTg0MS05ZmQ2LTRlYWMtYjg3MS1hOGM3MDI0ODcwMGYjN2NhNDQ1NzY3MTRlNWRmNWZjYjY1N2QxYWRjODM4ZDIj",
                   "primary_site": "Brain",
                   "project": {
@@ -1520,22 +1450,6 @@ CASES_TABLE = {
                     "gender": "male",
                     "race": "white"
                   },
-                  "diagnoses": {
-                    "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "age_at_diagnosis": 19022.0,
-                            "days_to_death": 2454.0,
-                            "id": "RGlhZ25vc2lzOjM5ODY3NzU2LTBlZjAtNDQwOC1hMGUxLWM4NWFlN2FkYjhlZTpjODM5YzAwYS1hMzIyLTVjMmUtOGFmOS01ZTQxNmZmMzMzMDk=",
-                            "primary_diagnosis": "Clear cell adenocarcinoma, NOS",
-                            "vital_status": "dead"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "disease_type": "Adenomas and Adenocarcinomas",
                   "id": "Q2FzZTozOTg2Nzc1Ni0wZWYwLTQ0MDgtYTBlMS1jODVhZTdhZGI4ZWUjN2NhNDQ1NzY3MTRlNWRmNWZjYjY1N2QxYWRjODM4ZDIj",
                   "primary_site": "Kidney",
                   "project": {
@@ -1598,22 +1512,6 @@ CASES_TABLE = {
                     "gender": "female",
                     "race": "white"
                   },
-                  "diagnoses": {
-                    "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "age_at_diagnosis": 29131.0,
-                            "days_to_death": 274.0,
-                            "id": "RGlhZ25vc2lzOmYzNTVjZDU5LWVhYTktNDZjNy1hYjA3LWI5MGE3YWZjODc1YzpjMGE5ZDFlYi0yYzUyLTViYjQtOGI1Ni05NGE3MDVhMDM4Zjg=",
-                            "primary_diagnosis": "Squamous cell carcinoma, NOS",
-                            "vital_status": "dead"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "disease_type": "Squamous Cell Neoplasms",
                   "id": "Q2FzZTpmMzU1Y2Q1OS1lYWE5LTQ2YzctYWIwNy1iOTBhN2FmYzg3NWMjN2NhNDQ1NzY3MTRlNWRmNWZjYjY1N2QxYWRjODM4ZDIj",
                   "primary_site": "Bronchus and lung",
                   "project": {
@@ -1680,22 +1578,6 @@ CASES_TABLE = {
                     "gender": "male",
                     "race": "white"
                   },
-                  "diagnoses": {
-                    "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "age_at_diagnosis": 22880.0,
-                            "days_to_death": 1485.0,
-                            "id": "RGlhZ25vc2lzOjI1ZjY0YjgwLTA2NzItNDk4MC05ODc1LTk1NmIxNjk5MzA5YjoyOGMyYzFlMS1iNzE3LTVkM2EtYjRiZC1kNjhkNjQ3ODkxMGU=",
-                            "primary_diagnosis": "Squamous cell carcinoma, NOS",
-                            "vital_status": "dead"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "disease_type": "Squamous Cell Neoplasms",
                   "id": "Q2FzZToyNWY2NGI4MC0wNjcyLTQ5ODAtOTg3NS05NTZiMTY5OTMwOWIjN2NhNDQ1NzY3MTRlNWRmNWZjYjY1N2QxYWRjODM4ZDIj",
                   "primary_site": "Bronchus and lung",
                   "project": {
@@ -1758,22 +1640,6 @@ CASES_TABLE = {
                     "gender": "male",
                     "race": "white"
                   },
-                  "diagnoses": {
-                    "hits": {
-                      "edges": [
-                        {
-                          "node": {
-                            "age_at_diagnosis": 15264.0,
-                            "days_to_death": 'null',
-                            "id": "RGlhZ25vc2lzOmM2NDU0MzcxLTFmODQtNGU4ZS04YzNhLTJlYWM4MzgwODE5ZTowMmUwYjI2Zi1lMTcxLTUyZWYtODlhMy1kZGIyMjMyYzE5NzQ=",
-                            "primary_diagnosis": "Clear cell adenocarcinoma, NOS",
-                            "vital_status": "alive"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "disease_type": "Adenomas and Adenocarcinomas",
                   "id": "Q2FzZTpjNjQ1NDM3MS0xZjg0LTRlOGUtOGMzYS0yZWFjODM4MDgxOWUjN2NhNDQ1NzY3MTRlNWRmNWZjYjY1N2QxYWRjODM4ZDIj",
                   "primary_site": "Kidney",
                   "project": {
