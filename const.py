@@ -1095,13 +1095,14 @@ from string import Template
 temp = Template(FILE_NODE_TEMPLATE)
 
 sample = 1
+sample_names = [1,1,1,2,2,2,3,3,3,4,4,4,5,5,5]
 for i in range(1, 46):
-    if i > 15 and i <= 25:
+    if i > 15 and i <= 30:
         demo = "demoB"
         project = """{ "case_id": "2", "id": "2", "project": { "id": "2", "project_id": "NHSII-DemoB" } } }"""
         exp = "WMGX"
         platform = "Illumina MiSeq"
-    elif i > 25:
+    elif i > 30:
         demo = "demoC"
         project = """{ "case_id": "3", "id": "3", "project": { "id": "3", "project_id": "NHSII-DemoC" } } }"""
         exp = "WMGX"
@@ -1112,18 +1113,18 @@ for i in range(1, 46):
         exp = "WMGX"
         platform = "Illumina HiSeq"
   
-    if sample > 14:
+    if sample > 15:
         sample = 1
 
-    if i % 2 == 0:
+    if sample in [1,4,7,10,13]:
        FILES+= temp.substitute(cat="Gene Families", format="TSV", exp=exp, project=project, access="open",
-           id=str(i), name=demo+"_sample"+str(sample)+"_gene_families.tsv", size="300000000", plat=platform)
-    elif i % 3 == 0:
+           id=str(i), name=demo+"_sample"+str(sample_names[sample-1])+"_gene_families.tsv", size="300000000", plat=platform)
+    elif sample in [2,5,8,11,14]:
        FILES+= temp.substitute(cat="Taxonomic Profile", format="TSV", exp=exp, project=project, access="open",
-           id=str(i), name=demo+"_sample"+str(sample)+"_taxonomic_profile.tsv", size="200000000", plat=platform)
+           id=str(i), name=demo+"_sample"+str(sample_names[sample-1])+"_taxonomic_profile.tsv", size="200000000", plat=platform)
     else:
        FILES+= temp.substitute(cat="Raw Reads", format="Fastq", exp=exp, project=project, access="controlled",
-           id=str(i), name=demo+"_sample"+str(sample)+".fastq.gz", size="5000000000", plat=platform)
+           id=str(i), name=demo+"_sample"+str(sample_names[sample-1])+"_raw_reads.fastq.gz", size="5000000000", plat=platform)
 
     sample +=1
 
