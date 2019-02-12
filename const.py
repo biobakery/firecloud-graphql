@@ -455,143 +455,42 @@ PROJECT_CHARTS = {
           "edges": [
             {
               "node": {
-                "disease_type": [
-                  "Germ Cell Neoplasms",
-                  "Acinar Cell Neoplasms",
-                  "Miscellaneous Tumors",
-                  "Thymic Epithelial Neoplasms",
-                  "Gliomas",
-                ],
                 "id": "UHJvamVjdDpGTS1BRA==",
                 "name": "Foundation Medicine Adult Cancer Clinical Dataset (FM-AD)",
-                "primary_site": [
-                  "Testis",
-                  "Gallbladder",
-                  "Unknown",
-                  "Other and unspecified parts of biliary tract",
-                  "Adrenal gland",
-                  "Thyroid gland",
-                ],
                 "program": {
                   "name": "FM"
                 },
                 "project_id": "FM-AD",
                 "summary": {
                   "case_count": 18004.0,
-                  "data_categories": [
-                    {
-                      "case_count": 18004.0,
-                      "data_category": "Simple Nucleotide Variation"
-                    },
-                    {
-                      "case_count": 18004.0,
-                      "data_category": "Clinical"
-                    },
-                    {
-                      "case_count": 18004.0,
-                      "data_category": "Biospecimen"
-                    }
-                  ],
                   "file_count": 36134.0
                 }
               }
             },
             {
               "node": {
-                "disease_type": [
-                  "Neuroblastoma"
-                ],
                 "id": "UHJvamVjdDpUQVJHRVQtTkJM",
                 "name": "Neuroblastoma",
-                "primary_site": [
-                  "Nervous System"
-                ],
                 "program": {
                   "name": "TARGET"
                 },
                 "project_id": "TARGET-NBL",
                 "summary": {
                   "case_count": 1127.0,
-                  "data_categories": [
-                    {
-                      "case_count": 216.0,
-                      "data_category": "Simple Nucleotide Variation"
-                    },
-                    {
-                      "case_count": 277.0,
-                      "data_category": "Sequencing Reads"
-                    },
-                    {
-                      "case_count": 152.0,
-                      "data_category": "Transcriptome Profiling"
-                    },
-                    {
-                      "case_count": 1127.0,
-                      "data_category": "Biospecimen"
-                    },
-                    {
-                      "case_count": 1127.0,
-                      "data_category": "Clinical"
-                    }
-                  ],
                   "file_count": 2809.0
                 }
               }
             },
             {
               "node": {
-                "disease_type": [
-                  "Adnexal and Skin Appendage Neoplasms",
-                  "Basal Cell Neoplasms",
-                  "Adenomas and Adenocarcinomas",
-                  "Cystic, Mucinous and Serous Neoplasms",
-                  "Epithelial Neoplasms, NOS",
-                  "Squamous Cell Neoplasms",
-                  "Fibroepithelial Neoplasms",
-                  "Ductal and Lobular Neoplasms",
-                  "Complex Epithelial Neoplasms"
-                ],
                 "id": "UHJvamVjdDpUQ0dBLUJSQ0E=",
                 "name": "Breast Invasive Carcinoma",
-                "primary_site": [
-                  "Breast"
-                ],
                 "program": {
                   "name": "TCGA"
                 },
                 "project_id": "TCGA-BRCA",
                 "summary": {
                   "case_count": 1098.0,
-                  "data_categories": [
-                    {
-                      "case_count": 1097.0,
-                      "data_category": "Transcriptome Profiling"
-                    },
-                    {
-                      "case_count": 1098.0,
-                      "data_category": "Copy Number Variation"
-                    },
-                    {
-                      "case_count": 1044.0,
-                      "data_category": "Simple Nucleotide Variation"
-                    },
-                    {
-                      "case_count": 1095.0,
-                      "data_category": "DNA Methylation"
-                    },
-                    {
-                      "case_count": 1098.0,
-                      "data_category": "Clinical"
-                    },
-                    {
-                      "case_count": 1098.0,
-                      "data_category": "Sequencing Reads"
-                    },
-                    {
-                      "case_count": 1098.0,
-                      "data_category": "Biospecimen"
-                    }
-                  ],
                   "file_count": 31524.0
                 }
               }
