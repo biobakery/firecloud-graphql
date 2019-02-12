@@ -425,56 +425,6 @@ ROOT_REPOS = {
   }
 }
 
-PROJECTS = {
-  "data": {
-    "viewer": {
-      "explore": {
-        "genes": {
-          "hits": {
-            "total": "200"
-          }
-        },
-        "ssms": {
-          "hits": {
-            "total": "300"
-          }
-        }
-      },
-      "projects": {
-        "aggregations": {
-          "primary_site": {
-            "buckets": [
-              {
-                "key": "Kidney"
-              },
-              {
-                "key": "Bronchus and lung"
-              },
-            ]
-          }
-        },
-        "hits": {
-          "total": "40"
-        }
-      },
-      "repository": {
-        "cases": {
-          "hits": {
-            "total": "100"
-          }
-        },
-        "files": {
-          "hits": {
-            "total": "500"
-          }
-        }
-      }
-    }
-  }
-}
-
-
-
 
 # GenesAndCases
 GENES_CASES = {
