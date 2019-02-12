@@ -395,30 +395,6 @@ ROOT_REPOS = {
                 },
               ]
             },
-            "data_type": {
-              "buckets": [
-                {
-                  "doc_count": 63536,
-                  "key": "Annotated Somatic Mutation"
-                },
-                {
-                  "doc_count": 63536,
-                  "key": "Raw Simple Somatic Mutation"
-                },
-                {
-                  "doc_count": 47437,
-                  "key": "Aligned Reads"
-                },
-                {
-                  "doc_count": 34713,
-                  "key": "Gene Expression Quantification"
-                },
-                {
-                  "doc_count": 30072,
-                  "key": "Slide Image"
-                },
-              ]
-            },
             "experimental_strategy": {
               "buckets": [
                 {
