@@ -89,7 +89,7 @@ ROOT_REPOS = {
       "cart_summary": {
         "_aggregations1TAxVJ": {
           "fs": {
-            "value": 650606999096554.0
+            "value": 65000000000
           }
         }
       },
@@ -282,7 +282,7 @@ ROOT_REPOS = {
             }
           },
           "_hits1ATaID": {
-            "total": 33096
+            "total": 15
           }
         },
         "files": {
@@ -417,7 +417,7 @@ ROOT_REPOS = {
             }
           },
           "_hits2bK9cM": {
-            "total": 358679
+            "total": 45
           }
         }
       }
