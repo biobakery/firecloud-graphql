@@ -1073,7 +1073,7 @@ FILE_NODE_TEMPLATE = """{
                   "access": "$access",
                   "cases": {
                     "hits": {
-                      "edges": [ { "node": { "case_id": "1", "id": "1A", "project": { "id": "1", "project_id": "$project" } } } ],
+                      "edges": [ { "node": $project ],
                       "total": 1
                     }
                   },
@@ -1096,19 +1096,19 @@ temp = Template(FILE_NODE_TEMPLATE)
 
 sample = 1
 for i in range(1, 46):
-    if i > 15:
+    if i > 15 and i <= 25:
         demo = "demoB"
-        project = "NHSII-DemoB"
+        project = """{ "case_id": "2", "id": "2", "project": { "id": "2", "project_id": "NHSII-DemoB" } } }"""
         exp = "WMGX"
         platform = "Illumina MiSeq"
-    if i > 25:
+    elif i > 25:
         demo = "demoC"
-        project = "NHSII-DemoC"
+        project = """{ "case_id": "3", "id": "3", "project": { "id": "3", "project_id": "NHSII-DemoC" } } }"""
         exp = "WMGX"
         platform = "Illumina HiSeq"
     else:
         demo = "demoA"
-        project = "NHSII-DemoA"
+        project = """{ "case_id": "1", "id": "1", "project": { "id": "1", "project_id": "NHSII-DemoA" } } }"""
         exp = "WMGX"
         platform = "Illumina HiSeq"
   
