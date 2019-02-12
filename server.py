@@ -67,8 +67,6 @@ def main():
             temp_response = flask.jsonify(const.PROJECT_TABLE)
         elif "ProjectsCharts" in name:
             temp_response = flask.jsonify(const.PROJECT_CHARTS)
-        elif "TopCasesCountByGenes" in name:
-            temp_response = flask.jsonify(const.TOP_CASES_GENES)
         elif "FileAggregations" in name:
             temp_response = flask.jsonify(const.FILE_AGGREGATIONS)
         elif "FilesTable" in name:
