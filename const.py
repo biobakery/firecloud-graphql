@@ -99,184 +99,68 @@ ROOT_REPOS = {
             "demographic__ethnicity": {
               "buckets": [
                 {
-                  "doc_count": 21424,
-                  "key": "not reported"
-                },
-                {
-                  "doc_count": 10436,
+                  "doc_count": 30,
                   "key": "not hispanic or latino"
                 },
                 {
-                  "doc_count": 779,
+                  "doc_count": 15,
                   "key": "hispanic or latino"
                 },
-                {
-                  "doc_count": 163,
-                  "key": "Unknown"
-                }
               ]
             },
             "demographic__gender": {
               "buckets": [
                 {
-                  "doc_count": 17700,
+                  "doc_count": 15,
                   "key": "female"
                 },
                 {
-                  "doc_count": 15087,
+                  "doc_count": 30,
                   "key": "male"
                 },
-                {
-                  "doc_count": 10,
-                  "key": "unknown"
-                },
-                {
-                  "doc_count": 5,
-                  "key": "not reported"
-                }
               ]
             },
             "demographic__race": {
               "buckets": [
                 {
-                  "doc_count": 20156,
-                  "key": "not reported"
-                },
-                {
-                  "doc_count": 10381,
+                  "doc_count": 30,
                   "key": "white"
                 },
                 {
-                  "doc_count": 1336,
-                  "key": "black or african american"
-                },
-                {
-                  "doc_count": 789,
-                  "key": "asian"
-                },
-                {
-                  "doc_count": 74,
+                  "doc_count": 15,
                   "key": "other"
-                },
-                {
-                  "doc_count": 37,
-                  "key": "american indian or alaska native"
-                },
-                {
-                  "doc_count": 29,
-                  "key": "native hawaiian or other pacific islander"
-                }
-              ]
-            },
-            "diagnoses__vital_status": {
-              "buckets": [
-                {
-                  "doc_count": 18032,
-                  "key": "not reported"
-                },
-                {
-                  "doc_count": 9967,
-                  "key": "alive"
-                },
-                {
-                  "doc_count": 4767,
-                  "key": "dead"
-                },
-                {
-                  "doc_count": 36,
-                  "key": "unknown"
-                }
-              ]
-            },
-            "disease_type": {
-              "buckets": [
-                {
-                  "doc_count": 12492,
-                  "key": "Adenomas and Adenocarcinomas"
-                },
-                {
-                  "doc_count": 3202,
-                  "key": "Epithelial Neoplasms, NOS"
-                },
-                {
-                  "doc_count": 3025,
-                  "key": "Ductal and Lobular Neoplasms"
-                },
-                {
-                  "doc_count": 2635,
-                  "key": "Squamous Cell Neoplasms"
                 },
               ]
             },
             "primary_site": {
               "buckets": [
                 {
-                  "doc_count": 4866,
-                  "key": "Bronchus and lung"
-                },
-                {
-                  "doc_count": 3682,
-                  "key": "Breast"
-                },
-                {
-                  "doc_count": 2301,
-                  "key": "Colon"
-                },
-                {
-                  "doc_count": 2091,
-                  "key": "Kidney"
+                  "doc_count": 45,
+                  "key": "Stool"
                 },
               ]
             },
             "project__program__name": {
               "buckets": [
                 {
-                  "doc_count": 18004,
-                  "key": "FM"
-                },
-                {
-                  "doc_count": 11315,
-                  "key": "TCGA"
-                },
-                {
-                  "doc_count": 3236,
-                  "key": "TARGET"
-                },
-                {
-                  "doc_count": 489,
-                  "key": "NCICCR"
-                },
-                {
                   "doc_count": 45,
-                  "key": "CTSP"
+                  "key": "NHSII"
                 },
-                {
-                  "doc_count": 7,
-                  "key": "VAREPOP"
-                }
               ]
             },
             "project__project_id": {
               "buckets": [
                 {
-                  "doc_count": 18004,
-                  "key": "FM-AD"
+                  "doc_count": 15,
+                  "key": "NHSII-DemoA"
                 },
                 {
-                  "doc_count": 1127,
-                  "key": "TARGET-NBL"
+                  "doc_count": 15,
+                  "key": "NHSII-DemoB"
                 },
                 {
-                  "doc_count": 1098,
-                  "key": "TCGA-BRCA"
-                },
-                {
-                  "doc_count": 988,
-                  "key": "TARGET-AML"
-                },
-                {
-                  "doc_count": 652,
-                  "key": "TARGET-WT"
+                  "doc_count": 15,
+                  "key": "NHSII-DemoC"
                 },
               ]
             }
