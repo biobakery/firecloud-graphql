@@ -3,7 +3,7 @@
 
 VERSION = {
   "commit": "abcde",
-  "data_release": "Data Release 0.1 - January 17, 2019",
+  "data_release": "Data Release 0.1 - February 18, 2019",
   "status": "OK",
   "tag": "0.1",
   "version": 0.1
@@ -261,82 +261,6 @@ ROOT_REPOS = {
   }
 }
 
-
-# GenesAndCases
-GENES_CASES = {
-  "data": {
-    "viewer": {
-      "explore": {
-        "cases": {
-          "hits": {
-            "total": 10202
-          }
-        },
-        "genes": {
-          "hits": {
-            "edges": [
-              {
-                "node": {
-                  "allCases": {
-                    "hits": {
-                      "total": 4334
-                    }
-                  },
-                  "filteredCases": {
-                    "hits": {
-                      "total": 3609
-                    }
-                  },
-                  "gene_id": "ENSG00000141510",
-                  "id": "R2VuZTpFTlNHMDAwMDAxNDE1MTAjNWE0ZjJhZTRiNTg5NmFiNThiNzJiNDkxN2JmNzFjMTkj",
-                  "score": 3609,
-                  "symbol": "TP53"
-                }
-              },
-              {
-                "node": {
-                  "allCases": {
-                    "hits": {
-                      "total": 2736
-                    }
-                  },
-                  "filteredCases": {
-                    "hits": {
-                      "total": 1320
-                    }
-                  },
-                  "gene_id": "ENSG00000121879",
-                  "id": "R2VuZTpFTlNHMDAwMDAxMjE4NzkjNWE0ZjJhZTRiNTg5NmFiNThiNzJiNDkxN2JmNzFjMTkj",
-                  "score": 1320,
-                  "symbol": "PIK3CA"
-                }
-              },
-              {
-                "node": {
-                  "allCases": {
-                    "hits": {
-                      "total": 1663
-                    }
-                  },
-                  "filteredCases": {
-                    "hits": {
-                      "total": 941
-                    }
-                  },
-                  "gene_id": "ENSG00000167548",
-                  "id": "R2VuZTpFTlNHMDAwMDAxNjc1NDgjNWE0ZjJhZTRiNTg5NmFiNThiNzJiNDkxN2JmNzFjMTkj",
-                  "score": 941,
-                  "symbol": "KMT2D"
-                }
-              },
-            ],
-            "total": 573
-          }
-        }
-      }
-    }
-  }
-}
 
 # ProjectsTable
 PROJECT_TABLE = {
