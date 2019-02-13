@@ -99,10 +99,63 @@ class Repository(graphene.ObjectType):
     def resolve_files(self, info):
         return Files(hits=["1","2","3","4"])
 
+class Bucket(graphene.ObjectType):
+    doc_count = graphene.Int()
+    key = graphene.String()
+    key_as_string = graphene.String()
+
+    def resolve_key_as_string(self, info):
+        return str(key)
+
+class Aggregations(graphene.ObjectType):
+    buckets = graphene.List(Bucket)
+
+
+PROJECT_AGGREGATIONS={
+    "primary_site": Aggregations(buckets=[Bucket(doc_count=45, key="Stool")]),
+    "program__name": Aggregations(buckets=[Bucket(doc_count=45, key="NHSII")]),
+    "project_id": Aggregations(buckets=[Bucket(doc_count=15, key="NHSII-DemoA"),
+                   Bucket(doc_count=15, key="NHSII-DemoB"),
+                   Bucket(doc_count=15, key="NHSII-DemoC")]),
+    "summary__data_categories__data_category": Aggregations(buckets=[Bucket(doc_count=15, key="Raw Reads"),
+                                                Bucket(doc_count=15, key="Gene Families"),
+                                                Bucket(doc_count=15, key="Taxonomic Profiles")]),
+    "summary__experimental_strategies__experimental_strategy": Aggregations(buckets=[Bucket(doc_count=30, key="WMGX"),
+                                                                Bucket(doc_count=15, key="16S")]),
+}
+
+
+class ProjectAggregations(graphene.ObjectType):
+
+    primary_site = graphene.Field(Aggregations)
+    program__name = graphene.Field(Aggregations)
+    project_id = graphene.Field(Aggregations)
+    summary__experimental_strategies__experimental_strategy = graphene.Field(Aggregations)
+    summary__data_categories__data_category = graphene.Field(Aggregations)
+
+    def resolve_primary_site(self, info):
+       return PROJECT_AGGREGATIONS["primary_site"]
+    def resolve_program__name(self, info):
+       return PROJECT_AGGREGATIONS["program__name"]
+    def resolve_project_id(self, info):
+       return PROJECT_AGGREGATIONS["project_id"]
+    def resolve_summary__experimental_strategies__experimental_strategy(self, info):
+       return PROJECT_AGGREGATIONS["summary__experimental_strategies__experimental_strategy"]
+    def resolve_summary__data_categories__data_category(self, info):
+       return PROJECT_AGGREGATIONS["summary__data_categories__data_category"]
+
+
+class Projects(graphene.ObjectType):
+    aggregations = graphene.Field(ProjectAggregations, aggregations_filter_themselves=graphene.Boolean())
+
+    def resolve_aggregations(self, info, aggregations_filter_themselves):
+        return ProjectAggregations(self)
+
 class Root(graphene.ObjectType):
     user = graphene.Field(User)
     count = graphene.Field(Count)
     repository = graphene.Field(Repository)
+    projects = graphene.Field(Projects)
 
     def resolve_user(self, info):
         return User(self, info)
@@ -113,6 +166,8 @@ class Root(graphene.ObjectType):
     def resolve_repository(self, info):
         return Repository(self)
 
+    def resolve_projects(self, info):
+        return Projects(self)
 
 class Query(graphene.ObjectType):
 
