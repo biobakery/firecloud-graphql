@@ -25,7 +25,7 @@ def process_query(request, schema):
     url_hash=request.args.get("hash")
     data_body_query=request.get_json()['query']
 
-    firecloud_schema=graphene.Schema(query=schema)
+    firecloud_schema=graphene.Schema(query=schema, auto_camelcase=False)
     result=firecloud_schema.execute(data_body_query)
     json_result=flask.jsonify({"data": result.data})
 
@@ -83,7 +83,7 @@ def main():
 
     # add end point for graphql gui
     app.add_url_rule('/test', view_func=flask_graphql.GraphQLView.as_view(
-        'test', schema=graphene.Schema(query=schema.Query), graphiql=True))
+        'test', schema=graphene.Schema(query=schema.Query, auto_camelcase=False), graphiql=True))
 
     # start the app
     app.run(host=HOST, port=PORT)
