@@ -44,7 +44,7 @@ def main():
         # temp use null response (later use json_result)
         query = data_body_query=flask.request.get_json()['query']
         if "projects" in query:
-            temp_response = flask.jsonify(const.ROOT_PROJECTS)
+            temp_response = process_query(flask.request, schema.Query)
         elif "CaseAggregations" in query:
             temp_response = flask.jsonify(const.ROOT_REPOS)
         else:
