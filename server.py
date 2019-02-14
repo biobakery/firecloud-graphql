@@ -23,10 +23,12 @@ PORT = "5000"
 def process_query(request, schema):
     # process the request from the url
     url_hash=request.args.get("hash")
-    data_body_query=request.get_json()['query']
+    data_body=request.get_json()
+    data_query=data_body["query"]
+    data_variables=data_body["variables"]
 
     firecloud_schema=graphene.Schema(query=schema, auto_camelcase=False)
-    result=firecloud_schema.execute(data_body_query)
+    result=firecloud_schema.execute(data_query, variables=data_variables)
     json_result=flask.jsonify({"data": result.data})
 
     return json_result
