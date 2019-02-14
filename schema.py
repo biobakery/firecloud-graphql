@@ -45,6 +45,45 @@ class User(graphene.ObjectType):
     def resolve_username(self, info):
         return data.get_username()
 
+class Program(graphene.ObjectType):
+    name = graphene.String()
+    program_id = graphene.String()
+    id = graphene.String()
+
+    def resolve_program_id(self, info):
+        return self.name
+
+    def resolve_id(self, info):
+        return self.name
+
+class Summary(graphene.ObjectType):
+    case_count = graphene.Int()
+    file_count = graphene.Int()
+
+class Project(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    project_id = graphene.String()
+    name = graphene.String()
+    program = graphene.Field(Program)
+    summary = graphene.Field(Summary)
+
+    @classmethod
+    def get_node(cls, info, id):
+        return get_project(id)
+
+CURRENT_PROGRAMS = [Program(name="NHSII")]
+
+CURRENT_PROJECTS = {
+    "1":Project(id="1", project_id="NHSII-DemoA", name="NHSII-DemoA", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15)),
+    "2":Project(id="2", project_id="NHSII-DemoB", name="NHSII-DemoB", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15)),
+    "3":Project(id="3", project_id="NHSII-DemoC", name="NHSII-DemoC", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15)),
+} 
+
+def get_project(id):
+    return CURRENT_PROJECTS[id]
+
 class File(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
@@ -78,6 +117,14 @@ CURRENT_COUNTS = Count(
     rawFiles="15",
     processedFiles="30"
 )
+
+class ProjectConnection(graphene.relay.Connection):
+    class Meta:
+        node = Project
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return len(CURRENT_PROJECTS.keys())
 
 class FileConnection(graphene.relay.Connection):
     class Meta:
@@ -126,7 +173,6 @@ PROJECT_AGGREGATIONS={
 
 
 class ProjectAggregations(graphene.ObjectType):
-
     primary_site = graphene.Field(Aggregations)
     program__name = graphene.Field(Aggregations)
     project_id = graphene.Field(Aggregations)
@@ -147,6 +193,14 @@ class ProjectAggregations(graphene.ObjectType):
 
 class Projects(graphene.ObjectType):
     aggregations = graphene.Field(ProjectAggregations, aggregations_filter_themselves=graphene.Boolean())
+    hits = graphene.relay.ConnectionField(ProjectConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        sort=graphene.String(),
+        filters=graphene.String())
+
+    def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
+        return [get_project(project_id) for project_id in CURRENT_PROJECTS.keys()]
 
     def resolve_aggregations(self, info, aggregations_filter_themselves):
         return ProjectAggregations(self)
