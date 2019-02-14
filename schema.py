@@ -190,14 +190,19 @@ class ProjectAggregations(graphene.ObjectType):
     def resolve_summary__data_categories__data_category(self, info):
        return PROJECT_AGGREGATIONS["summary__data_categories__data_category"]
 
+class Sort(graphene.String):
+    pass
+
+class FiltersArgument(graphene.types.json.JSONString):
+    pass
 
 class Projects(graphene.ObjectType):
     aggregations = graphene.Field(ProjectAggregations, aggregations_filter_themselves=graphene.Boolean())
     hits = graphene.relay.ConnectionField(ProjectConnection,
         first=graphene.Int(),
         offset=graphene.Int(),
-        sort=graphene.String(),
-        filters=graphene.String())
+        sort=graphene.List(Sort),
+        filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
         return [get_project(project_id) for project_id in CURRENT_PROJECTS.keys()]

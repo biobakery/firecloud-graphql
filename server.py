@@ -29,6 +29,8 @@ def process_query(request, schema):
 
     firecloud_schema=graphene.Schema(query=schema, auto_camelcase=False)
     result=firecloud_schema.execute(data_query, variables=data_variables)
+    if result.errors:
+        print(result.errors)
     json_result=flask.jsonify({"data": result.data})
 
     return json_result
@@ -44,7 +46,7 @@ def main():
         # json_result = process_query(flask.request, schema.Query)
 
         # temp use null response (later use json_result)
-        query = data_body_query=flask.request.get_json()['query']
+        query = flask.request.get_json()['query']
         if "projects" in query:
             temp_response = process_query(flask.request, schema.Query)
         elif "CaseAggregations" in query:
@@ -66,7 +68,7 @@ def main():
         elif "ProjectsTable" in name:
             temp_response = flask.jsonify(const.PROJECT_TABLE)
         elif "ProjectsCharts" in name:
-            temp_response = flask.jsonify(const.PROJECT_CHARTS)
+            temp_response = process_query(flask.request, schema.Query)
         elif "FileAggregations" in name:
             temp_response = flask.jsonify(const.FILE_AGGREGATIONS)
         elif "FilesTable" in name:

@@ -298,63 +298,6 @@ PROJECT_TABLE = {
   }
 }
 
-# ProjectsCharts
-PROJECT_CHARTS = {
-  "data": {
-    "projectsViewer": {
-      "projects": {
-        "hits": {
-          "edges": [
-            {
-              "node": {
-                "id": "1",
-                "name": "NHSII-DemoA",
-                "program": {
-                  "name": "NHSII"
-                },
-                "project_id": "NHSII-DemoA",
-                "summary": {
-                  "case_count": 5,
-                  "file_count": 15
-                }
-              }
-            },
-            {
-              "node": {
-                "id": "2",
-                "name": "NHSII-DemoB",
-                "program": {
-                  "name": "NHSII"
-                },
-                "project_id": "NHSII-DemoB",
-                "summary": {
-                  "case_count": 5,
-                  "file_count": 15
-                }
-              }
-            },
-            {
-              "node": {
-                "id": "3",
-                "name": "NHSII-DemoC",
-                "program": {
-                  "name": "NHSII"
-                },
-                "project_id": "NHSII-DemoC",
-                "summary": {
-                  "case_count": 5,
-                  "file_count": 15
-                }
-              }
-            },
-          ],
-          "total": 3
-        }
-      }
-    }
-  }
-}
-
 CASE_AGGREGATIONS = {
   "data": {
     "viewer": {
