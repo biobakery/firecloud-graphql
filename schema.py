@@ -53,9 +53,19 @@ class Program(graphene.ObjectType):
     def resolve_id(self, info):
         return self.name
 
+class DataCategories(graphene.ObjectType):
+    case_count = graphene.Int()
+    data_category = graphene.String()
+
 class Summary(graphene.ObjectType):
     case_count = graphene.Int()
     file_count = graphene.Int()
+    file_size = graphene.Int()
+
+    data_categories = graphene.List(DataCategories)
+
+    def resolve_file_size(self, info):
+        return 5 * self.file_count
 
 class Project(graphene.ObjectType):
     class Meta:
@@ -65,6 +75,7 @@ class Project(graphene.ObjectType):
     name = graphene.String()
     program = graphene.Field(Program)
     summary = graphene.Field(Summary)
+    primary_site = graphene.List(graphene.String)
 
     @classmethod
     def get_node(cls, info, id):
@@ -72,10 +83,14 @@ class Project(graphene.ObjectType):
 
 CURRENT_PROGRAMS = [Program(name="NHSII")]
 
+DATA_CATEGORIES = [DataCategories(case_count=5, data_category="Raw Reads"),
+                   DataCategories(case_count=5, data_category="Gene Families"),
+                   DataCategories(case_count=5, data_category="Taxonomic Profiles")]
+
 CURRENT_PROJECTS = {
-    "1":Project(id="1", project_id="NHSII-DemoA", name="NHSII-DemoA", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15)),
-    "2":Project(id="2", project_id="NHSII-DemoB", name="NHSII-DemoB", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15)),
-    "3":Project(id="3", project_id="NHSII-DemoC", name="NHSII-DemoC", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15)),
+    "1":Project(id="1", project_id="NHSII-DemoA", name="NHSII-DemoA", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15, data_categories=DATA_CATEGORIES), primary_site=["Stool"]),
+    "2":Project(id="2", project_id="NHSII-DemoB", name="NHSII-DemoB", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15, data_categories=DATA_CATEGORIES), primary_site=["Stool"]),
+    "3":Project(id="3", project_id="NHSII-DemoC", name="NHSII-DemoC", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15, data_categories=DATA_CATEGORIES), primary_site=["Stool"]),
 } 
 
 def get_project(id):

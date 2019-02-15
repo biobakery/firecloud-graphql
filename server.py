@@ -69,7 +69,7 @@ def main():
         if "PortalSummary" in name:
             temp_response = process_query(flask.request, schema.Query)
         elif "ProjectsTable" in name:
-            temp_response = flask.jsonify(const.PROJECT_TABLE)
+            temp_response = process_query(flask.request, schema.Query)
         elif "ProjectsCharts" in name:
             temp_response = process_query(flask.request, schema.Query)
         elif "FileAggregations" in name:
