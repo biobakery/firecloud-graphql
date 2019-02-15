@@ -42,9 +42,6 @@ class Count(graphene.ObjectType):
 class User(graphene.ObjectType):
     username = graphene.String()
 
-    def resolve_username(self, info):
-        return data.get_username()
-
 class Program(graphene.ObjectType):
     name = graphene.String()
     program_id = graphene.String()
@@ -197,7 +194,9 @@ class FiltersArgument(graphene.types.json.JSONString):
     pass
 
 class Projects(graphene.ObjectType):
-    aggregations = graphene.Field(ProjectAggregations, aggregations_filter_themselves=graphene.Boolean())
+    aggregations = graphene.Field(ProjectAggregations, 
+        filters=FiltersArgument(),
+        aggregations_filter_themselves=graphene.Boolean())
     hits = graphene.relay.ConnectionField(ProjectConnection,
         first=graphene.Int(),
         offset=graphene.Int(),
@@ -207,7 +206,7 @@ class Projects(graphene.ObjectType):
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
         return [get_project(project_id) for project_id in CURRENT_PROJECTS.keys()]
 
-    def resolve_aggregations(self, info, aggregations_filter_themselves):
+    def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         return ProjectAggregations(self)
 
 class Root(graphene.ObjectType):
@@ -217,7 +216,7 @@ class Root(graphene.ObjectType):
     projects = graphene.Field(Projects)
 
     def resolve_user(self, info):
-        return User(self, info)
+        return User(username="null")
 
     def resolve_count(self, info):
         return CURRENT_COUNTS

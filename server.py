@@ -30,6 +30,9 @@ def process_query(request, schema):
     firecloud_schema=graphene.Schema(query=schema, auto_camelcase=False)
     result=firecloud_schema.execute(data_query, variables=data_variables)
     if result.errors:
+        print("ERROR")
+        print(data_query)
+        print(data_variables)
         print(result.errors)
     json_result=flask.jsonify({"data": result.data})
 
