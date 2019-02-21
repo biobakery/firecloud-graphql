@@ -73,7 +73,7 @@ def main():
         elif "ProjectsCharts" in name:
             temp_response = process_query(flask.request, schema.Query)
         elif "FileAggregations" in name:
-            temp_response = flask.jsonify(const.FILE_AGGREGATIONS)
+            temp_response = process_query(flask.request, schema.Query)
         elif "FilesTable" in name:
             temp_response = process_query(flask.request, schema.Query)
         elif "CaseAggregations" in name:

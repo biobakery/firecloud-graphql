@@ -159,22 +159,6 @@ class FileConnection(graphene.relay.Connection):
     def resolve_total(self, info):
         return get_total_files()
 
-class Files(graphene.ObjectType):
-    hits = graphene.relay.ConnectionField(FileConnection,
-        first=graphene.Int(),
-        offset=graphene.Int(),
-        sort=graphene.List(Sort),
-        filters=FiltersArgument())
-
-    def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
-        return [get_file(file_id) for file_id in self.hits]
-
-class Repository(graphene.ObjectType):
-    files = graphene.Field(Files)
-
-    def resolve_files(self, info):
-        return get_current_files()
-
 class Bucket(graphene.ObjectType):
     doc_count = graphene.Int()
     key = graphene.String()
@@ -185,6 +169,41 @@ class Bucket(graphene.ObjectType):
 
 class Aggregations(graphene.ObjectType):
     buckets = graphene.List(Bucket)
+
+class FileAggregations(graphene.ObjectType):
+    data_category = graphene.Field(Aggregations)
+    experimental_strategy = graphene.Field(Aggregations)
+    data_format = graphene.Field(Aggregations)
+    platform = graphene.Field(Aggregations)
+    access = graphene.Field(Aggregations)
+
+class Files(graphene.ObjectType):
+    hits = graphene.relay.ConnectionField(FileConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        sort=graphene.List(Sort),
+        filters=FiltersArgument())
+
+    facets = graphene.types.json.JSONString(filters=FiltersArgument(), 
+        facets=graphene.List(graphene.String))
+    aggregations = graphene.Field(FileAggregations, 
+        filters=FiltersArgument(),
+        aggregations_filter_themselves=graphene.Boolean())
+
+    def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
+        return [get_file(file_id) for file_id in self.hits]
+
+    def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
+        return get_file_aggregations()
+
+    def resolve_facets(self, info, filters=None, facets=None):
+        return get_file_facets()
+
+class Repository(graphene.ObjectType):
+    files = graphene.Field(Files)
+
+    def resolve_files(self, info):
+        return get_current_files()
 
 class ProjectAggregations(graphene.ObjectType):
     primary_site = graphene.Field(Aggregations)
@@ -258,7 +277,7 @@ def get_total_projects_count():
     return len(CURRENT_PROJECTS.keys())
 
 def get_user():
-    return User(username="null")
+    return User(username="null") # no users are currently being used
 
 def get_filecase(id):
     return CURRENT_FILE_CASES[id]
@@ -281,8 +300,14 @@ def get_project_aggregations():
 def get_current_counts():
     return CURRENT_COUNTS
 
+def get_file_aggregations():
+    return FILE_AGGREGATIONS
+
 def get_total_cases_per_file():
     return 1 # there is always at most one case per file
+
+def get_file_facets():
+    return "null" # this is not currently being used
 
 CURRENT_PROGRAMS = [Program(name="NHSII")]
 
@@ -330,6 +355,24 @@ CURRENT_COUNTS = Count(
 )
 
 CURRENT_FILES = Files(hits=TEST_FILES.keys())
+
+FILE_AGGREGATIONS=FileAggregations(
+    data_category=Aggregations(buckets=[
+        Bucket(doc_count=4, key="Raw Reads"),
+        Bucket(doc_count=4, key="Taxonomic Profile"),
+        Bucket(doc_count=4, key="Gene Families")]),
+    experimental_strategy=Aggregations(buckets=[
+        Bucket(doc_count=6, key="WMGX"),
+        Bucket(doc_count=6, key="16S")]),
+    data_format=Aggregations(buckets=[
+        Bucket(doc_count=4, key="Fastq"),
+        Bucket(doc_count=8, key="TSV")]),
+    platform=Aggregations(buckets=[
+        Bucket(doc_count=6, key="Illumina MiSeq"),
+        Bucket(doc_count=6, key="Illumina HiSeq")]),
+    access=Aggregations(buckets=[
+        Bucket(doc_count=4, key="open"),
+        Bucket(doc_count=8, key="controlled")]))
 
 PROJECT_AGGREGATIONS=ProjectAggregations(
     primary_site=Aggregations(buckets=[Bucket(doc_count=45, key="Stool")]),
