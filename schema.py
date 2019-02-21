@@ -106,6 +106,20 @@ class File(graphene.ObjectType):
     type = graphene.String()
     raw = graphene.String()
     access = graphene.String()
+    file_size = graphene.Int()
+    data_category = graphene.String()
+    data_format = graphene.String()
+    platform = graphene.String()
+    experimental_strategy = graphene.String()
+
+    file_id = graphene.String()
+    file_name = graphene.String()
+
+    def resolve_file_id(self, info):
+        return self.name
+
+    def resolve_file_name(self, info):
+        return self.name
 
     @classmethod
     def get_node(cls, info, id):
@@ -115,10 +129,10 @@ def get_file(id):
     return TEST_FILES[id]
 
 TEST_FILES = {
-    "1": File(1, "demo_A1.fastq","person1","sample1","fastq", "raw", "open"),
-    "2": File(2, "demo_A2.fastq","person2","sample2","fastq", "raw", "open"),
-    "3": File(3, "demo_B1.fastq","person1B","sample1B","fastq", "raw", "open"),
-    "4": File(4, "demo_B2.fastq","person2B","sample2B","fastq", "raw", "open")
+    "1": File(1, "demo_A1.fastq","person1","sample1","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX"),
+    "2": File(2, "demo_A2.fastq","person2","sample2","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX"),
+    "3": File(3, "demo_B1.fastq","person1B","sample1B","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX"),
+    "4": File(4, "demo_B2.fastq","person2B","sample2B","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX")
 }
 
 CURRENT_COUNTS = Count(
@@ -141,6 +155,10 @@ class ProjectConnection(graphene.relay.Connection):
 class FileConnection(graphene.relay.Connection):
     class Meta:
         node = File
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return get_total_files()
 
 class Files(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(FileConnection, 
@@ -152,11 +170,16 @@ class Files(graphene.ObjectType):
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
         return [get_file(file_id) for file_id in self.hits]
 
+CURRENT_FILES = Files(hits=["1","2","3","4"])
+
+def get_total_files():
+    return len(CURRENT_FILES.hits())
+
 class Repository(graphene.ObjectType):
     files = graphene.Field(Files)
 
     def resolve_files(self, info):
-        return Files(hits=["1","2","3","4"])
+        return CURRENT_FILES
 
 class Bucket(graphene.ObjectType):
     doc_count = graphene.Int()
