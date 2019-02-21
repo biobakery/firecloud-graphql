@@ -354,87 +354,8 @@ FILE_AGGREGATIONS = {
   }
 }
 
-# generate temp files list
-
-FILE_NODE_TEMPLATE = """{
-                "node": {
-                  "access": "$access",
-                  "cases": {
-                    "hits": {
-                      "edges": [ { "node": $project ],
-                      "total": 1
-                    }
-                  },
-                  "data_category": "$cat",
-                  "data_format": "$format",
-                  "experimental_strategy": "$exp",
-                  "file_id": "$id",
-                  "file_name": "$name",
-                  "file_size": $size,
-                  "id": "$id",
-                  "platform": "$plat",
-                }
-              },"""
-
-FILES = ""
-
 from string import Template
-
-temp = Template(FILE_NODE_TEMPLATE)
-
-sample = 1
-sample_names = [1,1,1,2,2,2,3,3,3,4,4,4,5,5,5]
-for i in range(1, 46):
-    if i > 15 and i <= 30:
-        demo = "demoB"
-        project = """{ "case_id": "2", "id": "2", "project": { "id": "2", "project_id": "NHSII-DemoB" } } }"""
-        exp = "WMGX"
-        platform = "Illumina MiSeq"
-    elif i > 30:
-        demo = "demoC"
-        project = """{ "case_id": "3", "id": "3", "project": { "id": "3", "project_id": "NHSII-DemoC" } } }"""
-        exp = "WMGX"
-        platform = "Illumina HiSeq"
-    else:
-        demo = "demoA"
-        project = """{ "case_id": "1", "id": "1", "project": { "id": "1", "project_id": "NHSII-DemoA" } } }"""
-        exp = "WMGX"
-        platform = "Illumina HiSeq"
-  
-    if sample > 15:
-        sample = 1
-
-    if sample in [1,4,7,10,13]:
-       FILES+= temp.substitute(cat="Gene Families", format="TSV", exp=exp, project=project, access="open",
-           id=str(i), name=demo+"_sample"+str(sample_names[sample-1])+"_gene_families.tsv", size="300000000", plat=platform)
-    elif sample in [2,5,8,11,14]:
-       FILES+= temp.substitute(cat="Taxonomic Profile", format="TSV", exp=exp, project=project, access="open",
-           id=str(i), name=demo+"_sample"+str(sample_names[sample-1])+"_taxonomic_profile.tsv", size="200000000", plat=platform)
-    else:
-       FILES+= temp.substitute(cat="Raw Reads", format="Fastq", exp=exp, project=project, access="controlled",
-           id=str(i), name=demo+"_sample"+str(sample_names[sample-1])+"_raw_reads.fastq.gz", size="5000000000", plat=platform)
-
-    sample +=1
-
-
 import ast
-
-FILES_LIT = ast.literal_eval(FILES)
-
-FILE_TABLE = {
-  "data": {
-    "viewer": {
-      "repository": {
-        "files": {
-          "hits": {
-            "edges":  FILES_LIT ,
-             "total" : "45"
-             }
-           }
-         }
-       }
-    }
- }
 
 TEMP_CASE_TEMPLATE = """{
                 "node": {
