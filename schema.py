@@ -117,8 +117,6 @@ class File(graphene.ObjectType):
     name = graphene.String()
     participant = graphene.String()
     sample = graphene.String()
-    type = graphene.String()
-    raw = graphene.String()
     access = graphene.String()
     file_size = graphene.Int()
     data_category = graphene.String()
@@ -130,12 +128,16 @@ class File(graphene.ObjectType):
 
     file_id = graphene.String()
     file_name = graphene.String()
+    type = graphene.String()
 
     def resolve_file_id(self, info):
         return self.name
 
     def resolve_file_name(self, info):
         return self.name
+
+    def resolve_type(self, info):
+        return self.data_format
 
     @classmethod
     def get_node(cls, info, id):
@@ -284,40 +286,50 @@ def get_total_cases_per_file():
 
 CURRENT_PROGRAMS = [Program(name="NHSII")]
 
-DATA_CATEGORIES = [DataCategories(case_count=5, data_category="Raw Reads"),
-                   DataCategories(case_count=5, data_category="Gene Families"),
-                   DataCategories(case_count=5, data_category="Taxonomic Profiles")]
+DATA_CATEGORIES = [DataCategories(case_count=2, data_category="Raw Reads"),
+                   DataCategories(case_count=2, data_category="Gene Families"),
+                   DataCategories(case_count=2, data_category="Taxonomic Profiles")]
 
 CURRENT_PROJECTS = {
-    "1":Project(id="1", project_id="NHSII-DemoA", name="NHSII-DemoA", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15, data_categories=DATA_CATEGORIES, file_size=15), primary_site=["Stool"]),
-    "2":Project(id="2", project_id="NHSII-DemoB", name="NHSII-DemoB", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15, data_categories=DATA_CATEGORIES, file_size=15), primary_site=["Stool"]),
-    "3":Project(id="3", project_id="NHSII-DemoC", name="NHSII-DemoC", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15, data_categories=DATA_CATEGORIES, file_size=15), primary_site=["Stool"]),
+    "1":Project(id="1", project_id="NHSII-DemoA", name="NHSII-DemoA", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=2, file_count=6, data_categories=DATA_CATEGORIES, file_size=15), primary_site=["Stool"]),
+    "2":Project(id="2", project_id="NHSII-DemoB", name="NHSII-DemoB", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=2, file_count=6, data_categories=DATA_CATEGORIES, file_size=15), primary_site=["Stool"]),
 } 
 
 CURRENT_FILE_CASES = {
     "1":FileCase(1,"Case1",get_project("1")),
     "2":FileCase(2,"Case2",get_project("1")),
     "3":FileCase(3,"Case3",get_project("2")),
-    "4":FileCase(4,"Case4",get_project("3")),
+    "4":FileCase(4,"Case4",get_project("2")),
 }
 
+FILE_SIZES = { "gene": 300000000, "raw": 500000000, "taxa": 200000000 }
+
 TEST_FILES = {
-    "1": File(1, "demo_A1.fastq","person1","sample1","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["1"])),
-    "2": File(2, "demo_A2.fastq","person2","sample2","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["2"])),
-    "3": File(3, "demo_B1.fastq","person1B","sample1B","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["3"])),
-    "4": File(4, "demo_B2.fastq","person2B","sample2B","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["4"]))
+    "1": File(1, "demoA_sample1_raw_reads.fastq","case1","sample1", "controlled", FILE_SIZES["raw"], "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["1"])),
+    "2": File(2, "demoA_sample1_taxonomic_profile.tsv","case1","sample1", "open", FILE_SIZES["taxa"], "Taxonomic Profile", "Illumina", "TSV", "WMGX", FileCases(hits=["1"])),
+    "3": File(3, "demoA_sample1_gene_families.tsv","case1","sample1", "open", FILE_SIZES["gene"], "Gene Families", "Illumina", "TSV", "WMGX", FileCases(hits=["1"])),
+    "4": File(4, "demoA_sample2_raw_reads.fastq","case2","sample2", "controlled", FILE_SIZES["raw"], "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["2"])),
+    "5": File(5, "demoA_sample2_taxonomic_profile.tsv","case2","sample2", "open", FILE_SIZES["taxa"], "Taxonomic Profile", "Illumina", "TSV", "WMGX", FileCases(hits=["2"])),
+    "6": File(6, "demoA_sample2_gene_families.tsv","case2","sample2", "open", FILE_SIZES["gene"], "Gene Families", "Illumina", "TSV", "WMGX", FileCases(hits=["2"])),
+
+    "7": File(7, "demoB_sample3_raw_reads.fastq","case3","sample3", "controlled", FILE_SIZES["raw"], "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["3"])),
+    "8": File(8, "demoB_sample3_taxonomic_profile.tsv","case3","sample3", "open", FILE_SIZES["taxa"], "Taxonomic Profile", "Illumina", "TSV", "WMGX", FileCases(hits=["3"])),
+    "9": File(9, "demoB_sample3_gene_families.tsv","case3","sample3", "open", FILE_SIZES["gene"], "Gene Families", "Illumina", "TSV", "WMGX", FileCases(hits=["3"])),
+    "10": File(10, "demoB_sample4_raw_reads.fastq","case4","sample4", "controlled", FILE_SIZES["raw"], "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["4"])),
+    "11": File(11, "demoB_sample4_taxonomic_profile.tsv","case4","sample4", "open", FILE_SIZES["taxa"], "Taxonomic Profile", "Illumina", "TSV", "WMGX", FileCases(hits=["4"])),
+    "12": File(12, "demoB_sample4_gene_families.tsv","case4","sample4", "open", FILE_SIZES["gene"], "Gene Families", "Illumina", "TSV", "WMGX", FileCases(hits=["4"])),
 }
 
 CURRENT_COUNTS = Count(
-    projects="3",
-    participants="15",
-    samples="15",
+    projects="2",
+    participants="4",
+    samples="4",
     dataFormats="3",
-    rawFiles="15",
-    processedFiles="30"
+    rawFiles="4",
+    processedFiles="8"
 )
 
-CURRENT_FILES = Files(hits=["1","2","3","4"])
+CURRENT_FILES = Files(hits=TEST_FILES.keys())
 
 PROJECT_AGGREGATIONS=ProjectAggregations(
     primary_site=Aggregations(buckets=[Bucket(doc_count=45, key="Stool")]),
