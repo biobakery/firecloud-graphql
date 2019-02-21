@@ -96,6 +96,42 @@ CURRENT_PROJECTS = {
 def get_project(id):
     return CURRENT_PROJECTS[id]
 
+class FileCase(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    case_id = graphene.String()
+    project = graphene.Field(Project)
+
+class FileCaseConnection(graphene.relay.Connection):
+    class Meta:
+        node = FileCase
+
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return 1
+
+CURRENT_FILE_CASES = {
+    "1":FileCase(1,"Case1",get_project("1")),
+    "2":FileCase(2,"Case2",get_project("1")),
+    "3":FileCase(3,"Case3",get_project("2")),
+    "4":FileCase(4,"Case4",get_project("3")),
+}
+
+def get_filecase(id):
+    return CURRENT_FILE_CASES[id]
+
+class FileCases(graphene.ObjectType):
+    hits = graphene.relay.ConnectionField(FileCaseConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        sort=graphene.String(),
+        filters=graphene.String())
+
+    def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
+        return [get_filecase(file_id) for file_id in self.hits]
+
 class File(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
@@ -111,6 +147,8 @@ class File(graphene.ObjectType):
     data_format = graphene.String()
     platform = graphene.String()
     experimental_strategy = graphene.String()
+
+    cases = graphene.Field(FileCases)
 
     file_id = graphene.String()
     file_name = graphene.String()
@@ -129,10 +167,10 @@ def get_file(id):
     return TEST_FILES[id]
 
 TEST_FILES = {
-    "1": File(1, "demo_A1.fastq","person1","sample1","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX"),
-    "2": File(2, "demo_A2.fastq","person2","sample2","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX"),
-    "3": File(3, "demo_B1.fastq","person1B","sample1B","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX"),
-    "4": File(4, "demo_B2.fastq","person2B","sample2B","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX")
+    "1": File(1, "demo_A1.fastq","person1","sample1","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["1"])),
+    "2": File(2, "demo_A2.fastq","person2","sample2","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["2"])),
+    "3": File(3, "demo_B1.fastq","person1B","sample1B","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["3"])),
+    "4": File(4, "demo_B2.fastq","person2B","sample2B","fastq", "raw", "open", 50, "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["4"]))
 }
 
 CURRENT_COUNTS = Count(
@@ -173,7 +211,7 @@ class Files(graphene.ObjectType):
 CURRENT_FILES = Files(hits=["1","2","3","4"])
 
 def get_total_files():
-    return len(CURRENT_FILES.hits())
+    return len(CURRENT_FILES.hits)
 
 class Repository(graphene.ObjectType):
     files = graphene.Field(Files)
