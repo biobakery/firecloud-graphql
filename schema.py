@@ -31,6 +31,12 @@ def query_firecloud(url):
 
 ## Portal API ##
 
+class Sort(graphene.String):
+    pass
+
+class FiltersArgument(graphene.types.json.JSONString):
+    pass
+
 class Count(graphene.ObjectType):
     projects = graphene.String()
     participants = graphene.String()
@@ -126,8 +132,8 @@ class FileCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(FileCaseConnection,
         first=graphene.Int(),
         offset=graphene.Int(),
-        sort=graphene.String(),
-        filters=graphene.String())
+        sort=graphene.List(Sort),
+        filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
         return [get_filecase(file_id) for file_id in self.hits]
@@ -202,8 +208,8 @@ class Files(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(FileConnection, 
         first=graphene.Int(),
         offset=graphene.Int(),
-        sort=graphene.String(),
-        filters=graphene.String())
+        sort=graphene.List(Sort),
+        filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
         return [get_file(file_id) for file_id in self.hits]
@@ -262,12 +268,6 @@ class ProjectAggregations(graphene.ObjectType):
        return PROJECT_AGGREGATIONS["summary__experimental_strategies__experimental_strategy"]
     def resolve_summary__data_categories__data_category(self, info):
        return PROJECT_AGGREGATIONS["summary__data_categories__data_category"]
-
-class Sort(graphene.String):
-    pass
-
-class FiltersArgument(graphene.types.json.JSONString):
-    pass
 
 class Projects(graphene.ObjectType):
     aggregations = graphene.Field(ProjectAggregations, 
