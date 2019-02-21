@@ -147,7 +147,7 @@ class ProjectConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return len(CURRENT_PROJECTS.keys())
+        return get_total_projects_count()
 
 class FileConnection(graphene.relay.Connection):
     class Meta:
@@ -214,7 +214,7 @@ class Root(graphene.ObjectType):
     projects = graphene.Field(Projects)
 
     def resolve_user(self, info):
-        return User(username="null")
+        return get_user()
 
     def resolve_count(self, info):
         return get_current_counts()
@@ -252,6 +252,12 @@ class Query(graphene.ObjectType):
         return obj_result
      
 # Constants
+def get_total_projects_count():
+    return len(CURRENT_PROJECTS.keys())
+
+def get_user():
+    return User(username="null")
+
 def get_filecase(id):
     return CURRENT_FILE_CASES[id]
 
