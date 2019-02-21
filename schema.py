@@ -70,9 +70,6 @@ class Summary(graphene.ObjectType):
 
     data_categories = graphene.List(DataCategories)
 
-    def resolve_file_size(self, info):
-        return 5 * self.file_count
-
 class Project(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
@@ -101,7 +98,7 @@ class FileCaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return 1
+        return get_total_cases_per_file()
 
 class FileCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(FileCaseConnection,
@@ -220,7 +217,7 @@ class Root(graphene.ObjectType):
         return User(username="null")
 
     def resolve_count(self, info):
-        return CURRENT_COUNTS
+        return get_current_counts()
 
     def resolve_repository(self, info):
         return Repository(self)
@@ -273,6 +270,12 @@ def get_current_files():
 def get_project_aggregations():
     return PROJECT_AGGREGATIONS
 
+def get_current_counts():
+    return CURRENT_COUNTS
+
+def get_total_cases_per_file():
+    return 1 # there is always at most one case per file
+
 CURRENT_PROGRAMS = [Program(name="NHSII")]
 
 DATA_CATEGORIES = [DataCategories(case_count=5, data_category="Raw Reads"),
@@ -280,9 +283,9 @@ DATA_CATEGORIES = [DataCategories(case_count=5, data_category="Raw Reads"),
                    DataCategories(case_count=5, data_category="Taxonomic Profiles")]
 
 CURRENT_PROJECTS = {
-    "1":Project(id="1", project_id="NHSII-DemoA", name="NHSII-DemoA", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15, data_categories=DATA_CATEGORIES), primary_site=["Stool"]),
-    "2":Project(id="2", project_id="NHSII-DemoB", name="NHSII-DemoB", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15, data_categories=DATA_CATEGORIES), primary_site=["Stool"]),
-    "3":Project(id="3", project_id="NHSII-DemoC", name="NHSII-DemoC", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15, data_categories=DATA_CATEGORIES), primary_site=["Stool"]),
+    "1":Project(id="1", project_id="NHSII-DemoA", name="NHSII-DemoA", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15, data_categories=DATA_CATEGORIES, file_size=15), primary_site=["Stool"]),
+    "2":Project(id="2", project_id="NHSII-DemoB", name="NHSII-DemoB", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15, data_categories=DATA_CATEGORIES, file_size=15), primary_site=["Stool"]),
+    "3":Project(id="3", project_id="NHSII-DemoC", name="NHSII-DemoC", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=5, file_count=15, data_categories=DATA_CATEGORIES, file_size=15), primary_site=["Stool"]),
 } 
 
 CURRENT_FILE_CASES = {
