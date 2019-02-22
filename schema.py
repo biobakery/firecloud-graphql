@@ -183,6 +183,7 @@ class Files(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(FileConnection,
         first=graphene.Int(),
         offset=graphene.Int(),
+        score=graphene.String(),
         sort=graphene.List(Sort),
         filters=FiltersArgument())
 
@@ -192,7 +193,7 @@ class Files(graphene.ObjectType):
         filters=FiltersArgument(),
         aggregations_filter_themselves=graphene.Boolean())
 
-    def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
+    def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
         return [get_file(file_id) for file_id in self.hits]
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
@@ -236,6 +237,9 @@ class RepositoryCases(graphene.ObjectType):
         filters=FiltersArgument(),
         aggregations_filter_themselves=graphene.Boolean())
 
+    def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
+        return [get_casefile(case_id) for case_id in self.hits]
+
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         return get_case_aggregations()
 
@@ -245,6 +249,9 @@ class Repository(graphene.ObjectType):
 
     def resolve_files(self, info):
         return get_current_files()
+
+    def resolve_cases(self, info):
+        return get_current_cases()
 
 class ProjectAggregations(graphene.ObjectType):
     primary_site = graphene.Field(Aggregations)
@@ -352,6 +359,12 @@ def get_total_files():
 def get_current_files():
     return CURRENT_FILES
 
+def get_current_cases():
+    return CURRENT_CASES
+
+def get_casefile(id):
+    return CASE_FILES[id]
+
 def get_project_aggregations():
     return PROJECT_AGGREGATIONS
 
@@ -418,7 +431,10 @@ CURRENT_COUNTS = Count(
     processedFiles="8"
 )
 
+CASE_FILES={"1":CaseFile("none","none")}
+
 CURRENT_FILES = Files(hits=TEST_FILES.keys())
+CURRENT_CASES = RepositoryCases(hits=CASE_FILES.keys())
 
 FILE_AGGREGATIONS=FileAggregations(
     data_category=Aggregations(buckets=[

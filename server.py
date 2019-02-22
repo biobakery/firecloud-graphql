@@ -45,19 +45,7 @@ def main():
     # add the root graphql queries
     @app.route('/graphql', methods=["POST"])
     def get_root_schema():
-
-        # json_result = process_query(flask.request, schema.Query)
-
-        # temp use null response (later use json_result)
-        query = flask.request.get_json()['query']
-        if "projects" in query:
-            temp_response = process_query(flask.request, schema.Query)
-        elif "CaseAggregations" in query:
-            temp_response = flask.jsonify(const.ROOT_REPOS)
-        else:
-            temp_response = process_query(flask.request, schema.Query)
-
-        return temp_response
+        return process_query(flask.request, schema.Query)
 
     # add subdirectories to identify schema
     @app.route('/graphql/<name>', methods=["POST"])
