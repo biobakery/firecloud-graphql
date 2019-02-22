@@ -176,6 +176,8 @@ class FileAggregations(graphene.ObjectType):
     data_format = graphene.Field(Aggregations)
     platform = graphene.Field(Aggregations)
     access = graphene.Field(Aggregations)
+    cases__project__project_id = graphene.Field(Aggregations)
+    cases__primary_site = graphene.Field(Aggregations)
 
 class Files(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(FileConnection,
@@ -199,8 +201,47 @@ class Files(graphene.ObjectType):
     def resolve_facets(self, info, filters=None, facets=None):
         return get_file_facets()
 
+class CaseAggregations(graphene.ObjectType):
+    demographic__ethnicity = graphene.Field(Aggregations)
+    demographic__gender = graphene.Field(Aggregations)
+    demographic__race = graphene.Field(Aggregations)
+    primary_site = graphene.Field(Aggregations)
+    project__project_id = graphene.Field(Aggregations)
+    project__program__name = graphene.Field(Aggregations)
+
+class CaseFile(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    acl = graphene.String()
+    file_name = graphene.String()
+
+class CaseConnection(graphene.relay.Connection):
+    class Meta:
+        node = CaseFile
+
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return get_total_cases_per_file()
+
+class RepositoryCases(graphene.ObjectType):
+    hits = graphene.relay.ConnectionField(CaseConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        sort=graphene.List(Sort),
+        score=graphene.String(),
+        filters=FiltersArgument())
+    aggregations = graphene.Field(CaseAggregations,
+        filters=FiltersArgument(),
+        aggregations_filter_themselves=graphene.Boolean())
+
+    def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
+        return get_case_aggregations()
+
 class Repository(graphene.ObjectType):
     files = graphene.Field(Files)
+    cases = graphene.Field(RepositoryCases)
 
     def resolve_files(self, info):
         return get_current_files()
@@ -228,11 +269,25 @@ class Projects(graphene.ObjectType):
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         return get_project_aggregations()
 
+class FileSize(graphene.ObjectType):
+    value = graphene.Int()
+
+class CartSummaryAggs(graphene.ObjectType):
+    fs = graphene.Field(FileSize)
+
+    def resolve_fs(self, info):
+        return get_cart_file_size()
+
+class CartSummary(graphene.ObjectType):
+    aggregations = graphene.Field(CartSummaryAggs, 
+        filters=FiltersArgument())
+
 class Root(graphene.ObjectType):
     user = graphene.Field(User)
     count = graphene.Field(Count)
     repository = graphene.Field(Repository)
     projects = graphene.Field(Projects)
+    cart_summary = graphene.Field(CartSummary)
 
     def resolve_user(self, info):
         return get_user()
@@ -303,11 +358,17 @@ def get_current_counts():
 def get_file_aggregations():
     return FILE_AGGREGATIONS
 
+def get_case_aggregations():
+    return CASE_AGGREGATIONS
+
 def get_total_cases_per_file():
     return 1 # there is always at most one case per file
 
 def get_file_facets():
     return "null" # this is not currently being used
+
+def get_cart_file_size():
+    return 1 # this is not currently being used
 
 CURRENT_PROGRAMS = [Program(name="NHSII")]
 
@@ -370,9 +431,33 @@ FILE_AGGREGATIONS=FileAggregations(
     platform=Aggregations(buckets=[
         Bucket(doc_count=6, key="Illumina MiSeq"),
         Bucket(doc_count=6, key="Illumina HiSeq")]),
+    cases__primary_site=Aggregations(buckets=[
+        Bucket(doc_count=12, key="Stool")]),
+    cases__project__project_id=Aggregations(buckets=[
+        Bucket(doc_count=6, key="NHSII-DemoA"),
+        Bucket(doc_count=6, key="NHSII-DemoB")]),
     access=Aggregations(buckets=[
         Bucket(doc_count=4, key="open"),
         Bucket(doc_count=8, key="controlled")]))
+
+CASE_AGGREGATIONS=CaseAggregations(
+    demographic__ethnicity=Aggregations(buckets=[
+        Bucket(doc_count=10, key="not hispanic or latino"),
+        Bucket(doc_count=2, key="hispanic or latino")]),
+    demographic__gender=Aggregations(buckets=[
+        Bucket(doc_count=8, key="male"),
+        Bucket(doc_count=4, key="female")]),
+    demographic__race=Aggregations(buckets=[
+        Bucket(doc_count=8, key="white"),
+        Bucket(doc_count=4, key="asian")]),
+    primary_site=Aggregations(buckets=[
+        Bucket(doc_count=12, key="Stool")]),
+    project__project_id=Aggregations(buckets=[
+        Bucket(doc_count=6, key="NHSII-DemoA"),
+        Bucket(doc_count=6, key="NHSII-DemoB")]),
+    project__program__name=Aggregations(buckets=[
+        Bucket(doc_count=12, key="NHSII")]),
+)
 
 PROJECT_AGGREGATIONS=ProjectAggregations(
     primary_site=Aggregations(buckets=[Bucket(doc_count=45, key="Stool")]),
