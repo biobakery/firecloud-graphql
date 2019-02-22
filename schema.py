@@ -66,7 +66,7 @@ class DataCategories(graphene.ObjectType):
 class Summary(graphene.ObjectType):
     case_count = graphene.Int()
     file_count = graphene.Int()
-    file_size = graphene.Int()
+    file_size = graphene.Float()
 
     data_categories = graphene.List(DataCategories)
 
@@ -118,7 +118,7 @@ class File(graphene.ObjectType):
     participant = graphene.String()
     sample = graphene.String()
     access = graphene.String()
-    file_size = graphene.Int()
+    file_size = graphene.Float()
     data_category = graphene.String()
     data_format = graphene.String()
     platform = graphene.String()
@@ -270,7 +270,7 @@ class Projects(graphene.ObjectType):
         return get_project_aggregations()
 
 class FileSize(graphene.ObjectType):
-    value = graphene.Int()
+    value = graphene.Float()
 
 class CartSummaryAggs(graphene.ObjectType):
     fs = graphene.Field(FileSize)
@@ -300,6 +300,9 @@ class Root(graphene.ObjectType):
 
     def resolve_projects(self, info):
         return Projects(self)
+
+    def resolve_cart_summary(self, info):
+        return CartSummary(self)
 
 class Query(graphene.ObjectType):
 
@@ -368,7 +371,7 @@ def get_file_facets():
     return "null" # this is not currently being used
 
 def get_cart_file_size():
-    return 1 # this is not currently being used
+    return FileSize(65000000000) # this is the total amount of files in repo table shown
 
 CURRENT_PROGRAMS = [Program(name="NHSII")]
 
@@ -388,7 +391,7 @@ CURRENT_FILE_CASES = {
     "4":FileCase(4,"Case4",get_project("2")),
 }
 
-FILE_SIZES = { "gene": 300000000, "raw": 500000000, "taxa": 200000000 }
+FILE_SIZES = { "gene": 300000000, "raw": 5000000000, "taxa": 200000000 }
 
 TEST_FILES = {
     "1": File(1, "demoA_sample1_raw_reads.fastq","case1","sample1", "controlled", FILE_SIZES["raw"], "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["1"])),
