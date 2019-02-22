@@ -65,7 +65,7 @@ def main():
         elif "FilesTable" in name:
             temp_response = process_query(flask.request, schema.Query)
         elif "CaseAggregations" in name:
-            temp_response = flask.jsonify(const.CASE_AGGREGATIONS)
+            temp_response = process_query(flask.request, schema.Query)
         elif "CasesTable" in name:
             temp_response = flask.jsonify(const.CASES_TABLE)
 

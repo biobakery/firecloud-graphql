@@ -200,7 +200,7 @@ class Files(graphene.ObjectType):
         return get_file_aggregations()
 
     def resolve_facets(self, info, filters=None, facets=None):
-        return get_file_facets()
+        return get_facets()
 
 class CaseAggregations(graphene.ObjectType):
     demographic__ethnicity = graphene.Field(Aggregations)
@@ -237,11 +237,17 @@ class RepositoryCases(graphene.ObjectType):
         filters=FiltersArgument(),
         aggregations_filter_themselves=graphene.Boolean())
 
+    facets = graphene.types.json.JSONString(filters=FiltersArgument(),
+        facets=graphene.List(graphene.String))
+
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
         return [get_casefile(case_id) for case_id in self.hits]
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         return get_case_aggregations()
+
+    def resolve_facets(self, info, filters=None, facets=None):
+        return get_facets()
 
 class Repository(graphene.ObjectType):
     files = graphene.Field(Files)
@@ -380,7 +386,7 @@ def get_case_aggregations():
 def get_total_cases_per_file():
     return 1 # there is always at most one case per file
 
-def get_file_facets():
+def get_facets():
     return "null" # this is not currently being used
 
 def get_cart_file_size():
