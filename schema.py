@@ -61,6 +61,7 @@ class Program(graphene.ObjectType):
 
 class DataCategories(graphene.ObjectType):
     case_count = graphene.Int()
+    file_count = graphene.Int()
     data_category = graphene.String()
 
 class Summary(graphene.ObjectType):
@@ -210,21 +211,62 @@ class CaseAggregations(graphene.ObjectType):
     project__project_id = graphene.Field(Aggregations)
     project__program__name = graphene.Field(Aggregations)
 
-class CaseFile(graphene.ObjectType):
+class CaseAnnotation(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+    annotation_id = graphene.String()
+
+    def resolve_annotation_id(self, info):
+        return self.id
+
+class CaseAnnotationConnection(graphene.relay.Connection):
+    class Meta:
+        node = CaseAnnotation
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return get_total_case_annotations()
+
+class CaseAnnotations(graphene.ObjectType):
+    hits = graphene.relay.ConnectionField(CaseAnnotationConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        score=graphene.String(),
+        sort=graphene.List(Sort),
+        filters=FiltersArgument())
+
+    def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
+        return get_case_annotation()
+
+class Demographic(graphene.ObjectType):
+    ethnicity = graphene.String()
+    gender = graphene.String()
+    race = graphene.String()
+
+class Case(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
 
-    acl = graphene.String()
-    file_name = graphene.String()
+    case_id = graphene.String()
+    primary_site = graphene.String()
+    submitter_id = graphene.String()
+
+    demographic = graphene.Field(Demographic)
+    project = graphene.Field(Project)
+    summary = graphene.Field(Summary)
+    annotations = graphene.Field(CaseAnnotations)
+
+    def resolve_submitter_id(self, info):
+        return self.case_id
 
 class CaseConnection(graphene.relay.Connection):
     class Meta:
-        node = CaseFile
+        node = Case
 
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return get_total_cases_per_file()
+        return get_total_cases()
 
 class RepositoryCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseConnection,
@@ -241,7 +283,7 @@ class RepositoryCases(graphene.ObjectType):
         facets=graphene.List(graphene.String))
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        return [get_casefile(case_id) for case_id in self.hits]
+        return [get_case(case_id) for case_id in self.hits]
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         return get_case_aggregations()
@@ -362,14 +404,20 @@ def get_file(id):
 def get_total_files():
     return len(CURRENT_FILES.hits)
 
+def get_total_case_annotations():
+    return 1 # not currently being used
+
+def get_case_annotation():
+    return CaseAnnotation() # not currently used
+
 def get_current_files():
     return CURRENT_FILES
 
 def get_current_cases():
     return CURRENT_CASES
 
-def get_casefile(id):
-    return CASE_FILES[id]
+def get_case(id):
+    return TEST_CASES[id]
 
 def get_project_aggregations():
     return PROJECT_AGGREGATIONS
@@ -384,7 +432,10 @@ def get_case_aggregations():
     return CASE_AGGREGATIONS
 
 def get_total_cases_per_file():
-    return 1 # there is always at most one case per file
+    return 1 # this is currently not being used
+
+def get_total_cases():
+    return len(TEST_CASES.keys())
 
 def get_facets():
     return "null" # this is not currently being used
@@ -398,6 +449,10 @@ DATA_CATEGORIES = [DataCategories(case_count=2, data_category="Raw Reads"),
                    DataCategories(case_count=2, data_category="Gene Families"),
                    DataCategories(case_count=2, data_category="Taxonomic Profiles")]
 
+DATA_CATEGORIES_SINGLE_CASE = [DataCategories(file_count=1, data_category="Raw Reads"),
+                   DataCategories(file_count=1, data_category="Gene Families"),
+                   DataCategories(file_count=1, data_category="Taxonomic Profiles")]
+
 CURRENT_PROJECTS = {
     "1":Project(id="1", project_id="NHSII-DemoA", name="NHSII-DemoA", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=2, file_count=6, data_categories=DATA_CATEGORIES, file_size=15), primary_site=["Stool"]),
     "2":Project(id="2", project_id="NHSII-DemoB", name="NHSII-DemoB", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=2, file_count=6, data_categories=DATA_CATEGORIES, file_size=15), primary_site=["Stool"]),
@@ -409,6 +464,7 @@ CURRENT_FILE_CASES = {
     "3":FileCase(3,"Case3",get_project("2")),
     "4":FileCase(4,"Case4",get_project("2")),
 }
+
 
 FILE_SIZES = { "gene": 300000000, "raw": 5000000000, "taxa": 200000000 }
 
@@ -437,10 +493,30 @@ CURRENT_COUNTS = Count(
     processedFiles="8"
 )
 
-CASE_FILES={"1":CaseFile("none","none")}
+TEST_CASES={"1":Case(1,case_id="Case1",primary_site="Stool",
+                    demographic=Demographic("not hispanic or latino","male","white"),
+                    project=CURRENT_PROJECTS["1"],
+                    summary=Summary(case_count=1,file_count=1,file_size=1,
+                        data_categories=DATA_CATEGORIES_SINGLE_CASE)), 
+            "2":Case(2,case_id="Case2",primary_site="Stool",
+                    demographic=Demographic("not hispanic or latino","male","white"),
+                    project=CURRENT_PROJECTS["1"],
+                    summary=Summary(case_count=1,file_count=1,file_size=1,
+                        data_categories=DATA_CATEGORIES_SINGLE_CASE)),
+            "3":Case(3,case_id="Case3",primary_site="Stool",
+                    demographic=Demographic("not hispanic or latino","female","white"),
+                    project=CURRENT_PROJECTS["2"],
+                    summary=Summary(case_count=1,file_count=1,file_size=1,
+                        data_categories=DATA_CATEGORIES_SINGLE_CASE)),
+            "4":Case(4,case_id="Case4",primary_site="Stool",
+                    demographic=Demographic("not hispanic or latino","female","white"),
+                    project=CURRENT_PROJECTS["2"],
+                    summary=Summary(case_count=1,file_count=1,file_size=1,
+                        data_categories=DATA_CATEGORIES_SINGLE_CASE))
+}
 
 CURRENT_FILES = Files(hits=TEST_FILES.keys())
-CURRENT_CASES = RepositoryCases(hits=CASE_FILES.keys())
+CURRENT_CASES = RepositoryCases(hits=TEST_CASES.keys())
 
 FILE_AGGREGATIONS=FileAggregations(
     data_category=Aggregations(buckets=[

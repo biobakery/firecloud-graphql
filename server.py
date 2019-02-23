@@ -50,26 +50,7 @@ def main():
     # add subdirectories to identify schema
     @app.route('/graphql/<name>', methods=["POST"])
     def get_schema(name):
-        
-        #json_result = process_query(flask.request, schema.Query)
-
-        # temp use const response (later use json_result)
-        if "PortalSummary" in name:
-            temp_response = process_query(flask.request, schema.Query)
-        elif "ProjectsTable" in name:
-            temp_response = process_query(flask.request, schema.Query)
-        elif "ProjectsCharts" in name:
-            temp_response = process_query(flask.request, schema.Query)
-        elif "FileAggregations" in name:
-            temp_response = process_query(flask.request, schema.Query)
-        elif "FilesTable" in name:
-            temp_response = process_query(flask.request, schema.Query)
-        elif "CaseAggregations" in name:
-            temp_response = process_query(flask.request, schema.Query)
-        elif "CasesTable" in name:
-            temp_response = flask.jsonify(const.CASES_TABLE)
-
-        return temp_response
+        return process_query(flask.request, schema.Query)
 
     # add static endpoint for version/status
     @app.route('/status', methods=["GET"])
