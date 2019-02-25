@@ -4,6 +4,7 @@
 import json
 
 import graphene
+from graphene.types import generic
 from firecloud import api
 
 import utilities
@@ -34,7 +35,7 @@ def query_firecloud(url):
 class Sort(graphene.String):
     pass
 
-class FiltersArgument(graphene.types.json.JSONString):
+class FiltersArgument(generic.GenericScalar):
     pass
 
 class Count(graphene.ObjectType):
