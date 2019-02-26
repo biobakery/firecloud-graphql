@@ -5,9 +5,9 @@ import json
 
 import graphene
 from graphene.types import generic
-from firecloud import api
 
 import utilities
+import query_firecloud
 
 ## Firecloud API ##
 
@@ -22,12 +22,6 @@ class entity(graphene.ObjectType):
     name = graphene.String()
     entityType = graphene.String()
     attributes = graphene.String()
-
-def query_firecloud(url):
-    """ Use the firecloud api module to query firecloud """
-    result = api.__get(url)
-    api._check_response_code(result, 200)
-    return result.json()
 
 ## Portal API ##
 
@@ -383,13 +377,13 @@ class Query(graphene.ObjectType):
 
     def resolve_entities_with_type(self, info, namespace, workspace):
         url = "workspaces/{0}/{1}/entities_with_type".format(namespace, workspace)
-        json_result = query_firecloud(url)
+        json_result = query_firecloud.call_api(url)
         obj_result = utilities.json2obj(json.dumps(json_result))
         return obj_result
 
     def resolve_samples(self, info, namespace, workspace):
         url = "workspaces/{0}/{1}/entities/{type}".format(namespace, workspace, "sample")
-        json_result = query_firecloud(url)
+        json_result = query_firecloud.call_api(url)
         obj_result = utilities.json2obj(json.dumps(json_result))
         return obj_result
      
