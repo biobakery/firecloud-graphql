@@ -8,7 +8,6 @@ from graphene.types import generic
 from firecloud import api
 
 import utilities
-import data
 
 ## Firecloud API ##
 
