@@ -65,12 +65,18 @@ class DataCategories(graphene.ObjectType):
     file_count = graphene.Int()
     data_category = graphene.String()
 
+class ExperimentalStrategies(graphene.ObjectType):
+    case_count = graphene.Int()
+    file_count = graphene.Int()
+    experimental_strategy = graphene.String()
+
 class Summary(graphene.ObjectType):
     case_count = graphene.Int()
     file_count = graphene.Int()
     file_size = graphene.Float()
 
     data_categories = graphene.List(DataCategories)
+    experimental_strategies = graphene.List(ExperimentalStrategies)
 
 class Project(graphene.ObjectType):
     class Meta:
@@ -320,7 +326,9 @@ class Projects(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
-        return [get_project(project_id) for project_id in CURRENT_PROJECTS.keys()]
+        projects = [get_project(project_id) for project_id in CURRENT_PROJECTS.keys()]
+        filtered_projects = utilities.filter_hits(projects, filters)
+        return filtered_projects
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         return get_project_aggregations()
@@ -454,9 +462,12 @@ DATA_CATEGORIES_SINGLE_CASE = [DataCategories(file_count=1, data_category="Raw R
                    DataCategories(file_count=1, data_category="Gene Families"),
                    DataCategories(file_count=1, data_category="Taxonomic Profiles")]
 
+EXPERIMENTAL_STRATEGIES = [ExperimentalStrategies(file_count=6, experimental_strategy="WMGX"),
+                           ExperimentalStrategies(file_count=6, experimental_strategy="16S")]
+
 CURRENT_PROJECTS = {
-    "1":Project(id="1", project_id="NHSII-DemoA", name="NHSII-DemoA", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=2, file_count=6, data_categories=DATA_CATEGORIES, file_size=15), primary_site=["Stool"]),
-    "2":Project(id="2", project_id="NHSII-DemoB", name="NHSII-DemoB", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=2, file_count=6, data_categories=DATA_CATEGORIES, file_size=15), primary_site=["Stool"]),
+    "1":Project(id="1", project_id="NHSII-DemoA", name="NHSII-DemoA", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=2, file_count=6, data_categories=DATA_CATEGORIES, experimental_strategies=EXPERIMENTAL_STRATEGIES, file_size=15), primary_site=["Stool"]),
+    "2":Project(id="2", project_id="NHSII-DemoB", name="NHSII-DemoB", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=2, file_count=6, data_categories=DATA_CATEGORIES, experimental_strategies=EXPERIMENTAL_STRATEGIES, file_size=15), primary_site=["Stool"]),
 } 
 
 CURRENT_FILE_CASES = {
