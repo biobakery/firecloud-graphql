@@ -8,6 +8,7 @@ from graphene.types import generic
 
 import utilities
 import query_firecloud
+import database
 
 ## Firecloud API ##
 
@@ -83,7 +84,7 @@ class Project(graphene.ObjectType):
 
     @classmethod
     def get_node(cls, info, id):
-        return get_project(id)
+        return database.get_project(id)
 
 class FileCase(graphene.ObjectType):
     class Meta:
@@ -99,7 +100,7 @@ class FileCaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return get_total_cases_per_file()
+        return database.get_total_cases_per_file()
 
 class FileCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(FileCaseConnection,
@@ -109,7 +110,7 @@ class FileCases(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
-        return [get_filecase(file_id) for file_id in self.hits]
+        return [database.get_filecase(file_id) for file_id in self.hits]
 
 class File(graphene.ObjectType):
     class Meta:
@@ -142,7 +143,7 @@ class File(graphene.ObjectType):
 
     @classmethod
     def get_node(cls, info, id):
-        return get_file(id)
+        return database.get_file(id)
 
 class ProjectConnection(graphene.relay.Connection):
     class Meta:
@@ -150,7 +151,7 @@ class ProjectConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return get_total_projects_count()
+        return database.get_total_projects_count()
 
 class FileConnection(graphene.relay.Connection):
     class Meta:
@@ -158,7 +159,7 @@ class FileConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return get_total_files()
+        return database.get_total_files()
 
 class Bucket(graphene.ObjectType):
     doc_count = graphene.Int()
@@ -195,13 +196,13 @@ class Files(graphene.ObjectType):
         aggregations_filter_themselves=graphene.Boolean())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        return [get_file(file_id) for file_id in self.hits]
+        return [database.get_file(file_id) for file_id in self.hits]
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        return get_file_aggregations()
+        return database.get_file_aggregations()
 
     def resolve_facets(self, info, filters=None, facets=None):
-        return get_facets()
+        return database.get_facets()
 
 class CaseAggregations(graphene.ObjectType):
     demographic__ethnicity = graphene.Field(Aggregations)
@@ -225,7 +226,7 @@ class CaseAnnotationConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return get_total_case_annotations()
+        return database.get_total_case_annotations()
 
 class CaseAnnotations(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseAnnotationConnection,
@@ -236,7 +237,7 @@ class CaseAnnotations(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        return get_case_annotation()
+        return database.get_case_annotation()
 
 class Demographic(graphene.ObjectType):
     ethnicity = graphene.String()
@@ -266,7 +267,7 @@ class CaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return get_total_cases()
+        return database.get_total_cases()
 
 class RepositoryCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseConnection,
@@ -283,23 +284,23 @@ class RepositoryCases(graphene.ObjectType):
         facets=graphene.List(graphene.String))
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        return [get_case(case_id) for case_id in self.hits]
+        return [database.get_case(case_id) for case_id in self.hits]
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        return get_case_aggregations()
+        return database.get_case_aggregations()
 
     def resolve_facets(self, info, filters=None, facets=None):
-        return get_facets()
+        return database.get_facets()
 
 class Repository(graphene.ObjectType):
     files = graphene.Field(Files)
     cases = graphene.Field(RepositoryCases)
 
     def resolve_files(self, info):
-        return get_current_files()
+        return database.get_current_files()
 
     def resolve_cases(self, info):
-        return get_current_cases()
+        return database.get_current_cases()
 
 class ProjectAggregations(graphene.ObjectType):
     primary_site = graphene.Field(Aggregations)
@@ -319,12 +320,12 @@ class Projects(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
-        projects = [get_project(project_id) for project_id in CURRENT_PROJECTS.keys()]
+        projects = database.get_current_projects()
         filtered_projects = utilities.filter_hits(projects, filters)
         return filtered_projects
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        return get_project_aggregations()
+        return database.get_project_aggregations()
 
 class FileSize(graphene.ObjectType):
     value = graphene.Float()
@@ -333,7 +334,7 @@ class CartSummaryAggs(graphene.ObjectType):
     fs = graphene.Field(FileSize)
 
     def resolve_fs(self, info):
-        return get_cart_file_size()
+        return database.get_cart_file_size()
 
 class CartSummary(graphene.ObjectType):
     aggregations = graphene.Field(CartSummaryAggs, 
@@ -347,10 +348,10 @@ class Root(graphene.ObjectType):
     cart_summary = graphene.Field(CartSummary)
 
     def resolve_user(self, info):
-        return get_user()
+        return database.get_user()
 
     def resolve_count(self, info):
-        return get_current_counts()
+        return database.get_current_counts()
 
     def resolve_repository(self, info):
         return Repository(self)
@@ -387,193 +388,4 @@ class Query(graphene.ObjectType):
         obj_result = utilities.json2obj(json.dumps(json_result))
         return obj_result
      
-# Constants
-def get_total_projects_count():
-    return len(CURRENT_PROJECTS.keys())
-
-def get_user():
-    return User(username="null") # no users are currently being used
-
-def get_filecase(id):
-    return CURRENT_FILE_CASES[id]
-
-def get_project(id):
-    return CURRENT_PROJECTS[id]
-
-def get_file(id):
-    return TEST_FILES[id]
-
-def get_total_files():
-    return len(CURRENT_FILES.hits)
-
-def get_total_case_annotations():
-    return 1 # not currently being used
-
-def get_case_annotation():
-    return CaseAnnotation() # not currently used
-
-def get_current_files():
-    return CURRENT_FILES
-
-def get_current_cases():
-    return CURRENT_CASES
-
-def get_case(id):
-    return TEST_CASES[id]
-
-def get_project_aggregations():
-    return PROJECT_AGGREGATIONS
-
-def get_current_counts():
-    return CURRENT_COUNTS
-
-def get_file_aggregations():
-    return FILE_AGGREGATIONS
-
-def get_case_aggregations():
-    return CASE_AGGREGATIONS
-
-def get_total_cases_per_file():
-    return 1 # this is currently not being used
-
-def get_total_cases():
-    return len(TEST_CASES.keys())
-
-def get_facets():
-    return "null" # this is not currently being used
-
-def get_cart_file_size():
-    return FileSize(65000000000) # this is the total amount of files in repo table shown
-
-CURRENT_PROGRAMS = [Program(name="NHSII")]
-
-DATA_CATEGORIES = [DataCategories(case_count=2, data_category="Raw Reads"),
-                   DataCategories(case_count=2, data_category="Gene Families"),
-                   DataCategories(case_count=2, data_category="Taxonomic Profiles")]
-
-DATA_CATEGORIES_SINGLE_CASE = [DataCategories(file_count=1, data_category="Raw Reads"),
-                   DataCategories(file_count=1, data_category="Gene Families"),
-                   DataCategories(file_count=1, data_category="Taxonomic Profiles")]
-
-EXPERIMENTAL_STRATEGIES = [ExperimentalStrategies(file_count=6, experimental_strategy="WMGX"),
-                           ExperimentalStrategies(file_count=6, experimental_strategy="16S")]
-
-CURRENT_PROJECTS = {
-    "1":Project(id="1", project_id="NHSII-DemoA", name="NHSII-DemoA", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=2, file_count=6, data_categories=DATA_CATEGORIES, experimental_strategies=EXPERIMENTAL_STRATEGIES, file_size=15), primary_site=["Stool"]),
-    "2":Project(id="2", project_id="NHSII-DemoB", name="NHSII-DemoB", program=CURRENT_PROGRAMS[0], summary=Summary(case_count=2, file_count=6, data_categories=DATA_CATEGORIES, experimental_strategies=EXPERIMENTAL_STRATEGIES, file_size=15), primary_site=["Stool"]),
-} 
-
-CURRENT_FILE_CASES = {
-    "1":FileCase(1,"Case1",get_project("1")),
-    "2":FileCase(2,"Case2",get_project("1")),
-    "3":FileCase(3,"Case3",get_project("2")),
-    "4":FileCase(4,"Case4",get_project("2")),
-}
-
-
-FILE_SIZES = { "gene": 300000000, "raw": 5000000000, "taxa": 200000000 }
-
-TEST_FILES = {
-    "1": File(1, "demoA_sample1_raw_reads.fastq","case1","sample1", "controlled", FILE_SIZES["raw"], "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["1"])),
-    "2": File(2, "demoA_sample1_taxonomic_profile.tsv","case1","sample1", "open", FILE_SIZES["taxa"], "Taxonomic Profile", "Illumina", "TSV", "WMGX", FileCases(hits=["1"])),
-    "3": File(3, "demoA_sample1_gene_families.tsv","case1","sample1", "open", FILE_SIZES["gene"], "Gene Families", "Illumina", "TSV", "WMGX", FileCases(hits=["1"])),
-    "4": File(4, "demoA_sample2_raw_reads.fastq","case2","sample2", "controlled", FILE_SIZES["raw"], "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["2"])),
-    "5": File(5, "demoA_sample2_taxonomic_profile.tsv","case2","sample2", "open", FILE_SIZES["taxa"], "Taxonomic Profile", "Illumina", "TSV", "WMGX", FileCases(hits=["2"])),
-    "6": File(6, "demoA_sample2_gene_families.tsv","case2","sample2", "open", FILE_SIZES["gene"], "Gene Families", "Illumina", "TSV", "WMGX", FileCases(hits=["2"])),
-
-    "7": File(7, "demoB_sample3_raw_reads.fastq","case3","sample3", "controlled", FILE_SIZES["raw"], "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["3"])),
-    "8": File(8, "demoB_sample3_taxonomic_profile.tsv","case3","sample3", "open", FILE_SIZES["taxa"], "Taxonomic Profile", "Illumina", "TSV", "WMGX", FileCases(hits=["3"])),
-    "9": File(9, "demoB_sample3_gene_families.tsv","case3","sample3", "open", FILE_SIZES["gene"], "Gene Families", "Illumina", "TSV", "WMGX", FileCases(hits=["3"])),
-    "10": File(10, "demoB_sample4_raw_reads.fastq","case4","sample4", "controlled", FILE_SIZES["raw"], "Raw Reads", "Illumina", "Fastq", "WMGX", FileCases(hits=["4"])),
-    "11": File(11, "demoB_sample4_taxonomic_profile.tsv","case4","sample4", "open", FILE_SIZES["taxa"], "Taxonomic Profile", "Illumina", "TSV", "WMGX", FileCases(hits=["4"])),
-    "12": File(12, "demoB_sample4_gene_families.tsv","case4","sample4", "open", FILE_SIZES["gene"], "Gene Families", "Illumina", "TSV", "WMGX", FileCases(hits=["4"])),
-}
-
-CURRENT_COUNTS = Count(
-    projects="2",
-    participants="4",
-    samples="4",
-    dataFormats="3",
-    rawFiles="4",
-    processedFiles="8"
-)
-
-TEST_CASES={"1":Case(1,case_id="Case1",primary_site="Stool",
-                    demographic=Demographic("not hispanic or latino","male","white"),
-                    project=CURRENT_PROJECTS["1"],
-                    summary=Summary(case_count=1,file_count=1,file_size=1,
-                        data_categories=DATA_CATEGORIES_SINGLE_CASE)), 
-            "2":Case(2,case_id="Case2",primary_site="Stool",
-                    demographic=Demographic("not hispanic or latino","male","white"),
-                    project=CURRENT_PROJECTS["1"],
-                    summary=Summary(case_count=1,file_count=1,file_size=1,
-                        data_categories=DATA_CATEGORIES_SINGLE_CASE)),
-            "3":Case(3,case_id="Case3",primary_site="Stool",
-                    demographic=Demographic("not hispanic or latino","female","white"),
-                    project=CURRENT_PROJECTS["2"],
-                    summary=Summary(case_count=1,file_count=1,file_size=1,
-                        data_categories=DATA_CATEGORIES_SINGLE_CASE)),
-            "4":Case(4,case_id="Case4",primary_site="Stool",
-                    demographic=Demographic("not hispanic or latino","female","white"),
-                    project=CURRENT_PROJECTS["2"],
-                    summary=Summary(case_count=1,file_count=1,file_size=1,
-                        data_categories=DATA_CATEGORIES_SINGLE_CASE))
-}
-
-CURRENT_FILES = Files(hits=TEST_FILES.keys())
-CURRENT_CASES = RepositoryCases(hits=TEST_CASES.keys())
-
-FILE_AGGREGATIONS=FileAggregations(
-    data_category=Aggregations(buckets=[
-        Bucket(doc_count=4, key="Raw Reads"),
-        Bucket(doc_count=4, key="Taxonomic Profile"),
-        Bucket(doc_count=4, key="Gene Families")]),
-    experimental_strategy=Aggregations(buckets=[
-        Bucket(doc_count=6, key="WMGX"),
-        Bucket(doc_count=6, key="16S")]),
-    data_format=Aggregations(buckets=[
-        Bucket(doc_count=4, key="Fastq"),
-        Bucket(doc_count=8, key="TSV")]),
-    platform=Aggregations(buckets=[
-        Bucket(doc_count=6, key="Illumina MiSeq"),
-        Bucket(doc_count=6, key="Illumina HiSeq")]),
-    cases__primary_site=Aggregations(buckets=[
-        Bucket(doc_count=12, key="Stool")]),
-    cases__project__project_id=Aggregations(buckets=[
-        Bucket(doc_count=6, key="NHSII-DemoA"),
-        Bucket(doc_count=6, key="NHSII-DemoB")]),
-    access=Aggregations(buckets=[
-        Bucket(doc_count=4, key="open"),
-        Bucket(doc_count=8, key="controlled")]))
-
-CASE_AGGREGATIONS=CaseAggregations(
-    demographic__ethnicity=Aggregations(buckets=[
-        Bucket(doc_count=10, key="not hispanic or latino"),
-        Bucket(doc_count=2, key="hispanic or latino")]),
-    demographic__gender=Aggregations(buckets=[
-        Bucket(doc_count=8, key="male"),
-        Bucket(doc_count=4, key="female")]),
-    demographic__race=Aggregations(buckets=[
-        Bucket(doc_count=8, key="white"),
-        Bucket(doc_count=4, key="asian")]),
-    primary_site=Aggregations(buckets=[
-        Bucket(doc_count=12, key="Stool")]),
-    project__project_id=Aggregations(buckets=[
-        Bucket(doc_count=6, key="NHSII-DemoA"),
-        Bucket(doc_count=6, key="NHSII-DemoB")]),
-    project__program__name=Aggregations(buckets=[
-        Bucket(doc_count=12, key="NHSII")]),
-)
-
-PROJECT_AGGREGATIONS=ProjectAggregations(
-    primary_site=Aggregations(buckets=[Bucket(doc_count=45, key="Stool")]),
-    program__name=Aggregations(buckets=[Bucket(doc_count=45, key="NHSII")]),
-    project_id=Aggregations(buckets=[Bucket(doc_count=15, key="NHSII-DemoA"),
-                   Bucket(doc_count=15, key="NHSII-DemoB"),
-                   Bucket(doc_count=15, key="NHSII-DemoC")]),
-    summary__data_categories__data_category=Aggregations(buckets=[Bucket(doc_count=15, key="Raw Reads"),
-                                                Bucket(doc_count=15, key="Gene Families"),
-                                                Bucket(doc_count=15, key="Taxonomic Profiles")]),
-    summary__experimental_strategies__experimental_strategy=Aggregations(buckets=[Bucket(doc_count=30, key="WMGX"),
-                                                                Bucket(doc_count=15, key="16S")]))
 
