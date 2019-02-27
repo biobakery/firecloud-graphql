@@ -18,6 +18,8 @@ the Firecloud and BigQuery APIs.
 
 ### Firecloud API
 
-
+[TBD]
 
 ### BigQuery API
+
+[TBD]
