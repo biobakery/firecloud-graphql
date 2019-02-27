@@ -8,7 +8,7 @@ from graphene.types import generic
 
 import utilities
 import query_firecloud
-import database
+from database import data
 
 ## Firecloud API ##
 
@@ -84,7 +84,7 @@ class Project(graphene.ObjectType):
 
     @classmethod
     def get_node(cls, info, id):
-        return database.get_project(id)
+        return data.get_project(id)
 
 class FileCase(graphene.ObjectType):
     class Meta:
@@ -100,7 +100,7 @@ class FileCaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return database.get_total_cases_per_file()
+        return data.get_total_cases_per_file()
 
 class FileCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(FileCaseConnection,
@@ -110,7 +110,7 @@ class FileCases(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
-        return [database.get_filecase(file_id) for file_id in self.hits]
+        return [data.get_filecase(file_id) for file_id in self.hits]
 
 class File(graphene.ObjectType):
     class Meta:
@@ -143,7 +143,7 @@ class File(graphene.ObjectType):
 
     @classmethod
     def get_node(cls, info, id):
-        return database.get_file(id)
+        return data.get_file(id)
 
 class ProjectConnection(graphene.relay.Connection):
     class Meta:
@@ -151,7 +151,7 @@ class ProjectConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return database.get_total_projects_count()
+        return data.get_total_projects_count()
 
 class FileConnection(graphene.relay.Connection):
     class Meta:
@@ -159,7 +159,7 @@ class FileConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return database.get_total_files()
+        return data.get_total_files()
 
 class Bucket(graphene.ObjectType):
     doc_count = graphene.Int()
@@ -196,13 +196,13 @@ class Files(graphene.ObjectType):
         aggregations_filter_themselves=graphene.Boolean())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        return [database.get_file(file_id) for file_id in self.hits]
+        return [data.get_file(file_id) for file_id in self.hits]
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        return database.get_file_aggregations()
+        return data.get_file_aggregations()
 
     def resolve_facets(self, info, filters=None, facets=None):
-        return database.get_facets()
+        return data.get_facets()
 
 class CaseAggregations(graphene.ObjectType):
     demographic__ethnicity = graphene.Field(Aggregations)
@@ -226,7 +226,7 @@ class CaseAnnotationConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return database.get_total_case_annotations()
+        return data.get_total_case_annotations()
 
 class CaseAnnotations(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseAnnotationConnection,
@@ -237,7 +237,7 @@ class CaseAnnotations(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        return database.get_case_annotation()
+        return data.get_case_annotation()
 
 class Demographic(graphene.ObjectType):
     ethnicity = graphene.String()
@@ -267,7 +267,7 @@ class CaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return database.get_total_cases()
+        return data.get_total_cases()
 
 class RepositoryCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseConnection,
@@ -284,23 +284,23 @@ class RepositoryCases(graphene.ObjectType):
         facets=graphene.List(graphene.String))
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        return [database.get_case(case_id) for case_id in self.hits]
+        return [data.get_case(case_id) for case_id in self.hits]
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        return database.get_case_aggregations()
+        return data.get_case_aggregations()
 
     def resolve_facets(self, info, filters=None, facets=None):
-        return database.get_facets()
+        return data.get_facets()
 
 class Repository(graphene.ObjectType):
     files = graphene.Field(Files)
     cases = graphene.Field(RepositoryCases)
 
     def resolve_files(self, info):
-        return database.get_current_files()
+        return data.get_current_files()
 
     def resolve_cases(self, info):
-        return database.get_current_cases()
+        return data.get_current_cases()
 
 class ProjectAggregations(graphene.ObjectType):
     primary_site = graphene.Field(Aggregations)
@@ -320,12 +320,12 @@ class Projects(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
-        projects = database.get_current_projects()
+        projects = data.get_current_projects()
         filtered_projects = utilities.filter_hits(projects, filters)
         return filtered_projects
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        return database.get_project_aggregations()
+        return data.get_project_aggregations()
 
 class FileSize(graphene.ObjectType):
     value = graphene.Float()
@@ -334,7 +334,7 @@ class CartSummaryAggs(graphene.ObjectType):
     fs = graphene.Field(FileSize)
 
     def resolve_fs(self, info):
-        return database.get_cart_file_size()
+        return data.get_cart_file_size()
 
 class CartSummary(graphene.ObjectType):
     aggregations = graphene.Field(CartSummaryAggs, 
@@ -348,10 +348,10 @@ class Root(graphene.ObjectType):
     cart_summary = graphene.Field(CartSummary)
 
     def resolve_user(self, info):
-        return database.get_user()
+        return data.get_user()
 
     def resolve_count(self, info):
-        return database.get_current_counts()
+        return data.get_current_counts()
 
     def resolve_repository(self, info):
         return Repository(self)

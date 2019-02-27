@@ -11,7 +11,7 @@ VERSION = {
   "version": 0.1
 }
 
-class db(object):
+class DB(object):
     def __init__(self):
         import schema
     
