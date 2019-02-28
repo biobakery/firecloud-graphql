@@ -25,7 +25,7 @@ def process_query(request, schema):
     url_hash=request.args.get("hash")
     data_body=request.get_json()
     data_query=data_body["query"]
-    data_variables=data_body["variables"]
+    data_variables=data_body.get("variables",{})
 
     firecloud_schema=graphene.Schema(query=schema, auto_camelcase=False)
     result=firecloud_schema.execute(data_query, variables=data_variables)

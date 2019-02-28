@@ -1,0 +1,304 @@
+type Aggregations {
+  buckets: [Bucket]
+}
+
+type Bucket {
+  doc_count: Int
+  key: String
+  key_as_string: String
+}
+
+type CartSummary {
+  aggregations(filters: FiltersArgument): CartSummaryAggs
+}
+
+type CartSummaryAggs {
+  fs: FileSize
+}
+
+type Case implements Node {
+  # The ID of the object.
+  id: ID!
+  case_id: String
+  primary_site: String
+  submitter_id: String
+  demographic: Demographic
+  project: Project
+  summary: Summary
+  annotations: CaseAnnotations
+}
+
+type CaseAggregations {
+  demographic__ethnicity: Aggregations
+  demographic__gender: Aggregations
+  demographic__race: Aggregations
+  primary_site: Aggregations
+  project__project_id: Aggregations
+  project__program__name: Aggregations
+}
+
+type CaseAnnotation implements Node {
+  # The ID of the object.
+  id: ID!
+  annotation_id: String
+}
+
+type CaseAnnotationConnection {
+  pageInfo: PageInfo!
+  edges: [CaseAnnotationEdge]!
+  total: Int
+}
+
+type CaseAnnotationEdge {
+  # The item at the end of the edge
+  node: CaseAnnotation
+
+  # A cursor for use in pagination
+  cursor: String!
+}
+
+type CaseAnnotations {
+  hits(first: Int, offset: Int, score: String, sort: [Sort], filters: FiltersArgument, before: String, after: String, last: Int): CaseAnnotationConnection
+}
+
+type CaseConnection {
+  pageInfo: PageInfo!
+  edges: [CaseEdge]!
+  total: Int
+}
+
+type CaseEdge {
+  # The item at the end of the edge
+  node: Case
+
+  # A cursor for use in pagination
+  cursor: String!
+}
+
+type Count {
+  projects: String
+  participants: String
+  samples: String
+  dataFormats: String
+  rawFiles: String
+  processedFiles: String
+}
+
+type DataCategories {
+  case_count: Int
+  file_count: Int
+  data_category: String
+}
+
+type Demographic {
+  ethnicity: String
+  gender: String
+  race: String
+}
+
+type entitiesWithType {
+  namespace: ID
+  workspace: ID
+  attributes: String
+}
+
+type entity {
+  namespace: ID
+  workspace: ID
+  name: String
+  entityType: String
+  attributes: String
+}
+
+type ExperimentalStrategies {
+  case_count: Int
+  file_count: Int
+  experimental_strategy: String
+}
+
+type File implements Node {
+  # The ID of the object.
+  id: ID!
+  name: String
+  participant: String
+  sample: String
+  access: String
+  file_size: Float
+  data_category: String
+  data_format: String
+  platform: String
+  experimental_strategy: String
+  cases: FileCases
+  file_id: String
+  file_name: String
+  type: String
+}
+
+type FileAggregations {
+  data_category: Aggregations
+  experimental_strategy: Aggregations
+  data_format: Aggregations
+  platform: Aggregations
+  access: Aggregations
+  cases__project__project_id: Aggregations
+  cases__primary_site: Aggregations
+}
+
+type FileCase implements Node {
+  # The ID of the object.
+  id: ID!
+  case_id: String
+  project: Project
+}
+
+type FileCaseConnection {
+  pageInfo: PageInfo!
+  edges: [FileCaseEdge]!
+  total: Int
+}
+
+type FileCaseEdge {
+  # The item at the end of the edge
+  node: FileCase
+
+  # A cursor for use in pagination
+  cursor: String!
+}
+
+type FileCases {
+  hits(first: Int, offset: Int, sort: [Sort], filters: FiltersArgument, before: String, after: String, last: Int): FileCaseConnection
+}
+
+type FileConnection {
+  pageInfo: PageInfo!
+  edges: [FileEdge]!
+  total: Int
+}
+
+type FileEdge {
+  # The item at the end of the edge
+  node: File
+
+  # A cursor for use in pagination
+  cursor: String!
+}
+
+type Files {
+  hits(first: Int, offset: Int, score: String, sort: [Sort], filters: FiltersArgument, before: String, after: String, last: Int): FileConnection
+  facets(filters: FiltersArgument, facets: [String]): JSONString
+  aggregations(filters: FiltersArgument, aggregations_filter_themselves: Boolean): FileAggregations
+}
+
+type FileSize {
+  value: Float
+}
+
+scalar FiltersArgument
+
+# JSON String
+scalar JSONString
+
+# An object with an ID
+interface Node {
+  # The ID of the object.
+  id: ID!
+}
+
+type PageInfo {
+  # When paginating forwards, are there more items?
+  hasNextPage: Boolean!
+
+  # When paginating backwards, are there more items?
+  hasPreviousPage: Boolean!
+
+  # When paginating backwards, the cursor to continue.
+  startCursor: String
+
+  # When paginating forwards, the cursor to continue.
+  endCursor: String
+}
+
+type Program {
+  name: String
+  program_id: String
+  id: String
+}
+
+type Project implements Node {
+  # The ID of the object.
+  id: ID!
+  project_id: String
+  name: String
+  program: Program
+  summary: Summary
+  primary_site: [String]
+}
+
+type ProjectAggregations {
+  primary_site: Aggregations
+  program__name: Aggregations
+  project_id: Aggregations
+  summary__experimental_strategies__experimental_strategy: Aggregations
+  summary__data_categories__data_category: Aggregations
+}
+
+type ProjectConnection {
+  pageInfo: PageInfo!
+  edges: [ProjectEdge]!
+  total: Int
+}
+
+type ProjectEdge {
+  # The item at the end of the edge
+  node: Project
+
+  # A cursor for use in pagination
+  cursor: String!
+}
+
+type Projects {
+  aggregations(filters: FiltersArgument, aggregations_filter_themselves: Boolean): ProjectAggregations
+  hits(first: Int, offset: Int, sort: [Sort], filters: FiltersArgument, before: String, after: String, last: Int): ProjectConnection
+}
+
+type Query {
+  viewer: Root
+
+  # The ID of the object
+  node(id: ID!): Node
+  entities_with_type(namespace: ID!, workspace: ID!): [entitiesWithType]
+  samples(namespace: ID!, workspace: ID!): [entity]
+}
+
+type Repository {
+  files: Files
+  cases: RepositoryCases
+}
+
+type RepositoryCases {
+  hits(first: Int, offset: Int, sort: [Sort], score: String, filters: FiltersArgument, before: String, after: String, last: Int): CaseConnection
+  aggregations(filters: FiltersArgument, aggregations_filter_themselves: Boolean): CaseAggregations
+  facets(filters: FiltersArgument, facets: [String]): JSONString
+}
+
+type Root {
+  user: User
+  count: Count
+  repository: Repository
+  projects: Projects
+  cart_summary: CartSummary
+}
+
+scalar Sort
+
+type Summary {
+  case_count: Int
+  file_count: Int
+  file_size: Float
+  data_categories: [DataCategories]
+  experimental_strategies: [ExperimentalStrategies]
+}
+
+type User {
+  username: String
+}

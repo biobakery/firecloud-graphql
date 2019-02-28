@@ -11,6 +11,8 @@ To install:
 To run:
 `` $ python server.py ``
 
+The file named `schema.graphql` contains the current schema (implemented in the module of the same name). Use the data utility script in the Portal UI repository to update this schema when needed.
+
 ## External API Utilities
 
 The server will load data from a local database. This database is created by running a utility script which queries
