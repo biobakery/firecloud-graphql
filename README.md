@@ -37,6 +37,7 @@ $ ./run.sh scripts/register_service_account/register_service_account.py -j $PATH
 $ export GOOGLE_APPLICATION_CREDENTIALS=$PATH_TO_KEY
 ```
 5. Login to the account (if not using a compute engine service account on a VM) with `gsutil config`
+6. Add the service account to each Firecloud workspace it will need to query. This can be done by adding the service account email id to the "Share" page as a new "User ID" with READER level access (no share and no compute permissions).
 
 When running the Firecloud API script make sure the environment variable is set and firecloud-tools, plus all of its dependencies are installed.
 
