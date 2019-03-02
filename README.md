@@ -15,8 +15,13 @@ The file named `schema.graphql` contains the current schema (implemented in the 
 
 ## External API Utilities
 
-The server will load data from a local database. This database is created by running a utility script which queries
-the Firecloud and BigQuery APIs.
+The server will load data from a local database. This database is created by running a utility script which queries the Firecloud and BigQuery APIs.
+
+### Run 
+
+The script that loads the local database with data from the Firecloud workspaces and BigQuery database is run as follows. Before running the script first set up the environment for the external API calls.
+
+[TBD]
 
 ### Firecloud API
 
@@ -41,16 +46,9 @@ $ export GOOGLE_APPLICATION_CREDENTIALS=$PATH_TO_KEY
 
 When running the Firecloud API script make sure the environment variable is set and firecloud-tools, plus all of its dependencies are installed.
 
-#### Run
-
-[TBD]
-
 ### BigQuery API
 
 #### Installation
 
 [TBD, describe authentication setup]
 
-#### Run
-
-[TBD]
