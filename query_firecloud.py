@@ -5,8 +5,8 @@ import json
 
 from firecloud import api
 
+# namespace to be changed to "biom-mass-firecloud" when ready
 NAMESPACE="biom-mass-firecloud-ana"
-WORKSPACES=["HPFS_Demo1"]
 
 def call_api(url):
     """ Use the firecloud api module to query firecloud 
@@ -20,8 +20,19 @@ def get_entities(namespace, workspace, entity_type):
     json_result = call_api(url)
     return json_result
 
+def get_workspaces(namespace):
+    # This is based on the fiss list_spaces function but only workspaces are returned
+
+    workspaces = api.list_workspaces()
+    api._check_response_code(workspaces, 200)
+
+    for space in workspaces.json():
+        if namespace == space['workspace']['namespace']:
+            yield space['workspace']['name']
+
 def get_all_workspace_data():
-    for workspace in WORKSPACES:
+    # search through all of the workspaces in the namespace 
+    for workspace in get_workspaces(NAMESPACE):
         print("Gather data from " + workspace)
         samples = get_entities(NAMESPACE,workspace,"sample")
         sample_attributes = dict([(item['attributes']['sample'],item['attributes']) for item in samples])
