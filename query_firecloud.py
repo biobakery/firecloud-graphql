@@ -3,17 +3,22 @@
 
 import json 
 
-from firecloud import api
+from firecloud import api, errors
 
-# namespace to be changed to "biom-mass-firecloud" when ready
-NAMESPACE="biom-mass-firecloud-ana"
+NAMESPACE="firecloud-biom-mass"
 
 def call_api(url):
     """ Use the firecloud api module to query firecloud 
         Allows for additional options not included in fiss api"""
     result = api.__get(url)
-    api._check_response_code(result, 200)
-    return result.json()
+    try:
+        api._check_response_code(result, 200)
+        result = result.json()
+    except errors.FireCloudServerError as e:
+        print("Error with api query ")
+        print(e)
+        result = {}
+    return result
 
 def get_entities(namespace, workspace, entity_type):
     url = "workspaces/{0}/{1}/entities/{2}".format(namespace,workspace,entity_type)
