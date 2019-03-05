@@ -110,6 +110,7 @@ class FileCases(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
+        # filters are not currently in use
         return [data.get_filecase(file_id) for file_id in self.hits]
 
 class File(graphene.ObjectType):
@@ -239,6 +240,7 @@ class CaseAnnotations(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
+        # filters are not currently in use
         return data.get_case_annotation()
 
 class Demographic(graphene.ObjectType):
@@ -286,7 +288,9 @@ class RepositoryCases(graphene.ObjectType):
         facets=graphene.List(graphene.String))
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        return [data.get_case(case_id) for case_id in self.hits]
+        all_cases = [data.get_case(case_id) for case_id in self.hits]
+        filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
+        return filtered_cases
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         return data.get_case_aggregations()
