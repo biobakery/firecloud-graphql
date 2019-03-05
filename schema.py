@@ -196,7 +196,9 @@ class Files(graphene.ObjectType):
         aggregations_filter_themselves=graphene.Boolean())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        return [data.get_file(file_id) for file_id in self.hits]
+        all_files = [data.get_file(file_id) for file_id in self.hits]
+        filtered_files = utilities.filter_hits(all_files, filters, "files")
+        return filtered_files
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         return data.get_file_aggregations()
@@ -321,7 +323,7 @@ class Projects(graphene.ObjectType):
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
         projects = data.get_current_projects()
-        filtered_projects = utilities.filter_hits(projects, filters)
+        filtered_projects = utilities.filter_hits(projects, filters, "projects")
         return filtered_projects
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
