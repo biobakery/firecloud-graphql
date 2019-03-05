@@ -43,9 +43,9 @@ def filter_hits(hits, filters, object_name):
             all_filtered_sets.append(list(filtered_set))
 
     # reduce sets
-    final_set = all_filtered_sets.pop(0)
+    final_set = set(all_filtered_sets.pop(0))
     for next_set in all_filtered_sets:
-        final_set = final_set.intersection(next_set)
+        final_set = final_set.union(next_set)
 
     return list(final_set)
 
