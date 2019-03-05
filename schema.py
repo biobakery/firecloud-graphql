@@ -333,7 +333,10 @@ class Projects(graphene.ObjectType):
         return filtered_projects
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        return data.get_project_aggregations()
+        projects = data.get_current_projects()
+        filtered_projects = utilities.filter_hits(projects, filters, "projects")
+        project_aggregations = data.get_project_aggregations(filtered_projects) 
+        return project_aggregations
 
 class FileSize(graphene.ObjectType):
     value = graphene.Float()

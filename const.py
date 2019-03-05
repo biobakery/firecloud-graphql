@@ -135,17 +135,3 @@ class DB(object):
                 schema.Bucket(doc_count=12, key="NHSII")]),
             )
 
-        self.PROJECT_AGGREGATIONS=schema.ProjectAggregations(
-            primary_site=schema.Aggregations(buckets=[schema.Bucket(doc_count=45, key="Stool")]),
-            program__name=schema.Aggregations(buckets=[schema.Bucket(doc_count=45, key="NHSII")]),
-            project_id=schema.Aggregations(buckets=[schema.Bucket(doc_count=15, key="NHSII-DemoA"),
-                schema.Bucket(doc_count=15, key="NHSII-DemoB"),
-                schema.Bucket(doc_count=15, key="NHSII-DemoC")]),
-            summary__data_categories__data_category=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=15, key="Raw Reads"),
-                schema.Bucket(doc_count=15, key="Gene Families"),
-                schema.Bucket(doc_count=15, key="Taxonomic Profiles")]),
-            summary__experimental_strategies__experimental_strategy=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=30, key="WMGX"),
-                schema.Bucket(doc_count=15, key="16S")]))
-

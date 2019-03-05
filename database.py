@@ -59,9 +59,39 @@ class Data(object):
         self.load_data()
         return self.data.TEST_CASES[id]
 
-    def get_project_aggregations(self):
+    def get_project_aggregations(self, projects):
+        import schema
+
         self.load_data()
-        return self.data.PROJECT_AGGREGATIONS
+
+        # compile aggregations from project
+        aggregates = {"primary_site": {}, "program__name": {},
+                      "project_id": {}, 
+                      "summary__data_categories__data_category": {},
+                      "summary__experimental_strategies__experimental_strategy": {}}
+
+        for project in projects:
+            add_key_increment(aggregates["primary_site"], project.primary_site[0])
+            add_key_increment(aggregates["project_id"], project.project_id)
+            add_key_increment(aggregates["program__name"], project.program.name)
+            for item in project.summary.data_categories:
+                add_key_increment(aggregates["summary__data_categories__data_category"], item.data_category)
+            for item in project.summary.experimental_strategies:
+                add_key_increment(aggregates["summary__experimental_strategies__experimental_strategy"], item.experimental_strategy)
+
+        project_aggregates=schema.ProjectAggregations(
+            primary_site=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["primary_site"].items()]),
+            project_id=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project_id"].items()]),
+            program__name=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["program__name"].items()]),
+            summary__data_categories__data_category=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["summary__data_categories__data_category"].items()]),
+            summary__experimental_strategies__experimental_strategy=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["summary__experimental_strategies__experimental_strategy"].items()]))
+
+        return project_aggregates
 
     def get_current_counts(self):
         self.load_data()
