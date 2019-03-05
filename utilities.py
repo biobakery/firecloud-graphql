@@ -18,6 +18,20 @@ def get_class_member_value(obj, levels, subset=False):
 
     return final_value
 
+def check_for_match(value_selected, hit_values):
+    # check if the values for the hit match one or more of the values selected
+
+    match = False
+    if isinstance(value_selected, list):
+        for item in value_selected:
+            if item in hit_values:
+                match = True
+                break
+    elif value_selected in hit_values:
+        match = True
+
+    return match
+
 def filter_hits(hits, filters, object_name):
     # Filter the hits based on the json string provided
 
@@ -27,7 +41,7 @@ def filter_hits(hits, filters, object_name):
     all_filtered_sets = []
     for content in filters["content"]:   
         field=content["content"]["field"]
-        value_selected=content["content"]["value"][0]
+        value_selected=content["content"]["value"]
 
         # check if this filter is for this object
         levels = field.split(".")
@@ -38,14 +52,14 @@ def filter_hits(hits, filters, object_name):
             filtered_set=set()
             for item in hits:
                 hit_values=get_class_member_value(item,levels)
-                if value_selected in hit_values:
+                if check_for_match(value_selected, hit_values):
                     filtered_set.add(item)
             all_filtered_sets.append(list(filtered_set))
 
     # reduce sets
     final_set = set(all_filtered_sets.pop(0))
     for next_set in all_filtered_sets:
-        final_set = final_set.union(next_set)
+        final_set = final_set.intersection(next_set)
 
     return list(final_set)
 
