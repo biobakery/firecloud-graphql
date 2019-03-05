@@ -50,5 +50,25 @@ When running the Firecloud API script make sure the environment variable is set 
 
 #### Installation
 
-[TBD, describe authentication setup]
+To install the client library run
+
+``pip install --upgrade google-cloud-bigquery``
+
+To set up authentication
+
+-In the Google Console of your project create service account
+-Download generated json file that contains your credentials key
+-Either set path to your credentials file as environmental variable
+
+ ``export GOOGLE_APPLICATION_CREDENTIALS=$PATH_TO_KEY``
+  
+  or pass path directly when defining client within code
+  
+ ``from google.cloud import bigquery``
+ ``client = bigquery.Client.from_service_account_json($PATH_TO_KEY)``
+ 
+ More information 
+ https://cloud.google.com/bigquery/docs/reference/libraries#client-libraries-install-python
+  
+
 
