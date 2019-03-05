@@ -15,7 +15,7 @@ class DB(object):
     def __init__(self):
         import schema
     
-        self.CURRENT_CASEANNOTATION = schema.CaseAnnotation() # not currently used
+        self.CURRENT_CASE_ANNOTATION = schema.CaseAnnotation() # not currently used
 
         self.CURRENT_USER = schema.User(username="null") # no users are currently being used
 
