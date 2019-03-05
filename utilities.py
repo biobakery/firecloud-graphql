@@ -35,12 +35,12 @@ def filter_hits(hits, filters, object_name):
         if top_level != object_name:
             all_filtered_sets.append(set(hits))
         else:
+            filtered_set=set()
             for item in hits:
-                filtered_set=set()
                 hit_values=get_class_member_value(item,levels)
                 if value_selected in hit_values:
                     filtered_set.add(item)
-            all_filtered_sets.append(filtered_set)
+            all_filtered_sets.append(list(filtered_set))
 
     # reduce sets
     final_set = all_filtered_sets.pop(0)
