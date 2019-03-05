@@ -202,7 +202,9 @@ class Files(graphene.ObjectType):
         return filtered_files
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        return data.get_file_aggregations()
+        all_files = [data.get_file(file_id) for file_id in self.hits]
+        filtered_files = utilities.filter_hits(all_files, filters, "files")
+        return data.get_file_aggregations(filtered_files)
 
     def resolve_facets(self, info, filters=None, facets=None):
         return data.get_facets()

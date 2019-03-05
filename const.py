@@ -116,29 +116,6 @@ class DB(object):
         self.CURRENT_FILES = schema.Files(hits=self.TEST_FILES.keys())
         self.CURRENT_CASES = schema.RepositoryCases(hits=self.TEST_CASES.keys())
 
-        self.FILE_AGGREGATIONS=schema.FileAggregations(
-            data_category=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=4, key="Raw Reads"),
-                schema.Bucket(doc_count=4, key="Taxonomic Profile"),
-                schema.Bucket(doc_count=4, key="Gene Families")]),
-            experimental_strategy=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=6, key="WMGX"),
-                schema.Bucket(doc_count=6, key="16S")]),
-            data_format=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=4, key="Fastq"),
-                schema.Bucket(doc_count=8, key="TSV")]),
-            platform=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=6, key="Illumina MiSeq"),
-                schema.Bucket(doc_count=6, key="Illumina HiSeq")]),
-            cases__primary_site=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=12, key="Stool")]),
-            cases__project__project_id=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=6, key="NHSII-DemoA"),
-                schema.Bucket(doc_count=6, key="NHSII-DemoB")]),
-            access=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=4, key="open"),
-                schema.Bucket(doc_count=8, key="controlled")]))
-
         self.CASE_AGGREGATIONS=schema.CaseAggregations(
             demographic__ethnicity=schema.Aggregations(buckets=[
                 schema.Bucket(doc_count=10, key="not hispanic or latino"),
