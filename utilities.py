@@ -64,7 +64,7 @@ def filter_hits(hits, filters, object_name):
 
     return list(final_set)
 
-def sort_hits(hits, sort, object_name):
+def sort_hits(hits, sort):
     # Sort the hits based on the string provided
 
     if not sort:

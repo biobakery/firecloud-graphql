@@ -196,7 +196,7 @@ class Files(graphene.ObjectType):
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
         all_files = [data.get_file(file_id) for file_id in self.hits]
         filtered_files = utilities.filter_hits(all_files, filters, "files")
-        sorted_files = utilities.sort_hits(filtered_files, sort, "files")
+        sorted_files = utilities.sort_hits(filtered_files, sort)
         return sorted_files
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
@@ -290,7 +290,7 @@ class RepositoryCases(graphene.ObjectType):
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
         all_cases = [data.get_case(case_id) for case_id in self.hits]
         filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
-        sorted_cases = utilities.sort_hits(filtered_cases, sort, "cases")
+        sorted_cases = utilities.sort_hits(filtered_cases, sort)
         return sorted_cases
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
