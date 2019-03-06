@@ -12,10 +12,6 @@ class Data(object):
     def load_data(self):
         self.data = const.DB()
 
-    def get_total_projects_count(self):
-        self.load_data()
-        return len(self.data.CURRENT_PROJECTS.keys())
-
     def get_current_projects(self):
         self.load_data()
         return [self.get_project(project_id) for project_id in self.data.CURRENT_PROJECTS.keys()]
@@ -35,13 +31,6 @@ class Data(object):
     def get_file(self,id):
         self.load_data()
         return self.data.TEST_FILES[id]
-
-    def get_total_files(self):
-        self.load_data()
-        return len(self.data.CURRENT_FILES.hits)
-
-    def get_total_case_annotations(self):
-        return 1 # not currently being used
 
     def get_case_annotation(self):
         self.load_data()
@@ -134,16 +123,39 @@ class Data(object):
 
         return file_aggregates
 
-    def get_case_aggregations(self):
-        self.load_data()
-        return self.data.CASE_AGGREGATIONS
+    def get_case_aggregations(self, cases):
+        import schema
 
-    def get_total_cases_per_file(self):
-        return 1 # this is currently not being used
-
-    def get_total_cases(self):
         self.load_data()
-        return len(self.data.TEST_CASES.keys())
+
+        # aggregate case data
+        aggregates = {"demographic__ethnicity": {}, "demographic__gender": {},
+                      "demographic__race": {}, "primary_site": {}, "project__project_id": {},
+                      "project__program__name": {}}
+
+        for case in cases:
+            add_key_increment(aggregates["demographic__ethnicity"], case.demographic.ethnicity)
+            add_key_increment(aggregates["demographic__gender"], case.demographic.gender)
+            add_key_increment(aggregates["demographic__race"], case.demographic.race)
+            add_key_increment(aggregates["primary_site"], case.primary_site)
+            add_key_increment(aggregates["project__project_id"], case.project.project_id)
+            add_key_increment(aggregates["project__program__name"], case.project.program.name)
+
+        case_aggregates=schema.CaseAggregations(
+            demographic__ethnicity=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__ethnicity"].items()]),
+            demographic__gender=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__gender"].items()]),
+            demographic__race=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__race"].items()]),
+            primary_site=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["primary_site"].items()]),
+            project__project_id=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__project_id"].items()]),
+            project__program__name=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__program__name"].items()]))
+
+        return case_aggregates
 
     def get_facets(self):
         return "null" # this is not currently being used

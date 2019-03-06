@@ -107,7 +107,7 @@ class DB(object):
                     summary=schema.Summary(case_count=1,file_count=1,file_size=1,
                         data_categories=self.DATA_CATEGORIES_SINGLE_CASE)),
                 "4":schema.Case(4,case_id="Case4",primary_site="Stool",
-                    demographic=schema.Demographic("not hispanic or latino","female","white"),
+                    demographic=schema.Demographic("hispanic or latino","female","white"),
                     project=self.CURRENT_PROJECTS["2"],
                     summary=schema.Summary(case_count=1,file_count=1,file_size=1,
                         data_categories=self.DATA_CATEGORIES_SINGLE_CASE))
@@ -115,23 +115,4 @@ class DB(object):
 
         self.CURRENT_FILES = schema.Files(hits=self.TEST_FILES.keys())
         self.CURRENT_CASES = schema.RepositoryCases(hits=self.TEST_CASES.keys())
-
-        self.CASE_AGGREGATIONS=schema.CaseAggregations(
-            demographic__ethnicity=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=10, key="not hispanic or latino"),
-                schema.Bucket(doc_count=2, key="hispanic or latino")]),
-            demographic__gender=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=8, key="male"),
-                schema.Bucket(doc_count=4, key="female")]),
-            demographic__race=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=8, key="white"),
-                schema.Bucket(doc_count=4, key="asian")]),
-            primary_site=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=12, key="Stool")]),
-            project__project_id=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=6, key="NHSII-DemoA"),
-                schema.Bucket(doc_count=6, key="NHSII-DemoB")]),
-            project__program__name=schema.Aggregations(buckets=[
-                schema.Bucket(doc_count=12, key="NHSII")]),
-            )
 

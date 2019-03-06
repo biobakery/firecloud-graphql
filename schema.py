@@ -100,7 +100,7 @@ class FileCaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return data.get_total_cases_per_file()
+        return len(self.edges)
 
 class FileCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(FileCaseConnection,
@@ -152,7 +152,7 @@ class ProjectConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return data.get_total_projects_count()
+        return len(self.edges)
 
 class FileConnection(graphene.relay.Connection):
     class Meta:
@@ -160,7 +160,7 @@ class FileConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return data.get_total_files()
+        return len(self.edges)
 
 class Bucket(graphene.ObjectType):
     doc_count = graphene.Int()
@@ -231,7 +231,7 @@ class CaseAnnotationConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return data.get_total_case_annotations()
+        return len(self.edges)
 
 class CaseAnnotations(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseAnnotationConnection,
@@ -273,7 +273,7 @@ class CaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return data.get_total_cases()
+        return len(self.edges)
 
 class RepositoryCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseConnection,
@@ -295,7 +295,10 @@ class RepositoryCases(graphene.ObjectType):
         return filtered_cases
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        return data.get_case_aggregations()
+        all_cases = [data.get_case(case_id) for case_id in self.hits]
+        filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
+        case_aggregations = data.get_case_aggregations(filtered_cases)
+        return case_aggregations
 
     def resolve_facets(self, info, filters=None, facets=None):
         return data.get_facets()
