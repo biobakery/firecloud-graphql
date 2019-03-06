@@ -1,5 +1,6 @@
 
 import json
+import ast
 import collections
 
 def get_class_member_value(obj, levels, subset=False):
@@ -63,7 +64,36 @@ def filter_hits(hits, filters, object_name):
 
     return list(final_set)
 
-# The functions were based on code from
+def sort_hits(hits, sort, object_name):
+    # Sort the hits based on the string provided
+
+    if not sort:
+        return hits
+   
+    sorted_hits = hits
+    for content in sort:
+        eval_content = ast.literal_eval(content)   
+        field=eval_content["field"]
+        levels=field.split(".")
+
+        # reverse sort order if set
+        order=eval_content["order"]
+        reverse_sort_order = False
+        if order != "asc":
+            reverse_sort_order = True
+
+        # get the values for all of the hits
+        hit_value_pairs = []
+        for item in sorted_hits:
+            hit_value_pairs.append((item, get_class_member_value(item,levels)[0]))
+
+        hit_values = collections.OrderedDict(hit_value_pairs)
+
+        sorted_hits=sorted(hit_values, key=hit_values.get, reverse=reverse_sort_order)
+
+    return sorted_hits
+
+# The functions below were based on code from
 # https://github.com/nderkach/python-grahql-api
 
 def _json_object_hook(d):
