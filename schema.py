@@ -86,12 +86,19 @@ class Project(graphene.ObjectType):
     def get_node(cls, info, id):
         return data.get_project(id)
 
+class Demographic(graphene.ObjectType):
+    ethnicity = graphene.String()
+    gender = graphene.String()
+    race = graphene.String()
+
 class FileCase(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
 
     case_id = graphene.String()
     project = graphene.Field(Project)
+    demographic = graphene.Field(Demographic)
+    primary_site = graphene.String()
 
 class FileCaseConnection(graphene.relay.Connection):
     class Meta:
@@ -108,10 +115,6 @@ class FileCases(graphene.ObjectType):
         offset=graphene.Int(),
         sort=graphene.List(Sort),
         filters=FiltersArgument())
-
-    def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
-        # filters are not currently in use
-        return [data.get_filecase(file_id) for file_id in self.hits]
 
 class File(graphene.ObjectType):
     class Meta:
@@ -243,10 +246,32 @@ class CaseAnnotations(graphene.ObjectType):
         # filters are not currently in use
         return data.get_case_annotation()
 
-class Demographic(graphene.ObjectType):
-    ethnicity = graphene.String()
-    gender = graphene.String()
-    race = graphene.String()
+class CaseFile(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    case_id = graphene.String()
+    experimental_strategy = graphene.String()
+    data_category = graphene.String()
+    data_format = graphene.String()
+    platform = graphene.String()
+    access = graphene.String()
+
+class CaseFileConnection(graphene.relay.Connection):
+    class Meta:
+        node = CaseFile
+
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return len(self.edges)
+
+class CaseFiles(graphene.ObjectType):
+    hits = graphene.relay.ConnectionField(CaseFileConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        sort=graphene.List(Sort),
+        filters=FiltersArgument())
 
 class Case(graphene.ObjectType):
     class Meta:
@@ -260,6 +285,8 @@ class Case(graphene.ObjectType):
     project = graphene.Field(Project)
     summary = graphene.Field(Summary)
     annotations = graphene.Field(CaseAnnotations)
+
+    files = graphene.Field(CaseFiles)
 
     def resolve_submitter_id(self, info):
         return self.case_id

@@ -48,7 +48,18 @@ def filter_hits(hits, filters, object_name):
         levels = field.split(".")
         top_level = levels.pop(0)
         if top_level != object_name:
-            all_filtered_sets.append(set(hits))
+            if not top_level in dir(hits[0]):
+                all_filtered_sets.append(set(hits))
+            else:
+                filtered_set=set()
+                for item in hits:
+                    # find object that contains the search values
+                    hit_values = []
+                    for search_item in getattr(item, top_level).hits:
+                        hit_values+=get_class_member_value(search_item, levels)
+                    if check_for_match(value_selected, hit_values):
+                        filtered_set.add(item)
+                all_filtered_sets.append(list(filtered_set))
         else:
             filtered_set=set()
             for item in hits:

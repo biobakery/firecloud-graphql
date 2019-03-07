@@ -20,10 +20,6 @@ class Data(object):
         self.load_data()
         return self.data.CURRENT_USER
 
-    def get_filecase(self,id):
-        self.load_data()
-        return self.data.CURRENT_FILE_CASES[id]
-
     def get_project(self,id):
         self.load_data()
         return self.data.CURRENT_PROJECTS[id]
@@ -101,7 +97,7 @@ class Data(object):
             add_key_increment(aggregates["data_format"], file.data_format)
             add_key_increment(aggregates["platform"], file.platform)
             add_key_increment(aggregates["access"], file.access)
-            project = data.get_filecase(file.cases.hits[0]).project
+            project = file.cases.hits[0].project
             add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
             add_key_increment(aggregates["cases__project__project_id"], project.project_id)
 
