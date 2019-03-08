@@ -19,9 +19,13 @@ The server will load data from a local database. This database is created by run
 
 ### Run 
 
-The script that loads the local database with data from the Firecloud workspaces and BigQuery database is run as follows. Before running the script first set up the environment for the external API calls.
+The script that loads the local database with data from the Firecloud workspaces and BigQuery database is run as follows.
 
-[TBD]
+``python load_local_database.py``
+
+Script calls functions from other 2 scripts query_firecloud.py and query_bigquery.py. These 2 scripts can be run to view data in Firecloud and BigQuery
+
+Before running the script first set up the environment for the external API calls and have mariadb running.
 
 ### Firecloud API
 
@@ -70,6 +74,8 @@ To set up authentication
  More information 
  https://cloud.google.com/bigquery/docs/reference/libraries#client-libraries-install-python
  
+## Data Repositories
+
 ### BigQuery Dataset
 
 Biom-mass project Demo dataset 'HPFS_Demo_Clean' has 2 tables
@@ -79,9 +85,9 @@ Biom-mass project Demo dataset 'HPFS_Demo_Clean' has 2 tables
 
 sample table has participant field that connects it to participant by id.
 
-### FireCloud Workspaces
+### Firecloud Workspaces
 
-FireCloud workspaces have
+Firecloud workspaces have
 
 1. All raw files and processed files of study uploaded to google backet associated with workspace
 2. Information about files is stored as key/value pairs in 'sample' section
@@ -100,27 +106,33 @@ type
 
 3. Participant ids are stored in 'participant' section of workspace
 
-Files and file information are associated to participants by key 'participant' that matches participant id.
+Files and related information are associated to participants by key 'participant' that matches participant id.
 
 ### Local Maria DB
 
-Local to portal mariadb combines all data from Big Query and FireCloud Workspaces and stores information in 3 tables
+Local to portal mariadb combines all data from BigQuery and Firecloud Workspaces and stores information in 3 tables
 
-1. participant (all participant information from Big Query)
-2. sample (all sample information from Big Query)
-3. file_sample (all file information from all FireCloud Workspaces)
+1. participant (all participant information from BigQuery)
+2. sample (all sample information from BigQuery)
+3. file_sample (all file information from all Firecloud Workspaces)
 
-file_sample and sample tables have 'participant' field that connects them to participant table by id
-GraphQL server pulls information from local mariadb to serve portal ui.
+file_sample and sample tables have 'participant' field that connects them to participant table by id.
+
+To install mariadb on ubuntu/debian run
+
+``apt-get update -y``
+``apt-get install mariadb-server``
+
+To start server
+``service mysql start``
+
+More information
+https://www.vultr.com/docs/install-mariadb-on-ubuntu-14-04
+
+load_local_database.py script needs mysql.connect module.
+
+To install it run
+``pip install mysql-connector-python``
+
 
  
-
-
-
-
-
- 
- 
-  
-
-
