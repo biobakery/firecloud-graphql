@@ -56,9 +56,9 @@ To install the client library run
 
 To set up authentication
 
--In the Google Console of your project create service account
--Download generated json file that contains your credentials key
--Either set path to your credentials file as environmental variable
+1. In the Google Console of your project create service account
+2. Download generated json file that contains your credentials key
+3. Either set path to your credentials file as environmental variable
 
  ``export GOOGLE_APPLICATION_CREDENTIALS=$PATH_TO_KEY``
   
@@ -69,6 +69,58 @@ To set up authentication
  
  More information 
  https://cloud.google.com/bigquery/docs/reference/libraries#client-libraries-install-python
+ 
+### BigQuery Dataset
+
+Biom-mass project Demo dataset 'HPFS_Demo_Clean' has 2 tables
+
+1. participant (has all fileds that describe participant of study)
+2. sample (has all fileds that describe measurements/tests taken on participant during study
+
+sample table has participant field that connects it to participant by id.
+
+### FireCloud Workspaces
+
+FireCloud workspaces have
+
+1. All raw files and processed files of study uploaded to google backet associated with workspace
+2. Information about files is stored as key/value pairs in 'sample' section
+
+access 
+data_category
+data_format
+experimental_strategy
+file_id
+file_name
+file_size
+participant
+platform
+sample
+type
+
+3. Participant ids are stored in 'participant' section of workspace
+
+Files and file information are associated to participants by key 'participant' that matches participant id.
+
+### Local Maria DB
+
+Local to portal mariadb combines all data from Big Query and FireCloud Workspaces and stores information in 3 tables
+
+1. participant (all participant information from Big Query)
+2. sample (all sample information from Big Query)
+3. file_sample (all file information from all FireCloud Workspaces)
+
+file_sample and sample tables have 'participant' field that connects them to participant table by id
+GraphQL server pulls information from local mariadb to serve portal ui.
+
+ 
+
+
+
+
+
+ 
+ 
   
 
 
