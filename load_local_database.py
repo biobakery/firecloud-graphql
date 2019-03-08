@@ -5,6 +5,7 @@ and file sample information from FireCould workspaces  into local mariadb.
 """
 
 import argparse
+import getpass
 import sys
 import os
 import string
@@ -39,15 +40,14 @@ def parse_arguments(args):
         required=False)
     parser.add_argument(
         "--mysql-user", 
-        default="root",
+        default="biom_mass",
         help="local mysql/mariadb user \n", 
         required=False)
     parser.add_argument(
-        "--mysql-psw", 
-        default="",
+        "--mysql-psw",
         help="local mysql/mariadb password \n", 
         required=False)
-    
+
     return parser.parse_args()
 
 
@@ -56,6 +56,8 @@ def main():
 
     # parse arguments from the user
     args = parse_arguments(sys.argv)
+    print("Mariadb user ",  args.mysql_user)
+    args.mysql_psw = getpass.getpass()    
 
     # Get data from  big query 
     values_participant,values_sample,columns_participant,columns_sample=query_bigquery.query_bigquery(args.project,args.dataset,args.key_file)
@@ -66,13 +68,13 @@ def main():
        USE portal_ui;'''
     query_create_participant = '''CREATE TABLE IF NOT EXISTS participant(id int not null auto_increment primary key,\n'''
     query_create_participant =  query_create_participant + columns_participant_desc
-    query_create_participant = query_create_participant + " varchar(100))\n"
+    query_create_participant = query_create_participant + " varchar(100), updated timestamp)\n"
     
     # Construct query to create  table sample in mariadb
     columns_sample_desc = columns_sample.replace(","," varchar(100),")
     query_create_sample = "CREATE TABLE IF NOT EXISTS sample(id int not null auto_increment primary key,\n"
     query_create_sample =  query_create_sample + columns_sample_desc
-    query_create_sample = query_create_sample + ''' varchar(100),\n 
+    query_create_sample = query_create_sample + ''' varchar(100), updated timestamp, \n 
         CONSTRAINT fk_participant FOREIGN KEY (participant)
         REFERENCES participant(entity_participant_id)
         ON DELETE CASCADE
@@ -99,9 +101,6 @@ def main():
       
     # Truncate tables before inserting
     cursor.execute("SET FOREIGN_KEY_CHECKS=0")
-    mariadb_connection.commit()
-
-    cursor.execute("TRUNCATE TABLE file_sample") 
     mariadb_connection.commit()
  
     cursor.execute("TRUNCATE TABLE sample")  
@@ -134,7 +133,8 @@ def main():
     query_create_file_sample = "CREATE TABLE IF NOT EXISTS file_sample(id int not null auto_increment primary key,\n"
     query_create_file_sample =  query_create_file_sample + columns_file_sample_desc
     query_create_file_sample = query_create_file_sample + ''' 
-        varchar(100),\n  CONSTRAINT fsfk_participant FOREIGN KEY (participant)
+        varchar(100), updated timestamp,\n
+        CONSTRAINT fsfk_participant FOREIGN KEY (participant)
         REFERENCES participant(entity_participant_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE)'''
@@ -146,6 +146,13 @@ def main():
 
     # Execure create table file_sample
     cursor.execute(query_create_file_sample)
+    mariadb_connection.commit()
+
+    # Truncate table before inserting
+    cursor.execute("SET FOREIGN_KEY_CHECKS=0")
+    mariadb_connection.commit()
+
+    cursor.execute("TRUNCATE TABLE file_sample") 
     mariadb_connection.commit()
 
     # Construct and execute insert file samples into mariadb file_sample table
