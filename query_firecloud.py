@@ -66,7 +66,7 @@ def get_all_workspace_data():
                   
         for item in samples:
              values = extract_values(item['attributes'])
-             values.insert(0,item['attributes']['sample'])
+             values.insert(0,item['name'])
              values.pop(3)
              print("File sample values",values)
              values_file_samples.append(values)
