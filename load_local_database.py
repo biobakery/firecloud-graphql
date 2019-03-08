@@ -62,10 +62,11 @@ def main():
     # Get data from  big query 
     values_participant,values_sample,columns_participant,columns_sample=query_bigquery.query_bigquery(args.project,args.dataset,args.key_file)
 
+    # Construct query to  create db in mariadb
+    query_create_db = "CREATE DATABASE IF NOT EXISTS "+args.local_db
+
     # Construct query to  create table  participant in  mariadb
     columns_participant_desc = columns_participant.replace(","," varchar(100),")
-    query_create_participant = '''CREATE DATABASE IF NOT EXISTS portal_ui;
-       USE portal_ui;'''
     query_create_participant = '''CREATE TABLE IF NOT EXISTS participant(id int not null auto_increment primary key,\n'''
     query_create_participant =  query_create_participant + columns_participant_desc
     query_create_participant = query_create_participant + " varchar(100), updated timestamp)\n"
@@ -88,8 +89,14 @@ def main():
     print(query_create_participant,query_create_sample)
 
     # Connect to mariadb
-    mariadb_connection = mariadb.connect(user=args.mysql_user, password=args.mysql_psw, database=args.local_db)
+    mariadb_connection = mariadb.connect(user=args.mysql_user, password=args.mysql_psw)
     cursor = mariadb_connection.cursor()
+
+    # Execute create db
+    cursor.execute(query_create_db)
+    mariadb_connection.commit()
+    cursor.execute("USE " + args.local_db)
+    mariadb_connection.commit()
 
     # Run create table participant statement
     cursor.execute(query_create_participant)
