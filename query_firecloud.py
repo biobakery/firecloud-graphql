@@ -68,11 +68,13 @@ def get_all_workspace_data():
              values = extract_values(item['attributes'])
              values.insert(0,item['name'])
              values.pop(3)
+             values.insert(0,workspace)
              print("File sample values",values)
              values_file_samples.append(values)
 
              keys = item['attributes'].keys()
              keys.insert(0,'entity_sample_id')
+             keys.insert(0,'project')
              keys_file_samples.append(keys)
              print("File sample keys", keys)
  
