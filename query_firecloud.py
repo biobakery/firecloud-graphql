@@ -1,4 +1,5 @@
 
+
 # Code to query the firecloud api
 
 import json 
@@ -35,18 +36,55 @@ def get_workspaces(namespace):
         if namespace == space['workspace']['namespace']:
             yield space['workspace']['name']
 
+def extract_values(obj):
+    """Pull all values recursively from nested JSON."""
+    arr = []
+    def extract(obj, arr):
+        """Recursively search for values in JSON tree."""
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(v, (dict, list)):
+                    extract(v, arr)
+                else:
+                    arr.append(str(v))
+        elif isinstance(obj, list):
+            for item in obj:
+                extract(item, arr)
+        return arr
+
+    results = extract(obj, arr)
+    return results
+
 def get_all_workspace_data():
     # search through all of the workspaces in the namespace 
+    values_file_samples = list()
+    values_participants = list()
+    keys_file_samples = list()
     for workspace in get_workspaces(NAMESPACE):
         print("Gather data from " + workspace)
         samples = get_entities(NAMESPACE,workspace,"sample")
-        sample_attributes = dict([(item['attributes']['sample'],item['attributes']) for item in samples])
-        print("sample names")
-        print(sample_attributes.keys())
+                  
+        for item in samples:
+             values = extract_values(item['attributes'])
+             values.insert(0,item['attributes']['sample'])
+             values.pop(3)
+             print("File sample values",values)
+             values_file_samples.append(values)
+
+             keys = item['attributes'].keys()
+             keys.insert(0,'entity_sample_id')
+             keys_file_samples.append(keys)
+             print("File sample keys", keys)
+ 
         participants = get_entities(NAMESPACE,workspace,"participant")
-        participant_names = [item['name'] for item in participants]
-        print("participant names")
-        print(participant_names)
+        
+        for item in participants:
+             values_participants.append(item['name'])
+     
+        print("Participant values",values_participants)
+        
+       
+    return values_file_samples, keys_file_samples, values_participants
 
 if __name__ == "__main__":
     get_all_workspace_data()

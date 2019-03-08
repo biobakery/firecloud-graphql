@@ -44,7 +44,7 @@ def parse_arguments(args):
         required=False)
     parser.add_argument(
         "--mysql-psw", 
-        default="DanDa1osh",
+        default="",
         help="local mysql/mariadb password \n", 
         required=False)
     
