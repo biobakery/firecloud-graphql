@@ -81,7 +81,8 @@ def get_all_workspace_data():
         participants = get_entities(NAMESPACE,workspace,"participant")
         
         for item in participants:
-             values_participants.append(item['name'])
+             values_participants.append(workspace + "," + item['name'])
+             
      
         print("Participant values",values_participants)
         

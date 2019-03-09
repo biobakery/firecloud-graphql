@@ -67,13 +67,17 @@ def main():
 
     # Construct query to  create table  participant in  mariadb
     columns_participant_desc = columns_participant.replace(","," varchar(100),")
-    query_create_participant = '''CREATE TABLE IF NOT EXISTS participant(id int not null auto_increment primary key,\n'''
+    query_create_participant = '''CREATE TABLE IF NOT EXISTS
+        participant(id int not null auto_increment primary key,
+        project varchar(100),\n'''
     query_create_participant =  query_create_participant + columns_participant_desc
     query_create_participant = query_create_participant + " varchar(100), updated timestamp)\n"
     
     # Construct query to create  table sample in mariadb
     columns_sample_desc = columns_sample.replace(","," varchar(100),")
-    query_create_sample = "CREATE TABLE IF NOT EXISTS sample(id int not null auto_increment primary key,\n"
+    query_create_sample = '''CREATE TABLE IF NOT EXISTS
+        sample(id int not null auto_increment primary key,
+        project varchar(100),\n'''
     query_create_sample =  query_create_sample + columns_sample_desc
     query_create_sample = query_create_sample + ''' varchar(100), updated timestamp, \n 
         CONSTRAINT fk_participant FOREIGN KEY (participant)
@@ -83,9 +87,9 @@ def main():
 
     # Correct types for key fields  in create statements 
     query_create_sample = query_create_sample.replace("sample varchar(100)","sample varchar(100) not null UNIQUE KEY")
-    query_create_sample = query_create_sample.replace("participant varchar(100)","participant int not null")
+    query_create_sample = query_create_sample.replace("participant varchar(100)","participant varchar(100) not null")
     query_create_participant = query_create_participant.replace(
-        "entity_participant_id varchar(100)","entity_participant_id int not null  UNIQUE KEY")
+        "entity_participant_id varchar(100)","entity_participant_id varchar(100) not null  UNIQUE KEY")
     print(query_create_participant,query_create_sample)
 
     # Connect to mariadb
@@ -123,7 +127,7 @@ def main():
         cursor.execute(insert_participant)
     mariadb_connection.commit()
     
-    #Construct and execute insert samples into mariadb sample table
+    # Construct and execute insert samples into mariadb sample table
     for row in values_sample:
         insert_sample = "INSERT into sample (" + columns_sample + ") VALUES(" + row + ")"
         print(insert_sample)
@@ -147,7 +151,7 @@ def main():
         ON UPDATE CASCADE)'''
     query_create_file_sample = query_create_file_sample.replace(
         "entity_sample_id varchar(100)","entity_sample_id varchar(100) not null")
-    query_create_file_sample = query_create_file_sample.replace("participant varchar(100)","participant int not null")
+    query_create_file_sample = query_create_file_sample.replace("participant varchar(100)","participant varchar(100) not null")
   
     print(query_create_file_sample)
 
@@ -171,6 +175,15 @@ def main():
         cursor.execute(insert_file_sample)
     mariadb_connection.commit()
 
+    for row in participants:
+        project_part=row.split(",")
+        update_participant_query="UPDATE participant  set project='"+project_part[0]+"' where entity_participant_id='"+project_part[1]+"'" 
+        print(update_participant_query)
+        cursor.execute(update_participant_query)
+        update_sample_query="UPDATE sample set project='"+project_part[0]+"' where participant='"+project_part[1]+"'"
+        cursor.execute(update_sample_query) 
+    mariadb_connection.commit()
+ 
     print("--All data uploaded---")
 
 if __name__ == "__main__":
