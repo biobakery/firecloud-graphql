@@ -175,13 +175,16 @@ def main():
         cursor.execute(insert_file_sample)
     mariadb_connection.commit()
 
+    # Update participant and sample tables  'project' field 
     for row in participants:
         project_part=row.split(",")
-        update_participant_query="UPDATE participant  set project='"+project_part[0]+"' where entity_participant_id='"+project_part[1]+"'" 
+        update_participant_query="UPDATE participant  set project='"+project_part[0]+"' where entity_participant_id='"+project_part[1]+"'"
         print(update_participant_query)
         cursor.execute(update_participant_query)
         update_sample_query="UPDATE sample set project='"+project_part[0]+"' where participant='"+project_part[1]+"'"
-        cursor.execute(update_sample_query) 
+        print(update_sample_query)        
+        cursor.execute(update_sample_query)
+ 
     mariadb_connection.commit()
  
     print("--All data uploaded---")
