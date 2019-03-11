@@ -148,6 +148,10 @@ def main():
         CONSTRAINT fsfk_participant FOREIGN KEY (participant)
         REFERENCES participant(entity_participant_id)
         ON DELETE CASCADE
+        ON UPDATE CASCADE,
+        CONSTRAINT fsfk_sample FOREIGN KEY (sample)
+        REFERENCES sample(sample)
+        ON DELETE CASCADE
         ON UPDATE CASCADE)'''
     query_create_file_sample = query_create_file_sample.replace(
         "entity_sample_id varchar(100)","entity_sample_id varchar(100) not null")
@@ -176,7 +180,6 @@ def main():
     mariadb_connection.commit()
 
     # Update participant and sample tables  'project' field 
-    
     for row in participants:
         project_part=row.split(",")
         update_participant_query="UPDATE participant  set project='"+project_part[0]+"' where entity_participant_id='"+project_part[1]+"'"
@@ -205,10 +208,10 @@ def main():
     mariadb_connection.commit()
 
     # Construct and execute insert into project
-    cursor.execute("SELECT DISTINCT project as proj from participant")
-    print(cursor)
-    for proj in cursor:
-        print(proj)
+    cursor.execute("SELECT `project`,`id` from `participant` GROUP BY `project`")
+    rows = cursor.fetchall()
+
+    for project,id in rows:
         query_insert_project ='''INSERT INTO `project` ( 
            project_id,
            name,
@@ -217,7 +220,7 @@ def main():
            primary_site
            ) VALUES'''
 
-        project_row_values ="('" + ''.join(proj) + "','" + ''.join(proj) + "'," + "'HPFS','Project Summary', 'Stool')"
+        project_row_values ="('" + project + "','" + project + "'," + "'HPFS','Project Summary', 'Stool')"
         query_insert_project = query_insert_project +  project_row_values
 
         print(query_insert_project)
@@ -236,6 +239,9 @@ def main():
         updated timestamp)'''
     cursor.execute(query_create_version)
     mariadb_connection.commit()
+
+    cursor.close()
+    mariadb_connection.close()
 
 
     print("--All data loaded---")
