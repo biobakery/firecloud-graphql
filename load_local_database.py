@@ -94,7 +94,7 @@ def main():
 
     # Connect to mariadb
     mariadb_connection = mariadb.connect(user=args.mysql_user, password=args.mysql_psw)
-    cursor = mariadb_connection.cursor()
+    cursor = mariadb_connection.cursor(buffered=True)
 
     # Execute create db
     cursor.execute(query_create_db)
@@ -176,6 +176,7 @@ def main():
     mariadb_connection.commit()
 
     # Update participant and sample tables  'project' field 
+    
     for row in participants:
         project_part=row.split(",")
         update_participant_query="UPDATE participant  set project='"+project_part[0]+"' where entity_participant_id='"+project_part[1]+"'"
@@ -186,8 +187,58 @@ def main():
         cursor.execute(update_sample_query)
  
     mariadb_connection.commit()
- 
-    print("--All data uploaded---")
+
+    # Construct and execute create project table statement
+    query_create_project ='''CREATE TABLE IF NOT EXISTS
+        project(id int not null auto_increment primary key,
+        project_id varchar(100),
+        name varchar(100),
+        program  varchar(100),
+        summary  varchar(250),
+        primary_site  varchar(100),
+        updated timestamp)'''
+    cursor.execute(query_create_project)
+    mariadb_connection.commit()
+
+    # Truncate table before inserting 
+    cursor.execute("TRUNCATE TABLE project") 
+    mariadb_connection.commit()
+
+    # Construct and execute insert into project
+    cursor.execute("SELECT DISTINCT project as proj from participant")
+    print(cursor)
+    for proj in cursor:
+        print(proj)
+        query_insert_project ='''INSERT INTO `project` ( 
+           project_id,
+           name,
+           program,
+           summary,
+           primary_site
+           ) VALUES'''
+
+        project_row_values ="('" + ''.join(proj) + "','" + ''.join(proj) + "'," + "'HPFS','Project Summary', 'Stool')"
+        query_insert_project = query_insert_project +  project_row_values
+
+        print(query_insert_project)
+        cursor.execute(query_insert_project)
+
+    mariadb_connection.commit()
+    
+    # Construct and execute create version table statement
+    query_create_version ='''CREATE TABLE IF NOT EXISTS
+        version(id int not null auto_increment primary key,
+        commit varchar(250),
+        data_release varchar(100),
+        status varchar(10),
+        tag varchar(10),
+        version  varchar(10),
+        updated timestamp)'''
+    cursor.execute(query_create_version)
+    mariadb_connection.commit()
+
+
+    print("--All data loaded---")
 
 if __name__ == "__main__":
     main()
