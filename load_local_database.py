@@ -68,8 +68,7 @@ def main():
     # Construct query to  create table  participant in  mariadb
     columns_participant_desc = columns_participant.replace(","," varchar(100),")
     query_create_participant = '''CREATE TABLE IF NOT EXISTS
-        participant(id int not null auto_increment primary key,
-        project varchar(100),\n'''
+        participant(id int not null auto_increment primary key,\n'''
     query_create_participant =  query_create_participant + columns_participant_desc
     query_create_participant = query_create_participant + " varchar(100), updated timestamp)\n"
     
@@ -140,6 +139,7 @@ def main():
     # Construct query to create table file_sample in mariadb
     columns_file_sample =','.join(keys_file_samples[0])
     columns_file_sample_desc = columns_file_sample.replace(","," varchar(100),")
+    columns_file_sample_desc = columns_file_sample_desc.replace("file_id varchar(100),","file_id varchar(250),")
     
     query_create_file_sample = "CREATE TABLE IF NOT EXISTS file_sample(id int not null auto_increment primary key,\n"
     query_create_file_sample =  query_create_file_sample + columns_file_sample_desc
@@ -180,12 +180,11 @@ def main():
     mariadb_connection.commit()
 
     # Update participant and sample tables  'project' field 
-    for row in participants:
-        project_part=row.split(",")
-        update_participant_query="UPDATE participant  set project='"+project_part[0]+"' where entity_participant_id='"+project_part[1]+"'"
-        print(update_participant_query)
-        cursor.execute(update_participant_query)
-        update_sample_query="UPDATE sample set project='"+project_part[0]+"' where participant='"+project_part[1]+"'"
+    for row in values_file_samples:
+      #  update_participant_query="UPDATE participant  set project='"+project_part[0]+"' where entity_participant_id='"+project_part[1]+"'"
+      #  print(update_participant_query)
+      #  cursor.execute(update_participant_query)
+        update_sample_query="UPDATE sample set project='"+row[0]+"' where sample='"+row[6]+"'"
         print(update_sample_query)        
         cursor.execute(update_sample_query)
  
@@ -208,10 +207,10 @@ def main():
     mariadb_connection.commit()
 
     # Construct and execute insert into project
-    cursor.execute("SELECT `project`,`id` from `participant` GROUP BY `project`")
+    cursor.execute("SELECT `project`,`sample` from `sample` GROUP BY `project`")
     rows = cursor.fetchall()
 
-    for project,id in rows:
+    for project, sample in rows:
         query_insert_project ='''INSERT INTO `project` ( 
            project_id,
            name,
@@ -220,7 +219,7 @@ def main():
            primary_site
            ) VALUES'''
 
-        project_row_values ="('" + project + "','" + project + "'," + "'HPFS','Project Summary', 'Stool')"
+        project_row_values ="('" + str(project) + "','" + str(project) + "'," + "'HPFS','Project Summary', 'Stool')"
         query_insert_project = query_insert_project +  project_row_values
 
         print(query_insert_project)
