@@ -123,15 +123,27 @@ To install mariadb on ubuntu/debian run
 ``apt-get update -y``
 ``apt-get install mariadb-server``
 
+then run as root
+``/usr/bin/mysql_secure_installation`` 
+
 To start server
 ``service mysql start``
 
 More information
 https://www.vultr.com/docs/install-mariadb-on-ubuntu-14-04
 
-load_local_database.py script needs mysql.connect module.
 
-To install it run
+To create non root user in mysql  login as root user
+``mysql --user=root -p``
+then run
+``mysql> CREATE USER 'username'@'localhost' IDENTIFIED BY 'password'``
+
+More information https://dev.mysql.com/doc/refman/5.5/en/adding-users.html
+
+load_local_database.py script needs mysql client and mysql.connect module.
+
+To install run
+``sudo apt-get install libmysqlclient-dev``
 ``pip install mysql-connector-python``
 
 
