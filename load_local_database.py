@@ -5,7 +5,6 @@ and file sample information from FireCould workspaces  into local mariadb.
 """
 
 import argparse
-import getpass
 import sys
 import os
 import string
@@ -46,18 +45,38 @@ def parse_arguments(args):
     parser.add_argument(
         "--mysql-psw",
         help="local mysql/mariadb password \n", 
-        required=False)
+        required=True)
 
     return parser.parse_args()
 
+def get_firecloud_data():
+
+    all_samples,all_participants = query_firecloud.get_all_workspace_data()
+
+    values_file_samples = list()
+    values_participants = list()
+    keys_file_samples = list()
+    for samples in all_samples:
+        for item in samples:
+            participant_id=item['attributes']['participant']['entityName']
+            del item['attributes']['participant']
+            item['attributes']['participant'] = participant_id
+            item['attributes']['entity_sample_id']=item['name']
+            values_file_samples.append(item['attributes'].values())
+            keys_file_samples.append(item['attributes'].keys())
+    
+    for participants in all_participants:
+        for item in participants:
+            values_participants.append(item['name']) 
+       
+    return values_file_samples, keys_file_samples, values_participants
 
 def main():
     import mysql.connector as mariadb
+    import datetime
 
     # parse arguments from the user
-    args = parse_arguments(sys.argv)
-    print("Mariadb user ",  args.mysql_user)
-    args.mysql_psw = getpass.getpass()    
+    args = parse_arguments(sys.argv) 
 
     # Get data from  big query 
     values_participant,values_sample,columns_participant,columns_sample=query_bigquery.query_bigquery(args.project,args.dataset,args.key_file)
@@ -101,6 +120,16 @@ def main():
     cursor.execute("USE " + args.local_db)
     mariadb_connection.commit()
 
+    # Drop tables if exist 
+    cursor.execute("SET FOREIGN_KEY_CHECKS=0")
+    mariadb_connection.commit()
+ 
+    cursor.execute("DROP TABLE IF EXISTS sample")  
+    cursor.execute("DROP TABLE IF EXISTS participant")
+    cursor.execute("DROP TABLE IF EXISTS file_sample")  
+    mariadb_connection.commit() 
+
+
     # Run create table participant statement
     cursor.execute(query_create_participant)
     mariadb_connection.commit()
@@ -108,16 +137,6 @@ def main():
     # Run  create table sample statement
     cursor.execute(query_create_sample)
     mariadb_connection.commit()
-      
-    # Truncate tables before inserting
-    cursor.execute("SET FOREIGN_KEY_CHECKS=0")
-    mariadb_connection.commit()
- 
-    cursor.execute("TRUNCATE TABLE sample")  
-    mariadb_connection.commit() 
-
-    cursor.execute("TRUNCATE TABLE participant")  
-    mariadb_connection.commit() 
 
     # Construct and exxecute insert participants into mariadb participant statement 
     for row in values_participant:
@@ -133,9 +152,9 @@ def main():
         cursor.execute(insert_sample)
     mariadb_connection.commit()
 
-    # Get data from FireCloud workspaced
-    values_file_samples,keys_file_samples,participants=query_firecloud.get_all_workspace_data()
-
+    # Get data from FireCloud workspaces
+    values_file_samples,keys_file_samples,participants=get_firecloud_data()
+     
     # Construct query to create table file_sample in mariadb
     columns_file_sample =','.join(keys_file_samples[0])
     columns_file_sample_desc = columns_file_sample.replace(","," varchar(100),")
@@ -163,13 +182,6 @@ def main():
     cursor.execute(query_create_file_sample)
     mariadb_connection.commit()
 
-    # Truncate table before inserting
-    cursor.execute("SET FOREIGN_KEY_CHECKS=0")
-    mariadb_connection.commit()
-
-    cursor.execute("TRUNCATE TABLE file_sample") 
-    mariadb_connection.commit()
-
     # Construct and execute insert file samples into mariadb file_sample table
     for index in range(0,len(values_file_samples)):
         column_names = ','.join(keys_file_samples[index])
@@ -179,12 +191,12 @@ def main():
         cursor.execute(insert_file_sample)
     mariadb_connection.commit()
 
-    # Update participant and sample tables  'project' field 
+    # Update sample tables  'project' field 
     for row in values_file_samples:
       #  update_participant_query="UPDATE participant  set project='"+project_part[0]+"' where entity_participant_id='"+project_part[1]+"'"
       #  print(update_participant_query)
       #  cursor.execute(update_participant_query)
-        update_sample_query="UPDATE sample set project='"+row[0]+"' where sample='"+row[6]+"'"
+        update_sample_query="UPDATE sample set project='"+row[3]+"' where sample='"+row[6]+"'"
         print(update_sample_query)        
         cursor.execute(update_sample_query)
  
@@ -207,7 +219,7 @@ def main():
     mariadb_connection.commit()
 
     # Construct and execute insert into project
-    cursor.execute("SELECT `project`,`sample` from `sample` GROUP BY `project`")
+    cursor.execute("SELECT `project`,`sample` from `file_sample` GROUP BY `project`")
     rows = cursor.fetchall()
 
     for project, sample in rows:
@@ -237,6 +249,22 @@ def main():
         version  varchar(10),
         updated timestamp)'''
     cursor.execute(query_create_version)
+    mariadb_connection.commit()
+
+   # Construct and execute insert into version
+    now = datetime.datetime.now()
+    release_date = now.strftime("%b %d, %Y")
+    query_insert_version ='''INSERT INTO `version` ( 
+           commit,
+           data_release,
+           status,
+           tag,
+           version
+           ) VALUES'''
+    version_row_values ="('','" + release_date + "','','','')" 
+    query_insert_version = query_insert_version +  version_row_values
+    print(query_insert_version)
+    cursor.execute(query_insert_version)
     mariadb_connection.commit()
 
     cursor.close()
