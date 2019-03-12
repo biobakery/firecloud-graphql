@@ -126,7 +126,8 @@ def main():
  
     cursor.execute("DROP TABLE IF EXISTS sample")  
     cursor.execute("DROP TABLE IF EXISTS participant")
-    cursor.execute("DROP TABLE IF EXISTS file_sample")  
+    cursor.execute("DROP TABLE IF EXISTS file_sample")
+    cursor.execute("DROP TABLE IF EXISTS project")  
     mariadb_connection.commit() 
 
 
@@ -214,10 +215,6 @@ def main():
     cursor.execute(query_create_project)
     mariadb_connection.commit()
 
-    # Truncate table before inserting 
-    cursor.execute("TRUNCATE TABLE project") 
-    mariadb_connection.commit()
-
     # Construct and execute insert into project
     cursor.execute("SELECT `project`,`sample` from `file_sample` GROUP BY `project`")
     rows = cursor.fetchall()
@@ -251,9 +248,19 @@ def main():
     cursor.execute(query_create_version)
     mariadb_connection.commit()
 
-   # Construct and execute insert into version
+    # Construct and execute insert into version
+    cursor.execute("SELECT max(version) as maxversion, updated from  `version`")
+    rows = cursor.fetchall()
+
+    for maxversion, updated in rows:
+        if maxversion:
+           new_version = str(float(str(maxversion)) + 0.1)
+        else:
+           new_version = str(0.1)
+     
     now = datetime.datetime.now()
-    release_date = now.strftime("%b %d, %Y")
+    release_date ="Date Release "+new_version+" "+ now.strftime("%b %d, %Y")
+    commit ="commit_"+now.strftime("%m%d%Y")
     query_insert_version ='''INSERT INTO `version` ( 
            commit,
            data_release,
@@ -261,7 +268,7 @@ def main():
            tag,
            version
            ) VALUES'''
-    version_row_values ="('','" + release_date + "','','','')" 
+    version_row_values ="('"+commit+"','"+release_date+"','OK','"+new_version+"','"+new_version+"')" 
     query_insert_version = query_insert_version +  version_row_values
     print(query_insert_version)
     cursor.execute(query_insert_version)
