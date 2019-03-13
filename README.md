@@ -135,9 +135,8 @@ To create non root user in mysql  login as root user
 ``sudo mysql --user=root -p``
 then run
 1. ``CREATE USER 'username'@'localhost' IDENTIFIED BY 'password';``
-2. ``GRANT USAGE ON *.localhost TO 'username'@'localhost' IDENTIFIED BY 'password'``
-3. ``GRANT ALL PRIVILEGES ON *.localhost TO 'username'@'localhost'`` 
-4. ``flush privileges;``
+2. ``GRANT ALL PRIVILEGES ON *.* TO 'username'@'localhost' WITH GRANT OPTION;``
+3. ``flush privileges;``
 
 More information https://dev.mysql.com/doc/refman/5.5/en/adding-users.html
 
