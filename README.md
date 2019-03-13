@@ -120,30 +120,29 @@ file_sample and sample tables have 'participant' field that connects them to par
 
 To install mariadb on ubuntu/debian run
 
-``apt-get update -y``
-``apt-get install mariadb-server``
+``sudo apt-get update -y``
+``sudo apt-get install mariadb-server mariadb-client``
 
-then run as root
-``/usr/bin/mysql_secure_installation`` 
+To set root password (it is none by default) run
 
-To start server
-``service mysql start``
+``sudo mysql_secure_installation`` 
 
 More information
-https://www.vultr.com/docs/install-mariadb-on-ubuntu-14-04
+https://websiteforstudents.com/students-tutorial-install-mariadb-ubuntu-16-10/
 
 
 To create non root user in mysql  login as root user
-``mysql --user=root -p``
+``sudo mysql --user=root -p``
 then run
-``mysql> CREATE USER 'username'@'localhost' IDENTIFIED BY 'password'``
+1. ``CREATE USER 'username'@'localhost' IDENTIFIED BY 'password';``
+2. ``GRANT ALL PRIVILEGES ON *.* TO 'username'@'localhost' WITH GRANT OPTION;``
+3. ``flush privileges;``
 
 More information https://dev.mysql.com/doc/refman/5.5/en/adding-users.html
 
-load_local_database.py script needs mysql client and mysql.connect module.
+load_local_database.py script needs mysql.connect module.
 
 To install run
-``sudo apt-get install libmysqlclient-dev``
 ``pip install mysql-connector-python``
 
 
