@@ -9,7 +9,7 @@ def add_key_increment(dictionary, key):
     dictionary[key]+=1
 
 class Data(object):
-    db_conn = mariadb.connect(user='biom-mass', password='', db='portal_ui')
+    db_conn = mariadb.connect(user='biom_mass', password='DanDa1osh', db='portal_ui')
     cursor = db_conn.cursor(buffered=True)
 
     def fetch_results(self,query):
@@ -37,12 +37,12 @@ class Data(object):
         print("id inside get_project")
         print(id)
         project_json=self.fetch_results(
-            "select id, project_id, name as pr_name, program from  `project` where  `id` =" + str(id))
+            "select * from  `project` where  `id` =" + str(id))
         project_id=project_json[0]['project_id']
         proj_id=project_json[0]['id']
-        proj_name=project_json[0]['pr_name']
+        proj_name=project_json[0]['name']
         proj_program=["HPFS"]
-        #proj_program=project_json[0]['program']
+        proj_program=project_json[0]['program']
         #proj_primary_site=project_json[0]['primary_site']
         proj_primary_site=["Stool"]
 
@@ -53,32 +53,71 @@ class Data(object):
             "select count(distinct participant) as part_count from file_sample where project='"+project_id+"'")
         proj_part_count=part_count_json[0]['part_count']
 
-        data_cat_json=self.fetch_results("select distinct data_category from file_sample where project='"+project_id+"'")
-        proj_data_cat=[data_cat['data_category'] for  data_cat in data_cat_json]
-
-        exp_str_json=self.fetch_results("select distinct experimental_strategy from file_sample where project='"+project_id+"'")
-        proj_exp_str=[exp_str['experimental_strategy'] for exp_str in exp_str_json]
-
         sum_file_size_json=self.fetch_results(
             "select sum(file_size) as sum_file_size from file_sample where project='"+project_id+"'")
         proj_file_size=sum_file_size_json[0]['sum_file_size']
         print("values inside get_project")
         print(
-            proj_id,project_id,proj_name,proj_program,proj_part_count,proj_file_count,proj_data_cat,proj_exp_str,proj_file_size,proj_primary_site)
+            proj_id,project_id,proj_name,proj_program,proj_part_count,proj_file_count,proj_file_size,proj_primary_site)
 
         return schema.Project(
                 id=proj_id,
                 project_id=project_id,
                 name=proj_name,
-                program=proj_program,
+                program=schema.Program(name=proj_program),
                 summary=schema.Summary(
                     case_count=proj_part_count,
                     file_count=proj_file_count,
-                    data_categories=proj_data_cat,
-                    experimental_strategies=proj_exp_str,
+                    data_categories=self.get_data_categories("project",project_id),
+                    experimental_strategies=self.get_experimental_strategies("project",project_id),
                     file_size=proj_file_size),
                 primary_site=proj_primary_site)
 
+
+    def get_data_categories(self,table,id):
+        import schema
+
+        print("inside get_data_cat")
+        print(id)
+
+        data_cat_json=self.fetch_results(
+            "select distinct data_category from file_sample where "+ table+"='" + str(id)+"'")
+        data_cat=[]
+        for item in data_cat_json:
+            item_files_json=self.fetch_results(
+               "select count(id) as file_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
+            item_part_json=self.fetch_results(
+               "select count(distinct participant) as case_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
+            data_cat.append(
+                schema.DataCategories(
+                   case_count=item_part_json[0]['case_count'],
+                   file_count=item_files_json[0]['file_count'],
+                   data_category=item['data_category']))
+
+        return data_cat
+
+
+
+    def get_experimental_strategies(self,table,id):
+        import schema
+
+        print("inside get exp_str")
+        print(table,id)
+        exp_str_json=self.fetch_results(
+            "select distinct experimental_strategy from file_sample where "+ table+"='" + str(id) +"'")
+        exp_str=[]
+        for item in exp_str_json:
+            item_files_json=self.fetch_results(
+               "select count(id) as file_count from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'")
+            item_part_json=self.fetch_results(
+               "select count(distinct participant) as case_count from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'")
+            exp_str.append(
+                schema.ExperimentalStrategies(
+                    case_count=item_part_json[0]['case_count'],
+                    file_count=item_files_json[0]['file_count'],
+                    experimental_strategy=item['experimental_strategy']))
+
+        return exp_str
 
     def get_file(self,id):
         import schema
@@ -154,10 +193,10 @@ class Data(object):
 
         print("inside get case")
         print(part_id)
-        proj_json=self.fetch_results('''select distinct file_sample.project, project.id 
+        proj_json=self.fetch_results('''select distinct file_sample.project, project.id as proj_id 
             from file_sample, project where file_sample.participant='''+str(part_id)+''' 
             and project.project_id=file_sample.project''')
-        proj_id=proj_json[0]['id']
+        proj_id=proj_json[0]['proj_id']
         print(proj_id)
 
         cat_raw_json=self.fetch_results(
@@ -175,7 +214,7 @@ class Data(object):
         files_json=self.fetch_results("select * from file_sample where participant="+str(part_id))
 
         return schema.Case(id,
-                    case_id="entity_participant_id",
+                    case_id=part_id,
                     primary_site="Stool",
                     demographic=schema.Demographic("not hispanic or latino","male","white"),
                     project=self.get_project(proj_id),
@@ -207,15 +246,15 @@ class Data(object):
 
         for project in projects:
             print(
-               project.id, project.project_id,project.summary.data_categories,project.primary_site,
-               project.program,project.summary.experimental_strategies)
+               project.id, project.project_id,project.primary_site,
+               project.program)
             add_key_increment(aggregates["primary_site"],project.primary_site[0])
             add_key_increment(aggregates["project_id"], project.project_id)
-            add_key_increment(aggregates["program__name"], project.program[0])
+            add_key_increment(aggregates["program__name"], project.program.name)
             for item in project.summary.data_categories:
-                add_key_increment(aggregates["summary__data_categories__data_category"], item)
+                add_key_increment(aggregates["summary__data_categories__data_category"], item.data_category)
             for item in project.summary.experimental_strategies:
-                add_key_increment(aggregates["summary__experimental_strategies__experimental_strategy"], item)
+                add_key_increment(aggregates["summary__experimental_strategies__experimental_strategy"], item.experimental_strategy)
 
         project_aggregates=schema.ProjectAggregations(
             primary_site=schema.Aggregations(
@@ -314,9 +353,9 @@ class Data(object):
             add_key_increment(aggregates["demographic__ethnicity"], case.demographic.ethnicity)
             add_key_increment(aggregates["demographic__gender"], case.demographic.gender)
             add_key_increment(aggregates["demographic__race"], case.demographic.race)
-            add_key_increment(aggregates["primary_site"], case.primary_site)
+            add_key_increment(aggregates["primary_site"], case.primary_site[0])
             add_key_increment(aggregates["project__project_id"], case.project.project_id)
-            add_key_increment(aggregates["project__program__name"], case.project.program.name)
+            add_key_increment(aggregates["project__program__name"], case.project.program[0])
 
         case_aggregates=schema.CaseAggregations(
             demographic__ethnicity=schema.Aggregations(
