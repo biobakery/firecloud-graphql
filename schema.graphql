@@ -26,6 +26,7 @@ type Case implements Node {
   project: Project
   summary: Summary
   annotations: CaseAnnotations
+  files: CaseFiles
 }
 
 type CaseAggregations {
@@ -73,6 +74,35 @@ type CaseEdge {
 
   # A cursor for use in pagination
   cursor: String!
+}
+
+type CaseFile implements Node {
+  # The ID of the object.
+  id: ID!
+  case_id: String
+  experimental_strategy: String
+  data_category: String
+  data_format: String
+  platform: String
+  access: String
+}
+
+type CaseFileConnection {
+  pageInfo: PageInfo!
+  edges: [CaseFileEdge]!
+  total: Int
+}
+
+type CaseFileEdge {
+  # The item at the end of the edge
+  node: CaseFile
+
+  # A cursor for use in pagination
+  cursor: String!
+}
+
+type CaseFiles {
+  hits(first: Int, offset: Int, sort: [Sort], filters: FiltersArgument, before: String, after: String, last: Int): CaseFileConnection
 }
 
 type Count {
@@ -128,9 +158,9 @@ type File implements Node {
   data_format: String
   platform: String
   experimental_strategy: String
+  file_name: String
   cases: FileCases
   file_id: String
-  file_name: String
   type: String
 }
 
@@ -149,6 +179,8 @@ type FileCase implements Node {
   id: ID!
   case_id: String
   project: Project
+  demographic: Demographic
+  primary_site: String
 }
 
 type FileCaseConnection {

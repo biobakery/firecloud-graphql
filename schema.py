@@ -86,12 +86,19 @@ class Project(graphene.ObjectType):
     def get_node(cls, info, id):
         return data.get_project(id)
 
+class Demographic(graphene.ObjectType):
+    ethnicity = graphene.String()
+    gender = graphene.String()
+    race = graphene.String()
+
 class FileCase(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
 
     case_id = graphene.String()
     project = graphene.Field(Project)
+    demographic = graphene.Field(Demographic)
+    primary_site = graphene.String()
 
 class FileCaseConnection(graphene.relay.Connection):
     class Meta:
@@ -100,7 +107,7 @@ class FileCaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return data.get_total_cases_per_file()
+        return len(self.edges)
 
 class FileCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(FileCaseConnection,
@@ -108,9 +115,6 @@ class FileCases(graphene.ObjectType):
         offset=graphene.Int(),
         sort=graphene.List(Sort),
         filters=FiltersArgument())
-
-    def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
-        return [data.get_filecase(file_id) for file_id in self.hits]
 
 class File(graphene.ObjectType):
     class Meta:
@@ -125,17 +129,14 @@ class File(graphene.ObjectType):
     data_format = graphene.String()
     platform = graphene.String()
     experimental_strategy = graphene.String()
+    file_name = graphene.String()
 
     cases = graphene.Field(FileCases)
 
     file_id = graphene.String()
-    file_name = graphene.String()
     type = graphene.String()
 
     def resolve_file_id(self, info):
-        return self.name
-
-    def resolve_file_name(self, info):
         return self.name
 
     def resolve_type(self, info):
@@ -151,7 +152,7 @@ class ProjectConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return data.get_total_projects_count()
+        return len(self.edges)
 
 class FileConnection(graphene.relay.Connection):
     class Meta:
@@ -159,7 +160,7 @@ class FileConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return data.get_total_files()
+        return len(self.edges)
 
 class Bucket(graphene.ObjectType):
     doc_count = graphene.Int()
@@ -196,10 +197,15 @@ class Files(graphene.ObjectType):
         aggregations_filter_themselves=graphene.Boolean())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        return [data.get_file(file_id) for file_id in self.hits]
+        all_files = [data.get_file(file_id) for file_id in self.hits]
+        filtered_files = utilities.filter_hits(all_files, filters, "files")
+        sorted_files = utilities.sort_hits(filtered_files, sort)
+        return sorted_files
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        return data.get_file_aggregations()
+        all_files = [data.get_file(file_id) for file_id in self.hits]
+        filtered_files = utilities.filter_hits(all_files, filters, "files")
+        return data.get_file_aggregations(filtered_files)
 
     def resolve_facets(self, info, filters=None, facets=None):
         return data.get_facets()
@@ -226,7 +232,7 @@ class CaseAnnotationConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return data.get_total_case_annotations()
+        return len(self.edges)
 
 class CaseAnnotations(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseAnnotationConnection,
@@ -237,12 +243,35 @@ class CaseAnnotations(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
+        # filters are not currently in use
         return data.get_case_annotation()
 
-class Demographic(graphene.ObjectType):
-    ethnicity = graphene.String()
-    gender = graphene.String()
-    race = graphene.String()
+class CaseFile(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    case_id = graphene.String()
+    experimental_strategy = graphene.String()
+    data_category = graphene.String()
+    data_format = graphene.String()
+    platform = graphene.String()
+    access = graphene.String()
+
+class CaseFileConnection(graphene.relay.Connection):
+    class Meta:
+        node = CaseFile
+
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return len(self.edges)
+
+class CaseFiles(graphene.ObjectType):
+    hits = graphene.relay.ConnectionField(CaseFileConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        sort=graphene.List(Sort),
+        filters=FiltersArgument())
 
 class Case(graphene.ObjectType):
     class Meta:
@@ -257,6 +286,8 @@ class Case(graphene.ObjectType):
     summary = graphene.Field(Summary)
     annotations = graphene.Field(CaseAnnotations)
 
+    files = graphene.Field(CaseFiles)
+
     def resolve_submitter_id(self, info):
         return self.case_id
 
@@ -267,7 +298,7 @@ class CaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return data.get_total_cases()
+        return len(self.edges)
 
 class RepositoryCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseConnection,
@@ -284,10 +315,16 @@ class RepositoryCases(graphene.ObjectType):
         facets=graphene.List(graphene.String))
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        return [data.get_case(case_id) for case_id in self.hits]
+        all_cases = [data.get_case(case_id) for case_id in self.hits]
+        filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
+        sorted_cases = utilities.sort_hits(filtered_cases, sort)
+        return sorted_cases
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        return data.get_case_aggregations()
+        all_cases = [data.get_case(case_id) for case_id in self.hits]
+        filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
+        case_aggregations = data.get_case_aggregations(filtered_cases)
+        return case_aggregations
 
     def resolve_facets(self, info, filters=None, facets=None):
         return data.get_facets()
@@ -321,11 +358,14 @@ class Projects(graphene.ObjectType):
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
         projects = data.get_current_projects()
-        filtered_projects = utilities.filter_hits(projects, filters)
+        filtered_projects = utilities.filter_hits(projects, filters, "projects")
         return filtered_projects
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        return data.get_project_aggregations()
+        projects = data.get_current_projects()
+        filtered_projects = utilities.filter_hits(projects, filters, "projects")
+        project_aggregations = data.get_project_aggregations(filtered_projects) 
+        return project_aggregations
 
 class FileSize(graphene.ObjectType):
     value = graphene.Float()
