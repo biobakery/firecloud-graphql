@@ -91,6 +91,38 @@ class Demographic(graphene.ObjectType):
     gender = graphene.String()
     race = graphene.String()
 
+class Metadata(graphene.ObjectType):
+    age2012 = graphene.Int()
+    totMETs1 = graphene.String()
+    weightLbs = graphene.String()
+    DaysSince1Jan12 = graphene.Int()
+    drAlcohol = graphene.Float()
+    drB12 = graphene.Float()
+    drCalories = graphene.Float()
+    drCarbs = graphene.Float()
+    drCholine = graphene.Float()
+    drFat = graphene.Float()
+    drFiber = graphene.Float()
+    drFolate = graphene.Float()
+    drIron = graphene.Float()
+    drProtein = graphene.Float()
+    participant = graphene.Int()
+    q2Alcohol = graphene.String()
+    q2B12 = graphene.String()
+    q2Calories = graphene.String()
+    q2Carbs = graphene.String()
+    q2Choline = graphene.String()
+    q2Fat = graphene.String()
+    q2Fiber = graphene.String()
+    q2Folate = graphene.String()
+    q2Iron = graphene.String()
+    q2Protein = graphene.String()
+    Time = graphene.String()
+    week = graphene.Int()
+    non_ribosomal_proteins = graphene.Float()
+    ribosomal_Proteins = graphene.Float()
+
+
 class FileCase(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)

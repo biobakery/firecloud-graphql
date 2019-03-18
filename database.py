@@ -9,7 +9,7 @@ def add_key_increment(dictionary, key):
     dictionary[key]+=1
 
 class Data(object):
-    db_conn = mariadb.connect(user='biom_mass', password='DanDa1osh', db='portal_ui')
+    db_conn = mariadb.connect(user='biom_mass', password='', db='portal_ui')
     cursor = db_conn.cursor(buffered=True)
 
     def fetch_results(self,query):
@@ -23,8 +23,6 @@ class Data(object):
 
     def get_current_projects(self):
         projects_json=self.fetch_results("select `id` from `project`")
-        print("json_data  inside get_current_projects")
-        print(projects_json)
         return [self.get_project(project['id']) for project in projects_json]
 
     def get_user(self):
@@ -34,14 +32,13 @@ class Data(object):
     def get_project(self,id):
         import schema
 
-        print("id inside get_project")
+        print("inside get_project")
         print(id)
         project_json=self.fetch_results(
             "select * from  `project` where  `id` =" + str(id))
         project_id=project_json[0]['project_id']
         proj_id=project_json[0]['id']
         proj_name=project_json[0]['name']
-        proj_program=["HPFS"]
         proj_program=project_json[0]['program']
         #proj_primary_site=project_json[0]['primary_site']
         proj_primary_site=["Stool"]
@@ -56,9 +53,6 @@ class Data(object):
         sum_file_size_json=self.fetch_results(
             "select sum(file_size) as sum_file_size from file_sample where project='"+project_id+"'")
         proj_file_size=sum_file_size_json[0]['sum_file_size']
-        print("values inside get_project")
-        print(
-            proj_id,project_id,proj_name,proj_program,proj_part_count,proj_file_count,proj_file_size,proj_primary_site)
 
         return schema.Project(
                 id=proj_id,
@@ -78,7 +72,7 @@ class Data(object):
         import schema
 
         print("inside get_data_cat")
-        print(id)
+        print(table,id)
 
         data_cat_json=self.fetch_results(
             "select distinct data_category from file_sample where "+ table+"='" + str(id)+"'")
@@ -86,12 +80,22 @@ class Data(object):
         for item in data_cat_json:
             item_files_json=self.fetch_results(
                "select count(id) as file_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
+
             item_part_json=self.fetch_results(
                "select count(distinct participant) as case_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
+
+            if len(item_part_json) > 0:
+                case_count=item_part_json[0]['case_count']
+            else:
+                case_count=0
+            if len(item_files_json) > 0:
+                file_count=item_files_json[0]['file_count']
+            else:
+                file_count=0
             data_cat.append(
                 schema.DataCategories(
-                   case_count=item_part_json[0]['case_count'],
-                   file_count=item_files_json[0]['file_count'],
+                   case_count=case_count,
+                   file_count=file_count,
                    data_category=item['data_category']))
 
         return data_cat
@@ -127,13 +131,11 @@ class Data(object):
             "select id , project_id, primary_site from project where  project_id='"+file_json[0]['project']+"'")
         part_json=self.fetch_results(
            "select id, entity_participant_id from participant where  entity_participant_id='"+file_json[0]['participant']+"'")
-        print("file and project json inside get_file")
-        print(file_json[0]['sample'])
+        print("inside get_file")
         print(project_json[0]['project_id'])
         return schema.File(
                 id=file_json[0]['id'],
                 name=file_json[0]['file_name'],
-                file_id=file_json[0]['file_id'],
                 participant=file_json[0]['participant'],
                 sample=file_json[0]['sample'],
                 access=file_json[0]['access'],
@@ -150,7 +152,8 @@ class Data(object):
                       project=self.get_project(project_json[0]['id']),
                       demographic=schema.Demographic("not hispanic or latino","male","white"),
                       #primary_site=project_json[0]['primary_site']
-                      primary_site="Stool")]))
+                      primary_site="Stool")]),
+                file_id=file_json[0]['file_id'])
 
     def get_case_annotation(self):
         import schema
@@ -163,8 +166,6 @@ class Data(object):
         file_hits=[]
         for item in files_json:
            file_hits.append(item['id'])
-        print("file_hits inside current files")
-        print(file_hits)
         return schema.Files(hits=file_hits)
 
     def get_current_cases(self):
@@ -193,23 +194,13 @@ class Data(object):
 
         print("inside get case")
         print(part_id)
-        proj_json=self.fetch_results('''select distinct file_sample.project, project.id as proj_id 
-            from file_sample, project where file_sample.participant='''+str(part_id)+''' 
-            and project.project_id=file_sample.project''')
+        proj_query="select distinct file_sample.project, project.id as proj_id "
+        proj_query=proj_query+"from file_sample, project where file_sample.participant='" 
+        proj_query=proj_query+str(part_id)+"' and project.project_id=file_sample.project limit 1"
+        print(proj_query)
+        proj_json=self.fetch_results(proj_query)
         proj_id=proj_json[0]['proj_id']
         print(proj_id)
-
-        cat_raw_json=self.fetch_results(
-            "select count(id) as raw_count from file_sample where participant="+str(part_id)+" and data_category='Raw Reads'")
-        cat_raw_count=cat_raw_json[0]['raw_count']
-
-        cat_taxa_json=self.fetch_results(
-           "select count(id) as taxa_count from file_sample where participant="+str(part_id)+" and data_category='Taxonomic Profiles'")
-        cat_taxa_count=cat_taxa_json[0]['taxa_count']
-
-        cat_gene_json=self.fetch_results(
-            "select count(id) as gene_count from file_sample where participant="+str(part_id)+" and data_category='Gene Families'")
-        cat_gene_count=cat_gene_json[0]['gene_count']
 
         files_json=self.fetch_results("select * from file_sample where participant="+str(part_id))
 
@@ -222,10 +213,9 @@ class Data(object):
                       case_count=case_count,
                       file_count=file_count,
                       file_size=file_size,
-                      data_categories=[schema.DataCategories(file_count=cat_raw_count, data_category="Raw Reads"),
-                                       schema.DataCategories(file_count=cat_gene_count, data_category="Gene Families"),
-                                       schema.DataCategories(file_count=cat_taxa_count, data_category="Taxonomic Profiles")]),
-                      files=schema.CaseFiles(hits=[schema.CaseFile(
+                      data_categories=self.get_data_categories("participant",part_id)),
+                     # experimental_strategies=self.get_experimental_strategies("participant",part_id)),
+                    files=schema.CaseFiles(hits=[schema.CaseFile(
                                case_file['id'],
                                experimental_strategy=case_file['experimental_strategy'],
                                data_category=case_file['data_category'],
@@ -245,9 +235,6 @@ class Data(object):
         print("projects inside aggregations")
 
         for project in projects:
-            print(
-               project.id, project.project_id,project.primary_site,
-               project.program)
             add_key_increment(aggregates["primary_site"],project.primary_site[0])
             add_key_increment(aggregates["project_id"], project.project_id)
             add_key_increment(aggregates["program__name"], project.program.name)
@@ -310,18 +297,18 @@ class Data(object):
         aggregates = {"data_category": {}, "experimental_strategy": {},
                       "data_format": {}, "platform": {}, "cases__primary_site": {},
                       "cases__project__project_id": {}, "access": {}}
+        if len(files) > 0:
+            for file in files:
 
-        for file in files:
-            print(" values  inside file aggregation")
-            print(file.data_category,file.experimental_strategy,file.data_format,file.platform,file.access)
-            add_key_increment(aggregates["data_category"], file.data_category)
-            add_key_increment(aggregates["experimental_strategy"], file.experimental_strategy)
-            add_key_increment(aggregates["data_format"], file.data_format)
-            add_key_increment(aggregates["platform"], file.platform)
-            add_key_increment(aggregates["access"], file.access)
-            project = file.cases.hits[0].project
-            add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
-            add_key_increment(aggregates["cases__project__project_id"], project.project_id)
+                add_key_increment(aggregates["data_category"], file.data_category)
+                add_key_increment(aggregates["experimental_strategy"], file.experimental_strategy)
+                add_key_increment(aggregates["data_format"], file.data_format)
+                add_key_increment(aggregates["platform"], file.platform)
+                add_key_increment(aggregates["access"], file.access)
+
+                project = file.cases.hits[0].project
+                add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
+                add_key_increment(aggregates["cases__project__project_id"], project.project_id)
 
         file_aggregates = schema.FileAggregations(
             data_category=schema.Aggregations(
@@ -339,7 +326,7 @@ class Data(object):
             cases__project__project_id=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["cases__project__project_id"].items()]))
 
-        return file_aggregates
+        return file_aggregates 
 
     def get_case_aggregations(self, cases):
         import schema
@@ -355,7 +342,7 @@ class Data(object):
             add_key_increment(aggregates["demographic__race"], case.demographic.race)
             add_key_increment(aggregates["primary_site"], case.primary_site[0])
             add_key_increment(aggregates["project__project_id"], case.project.project_id)
-            add_key_increment(aggregates["project__program__name"], case.project.program[0])
+            add_key_increment(aggregates["project__program__name"], case.project.program.name)
 
         case_aggregates=schema.CaseAggregations(
             demographic__ethnicity=schema.Aggregations(
