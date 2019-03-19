@@ -9,7 +9,7 @@ def add_key_increment(dictionary, key):
     dictionary[key]+=1
 
 class Data(object):
-    db_conn = mariadb.connect(user='biom_mass', password='DanDa1osh', db='portal_ui')
+    db_conn = mariadb.connect(user='biom_mass', password='', db='portal_ui')
     cursor = db_conn.cursor(buffered=True)
 
     def fetch_results(self,query):
