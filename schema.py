@@ -91,6 +91,7 @@ class Demographic(graphene.ObjectType):
     gender = graphene.String()
     race = graphene.String()
 
+<<<<<<< HEAD
 class Metadata(graphene.ObjectType):
     age2012 = graphene.Int()
     totMETs1 = graphene.String()
@@ -123,6 +124,8 @@ class Metadata(graphene.ObjectType):
     ribosomal_Proteins = graphene.Float()
 
 
+=======
+>>>>>>> upstream/master
 class FileCase(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)

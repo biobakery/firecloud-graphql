@@ -78,25 +78,31 @@ class Data(object):
             "select distinct data_category from file_sample where "+ table+"='" + str(id)+"'")
         data_cat=[]
         for item in data_cat_json:
-            item_files_json=self.fetch_results(
-               "select count(id) as file_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
 
-            item_part_json=self.fetch_results(
-               "select count(distinct participant) as case_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
-
-            if len(item_part_json) > 0:
-                case_count=item_part_json[0]['case_count']
-            else:
-                case_count=0
-            if len(item_files_json) > 0:
-                file_count=item_files_json[0]['file_count']
-            else:
+            if table is "participant":
+                item_files_json=self.fetch_results(
+                   "select count(id) as file_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
                 file_count=0
-            data_cat.append(
-                schema.DataCategories(
-                   case_count=case_count,
-                   file_count=file_count,
-                   data_category=item['data_category']))
+                if len(item_files_json) > 0:
+                    file_count=item_files_json[0]['file_count']
+
+                data_cat.append(
+                    schema.DataCategories(
+                      file_count=file_count,
+                      data_category=item['data_category']))
+
+            elif table is "project":
+                item_part_json=self.fetch_results(
+                   "select count(distinct participant) as case_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
+
+                case_count=0 
+                if len(item_part_json) > 0:
+                    case_count=item_part_json[0]['case_count']
+
+                data_cat.append(
+                    schema.DataCategories(
+                        case_count=case_count,
+                        data_category=item['data_category']))
 
         return data_cat
 
@@ -109,17 +115,31 @@ class Data(object):
         print(table,id)
         exp_str_json=self.fetch_results(
             "select distinct experimental_strategy from file_sample where "+ table+"='" + str(id) +"'")
+  
         exp_str=[]
         for item in exp_str_json:
             item_files_json=self.fetch_results(
-               "select count(id) as file_count from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'")
-            item_part_json=self.fetch_results(
-               "select count(distinct participant) as case_count from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'")
+               "select count(id) as filecount from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'")
+            print("select count(id) as filecount from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'") 
+
+#           item_part_json=self.fetch_results(
+#              "select count(distinct participant) as case_count from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'")
+#
+#           case_count=0
+#           if len(item_part_json) > 0:
+#                case_count=item_part_json[0]['case_count']
+            print(len(item_files_json))
+            file_count=0
+            if len(item_files_json)> 0:
+                file_count=item_files_json[0]['filecount']
+            print( item)  
+            print(file_count)
             exp_str.append(
                 schema.ExperimentalStrategies(
-                    case_count=item_part_json[0]['case_count'],
-                    file_count=item_files_json[0]['file_count'],
-                    experimental_strategy=item['experimental_strategy']))
+#                   case_count=case_count,
+                    file_count=file_count,
+                    experimental_strategy="wmgx"))
+#                   experimental_strategy=item['experimental_strategy']))
 
         return exp_str
 
@@ -305,11 +325,11 @@ class Data(object):
                 add_key_increment(aggregates["data_format"], file.data_format)
                 add_key_increment(aggregates["platform"], file.platform)
                 add_key_increment(aggregates["access"], file.access)
-
-                project = file.cases.hits[0].project
-                add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
-                add_key_increment(aggregates["cases__project__project_id"], project.project_id)
-
+                if len(file.cases.hits) > 0:
+                    project = file.cases.hits[0].project
+                    add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
+                    add_key_increment(aggregates["cases__project__project_id"], project.project_id)
+        
         file_aggregates = schema.FileAggregations(
             data_category=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["data_category"].items()]),
