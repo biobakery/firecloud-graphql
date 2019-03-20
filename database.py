@@ -2,6 +2,7 @@
 
 import mysql.connector as mariadb
 import json
+import schema
 
 def add_key_increment(dictionary, key):
     if not key in dictionary:
@@ -9,16 +10,21 @@ def add_key_increment(dictionary, key):
     dictionary[key]+=1
 
 class Data(object):
-    db_conn = mariadb.connect(user='biom_mass', password='', db='portal_ui')
-    cursor = db_conn.cursor(buffered=True)
 
     def fetch_results(self,query):
-        self.cursor.execute(query)
-        row_headers=[x[0] for x in self.cursor.description]
-        rows = self.cursor.fetchall()
+
+        db_conn = mariadb.connect(user='biom_mass', password='', db='portal_ui')
+        cursor = db_conn.cursor(buffered=True)
+        cursor.execute(query)
+
+        row_headers=[x[0] for x in cursor.description]
+        rows = cursor.fetchall()
         json_data=[]
         for row in rows:
             json_data.append(dict(zip(row_headers,row)))
+        cursor.close()
+        db_conn.close()
+
         return json_data
 
     def get_current_projects(self):
@@ -26,14 +32,10 @@ class Data(object):
         return [self.get_project(project['id']) for project in projects_json]
 
     def get_user(self):
-        import schema
         return schema.User(username="null")
 
     def get_project(self,id):
-        import schema
 
-        print("inside get_project")
-        print(id)
         project_json=self.fetch_results(
             "select * from  `project` where  `id` =" + str(id))
         project_id=project_json[0]['project_id']
@@ -43,7 +45,8 @@ class Data(object):
         #proj_primary_site=project_json[0]['primary_site']
         proj_primary_site=["Stool"]
 
-        file_count_json=self.fetch_results("select count(id) as file_count from  file_sample where project='"+project_id+"'")
+        file_count_json=self.fetch_results(
+            "select count(id) as file_count from  file_sample where project='"+project_id+"'")
         proj_file_count=file_count_json[0]['file_count']
 
         part_count_json=self.fetch_results(
@@ -69,70 +72,75 @@ class Data(object):
 
 
     def get_data_categories(self,table,id):
-        import schema
-
-        print("inside get_data_cat")
-        print(table,id)
 
         data_cat_json=self.fetch_results(
             "select distinct data_category from file_sample where "+ table+"='" + str(id)+"'")
         data_cat=[]
         for item in data_cat_json:
-            item_files_json=self.fetch_results(
-               "select count(id) as file_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
 
-            item_part_json=self.fetch_results(
-               "select count(distinct participant) as case_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
-
-            if len(item_part_json) > 0:
-                case_count=item_part_json[0]['case_count']
-            else:
-                case_count=0
-            if len(item_files_json) > 0:
-                file_count=item_files_json[0]['file_count']
-            else:
+            if table is "participant":
+                item_files_json=self.fetch_results(
+                   "select count(id) as file_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
                 file_count=0
-            data_cat.append(
-                schema.DataCategories(
-                   case_count=case_count,
-                   file_count=file_count,
-                   data_category=item['data_category']))
+                if len(item_files_json) > 0:
+                    file_count=item_files_json[0]['file_count']
+
+                data_cat.append(
+                    schema.DataCategories(
+                      file_count=file_count,
+                      data_category=item['data_category']))
+            elif table is "project":
+                item_part_json=self.fetch_results(
+                   "select count(distinct participant) as case_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
+
+                case_count=0
+                if  len(item_part_json) > 0:
+                    case_count=item_part_json[0]['case_count']
+                data_cat.append(
+                    schema.DataCategories(
+                        case_count=case_count,
+                        data_category=item['data_category']))
 
         return data_cat
 
 
 
     def get_experimental_strategies(self,table,id):
-        import schema
 
-        print("inside get exp_str")
-        print(table,id)
         exp_str_json=self.fetch_results(
             "select distinct experimental_strategy from file_sample where "+ table+"='" + str(id) +"'")
+
         exp_str=[]
         for item in exp_str_json:
             item_files_json=self.fetch_results(
-               "select count(id) as file_count from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'")
-            item_part_json=self.fetch_results(
-               "select count(distinct participant) as case_count from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'")
+               "select count(id) as filecount from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'")
+#           item_part_json=self.fetch_results(
+#              "select count(distinct participant) as case_count from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'")
+#
+#           case_count=0
+#           if len(item_part_json) > 0:
+#                case_count=item_part_json[0]['case_count']
+
+            file_count=0
+            if len(item_files_json) > 0:
+                file_count=item_files_json[0]['filecount']
             exp_str.append(
                 schema.ExperimentalStrategies(
-                    case_count=item_part_json[0]['case_count'],
-                    file_count=item_files_json[0]['file_count'],
-                    experimental_strategy=item['experimental_strategy']))
+#                   case_count=case_count,
+                    file_count=file_count,
+                    experimental_strategy="wmgx"))
+#                   experimental_strategy=item['experimental_strategy']))
 
         return exp_str
 
     def get_file(self,id):
-        import schema
 
         file_json=self.fetch_results("select * from `file_sample` where  `id` ="+ str(id))
         project_json=self.fetch_results(
             "select id , project_id, primary_site from project where  project_id='"+file_json[0]['project']+"'")
         part_json=self.fetch_results(
            "select id, entity_participant_id from participant where  entity_participant_id='"+file_json[0]['participant']+"'")
-        print("inside get_file")
-        print(project_json[0]['project_id'])
+
         return schema.File(
                 id=file_json[0]['id'],
                 name=file_json[0]['file_name'],
@@ -156,26 +164,19 @@ class Data(object):
                 file_id=file_json[0]['file_id'])
 
     def get_case_annotation(self):
-        import schema
         return schema.CaseAnnotation()
 
     def get_current_files(self):
-        import schema
 
         files_json=self.fetch_results("select `id` from `file_sample`")
-        file_hits=[]
-        for item in files_json:
-           file_hits.append(item['id'])
-        return schema.Files(hits=file_hits)
+        return schema.Files(hits=[item['id'] for item in files_json])
 
     def get_current_cases(self):
-        import schema
 
         cases_json=self.fetch_results("select id from participant")
         return schema.RepositoryCases(hits=[case['id'] for case in cases_json])
 
     def get_case(self,id):
-        import schema
 
         case_json=self.fetch_results("select * from participant where id="+str(id))
         part_id=case_json[0]['entity_participant_id']
@@ -192,15 +193,11 @@ class Data(object):
             "select sum(file_size) as filesize from file_sample where participant="+str(part_id))
         file_size=file_size_json[0]['filesize']
 
-        print("inside get case")
-        print(part_id)
         proj_query="select distinct file_sample.project, project.id as proj_id "
         proj_query=proj_query+"from file_sample, project where file_sample.participant='" 
         proj_query=proj_query+str(part_id)+"' and project.project_id=file_sample.project limit 1"
-        print(proj_query)
         proj_json=self.fetch_results(proj_query)
         proj_id=proj_json[0]['proj_id']
-        print(proj_id)
 
         files_json=self.fetch_results("select * from file_sample where participant="+str(part_id))
 
@@ -225,14 +222,12 @@ class Data(object):
 
 
     def get_project_aggregations(self, projects):
-        import schema
 
         # compile aggregations from project
         aggregates = {"primary_site": {}, "program__name": {},
                       "project_id": {}, 
                       "summary__data_categories__data_category": {},
                       "summary__experimental_strategies__experimental_strategy": {}}
-        print("projects inside aggregations")
 
         for project in projects:
             add_key_increment(aggregates["primary_site"],project.primary_site[0])
@@ -259,11 +254,10 @@ class Data(object):
 
 
     def get_current_counts(self):
-        import schema
 
         projects_json = self.fetch_results("select count(`project_id`)as projects_count from project")
         projects = projects_json[0]['projects_count']
- 
+
         participants_json = self.fetch_results("select count(`entity_participant_id`) as participants_count from `participant`")
         participants = participants_json[0]['participants_count']
 
@@ -291,24 +285,23 @@ class Data(object):
 
 
     def get_file_aggregations(self, files):
-        import schema
 
         # aggregate file data
         aggregates = {"data_category": {}, "experimental_strategy": {},
                       "data_format": {}, "platform": {}, "cases__primary_site": {},
                       "cases__project__project_id": {}, "access": {}}
-        if len(files) > 0:
-            for file in files:
 
-                add_key_increment(aggregates["data_category"], file.data_category)
-                add_key_increment(aggregates["experimental_strategy"], file.experimental_strategy)
-                add_key_increment(aggregates["data_format"], file.data_format)
-                add_key_increment(aggregates["platform"], file.platform)
-                add_key_increment(aggregates["access"], file.access)
+        for file in files:
 
-                project = file.cases.hits[0].project
-                add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
-                add_key_increment(aggregates["cases__project__project_id"], project.project_id)
+            add_key_increment(aggregates["data_category"], file.data_category)
+            add_key_increment(aggregates["experimental_strategy"], file.experimental_strategy)
+            add_key_increment(aggregates["data_format"], file.data_format)
+            add_key_increment(aggregates["platform"], file.platform)
+            add_key_increment(aggregates["access"], file.access)
+
+            project = file.cases.hits[0].project
+            add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
+            add_key_increment(aggregates["cases__project__project_id"], project.project_id)
 
         file_aggregates = schema.FileAggregations(
             data_category=schema.Aggregations(
@@ -326,10 +319,9 @@ class Data(object):
             cases__project__project_id=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["cases__project__project_id"].items()]))
 
-        return file_aggregates 
+        return file_aggregates
 
     def get_case_aggregations(self, cases):
-        import schema
 
         # aggregate case data
         aggregates = {"demographic__ethnicity": {}, "demographic__gender": {},
@@ -364,7 +356,6 @@ class Data(object):
         return "null" # this is not currently being used
 
     def get_cart_file_size(self):
-        import schema
 
         file_json=self.fetch_results("select sum(file_size) as sum_size from  file_sample")
         return schema.FileSize(file_json[0]['sum_size'])
