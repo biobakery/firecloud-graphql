@@ -16,7 +16,7 @@ class Data(object):
     # connects to db and runs query
     def fetch_results(self,query):
 
-        db_conn = mariadb.connect(user='biom_mass', password='DanDa1osh', db='portal_ui')
+        db_conn = mariadb.connect(user='biom_mass', password='', db='portal_ui')
         cursor = db_conn.cursor(buffered=True)
         cursor.execute(query)
         # response json
