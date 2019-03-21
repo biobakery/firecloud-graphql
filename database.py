@@ -4,6 +4,8 @@ import mysql.connector as mariadb
 import json
 import schema
 
+
+# increments key for aggregations
 def add_key_increment(dictionary, key):
     if not key in dictionary:
         dictionary[key]=0
@@ -11,12 +13,13 @@ def add_key_increment(dictionary, key):
 
 class Data(object):
 
+    # connects to db and runs query
     def fetch_results(self,query):
 
-        db_conn = mariadb.connect(user='biom_mass', password='', db='portal_ui')
+        db_conn = mariadb.connect(user='biom_mass', password='DanDa1osh', db='portal_ui')
         cursor = db_conn.cursor(buffered=True)
         cursor.execute(query)
-
+        # response json
         row_headers=[x[0] for x in cursor.description]
         rows = cursor.fetchall()
         json_data=[]
@@ -27,13 +30,16 @@ class Data(object):
 
         return json_data
 
+    # get all projects from db
     def get_current_projects(self):
         projects_json=self.fetch_results("select `id` from `project`")
         return [self.get_project(project['id']) for project in projects_json]
 
+    # get user (currently none)
     def get_user(self):
         return schema.User(username="null")
 
+    # get project object details from db
     def get_project(self,id):
 
         project_json=self.fetch_results(
@@ -42,8 +48,8 @@ class Data(object):
         proj_id=project_json[0]['id']
         proj_name=project_json[0]['name']
         proj_program=project_json[0]['program']
-        #proj_primary_site=project_json[0]['primary_site']
-        proj_primary_site=["Stool"]
+        proj_primary_site=[project_json[0]['primary_site']]
+        #proj_primary_site=["Stool"]
 
         file_count_json=self.fetch_results(
             "select count(id) as file_count from  file_sample where project='"+project_id+"'")
@@ -71,6 +77,7 @@ class Data(object):
                 primary_site=proj_primary_site)
 
 
+    # get data categories file and case counts from db for a project or a participant 
     def get_data_categories(self,table,id):
 
         data_cat_json=self.fetch_results(
@@ -104,7 +111,7 @@ class Data(object):
         return data_cat
 
 
-
+    # get experimental strategies file count from db for a project 
     def get_experimental_strategies(self,table,id):
 
         exp_str_json=self.fetch_results(
@@ -128,11 +135,13 @@ class Data(object):
                 schema.ExperimentalStrategies(
 #                   case_count=case_count,
                     file_count=file_count,
-                    experimental_strategy="wmgx"))
-#                   experimental_strategy=item['experimental_strategy']))
+                   # experimental_strategy="wmgx"))
+                    experimental_strategy=item['experimental_strategy']))
 
         return exp_str
 
+
+   # get details of file object from db
     def get_file(self,id):
 
         file_json=self.fetch_results("select * from `file_sample` where  `id` ="+ str(id))
@@ -159,23 +168,27 @@ class Data(object):
                       case_id=file_json[0]['participant'],
                       project=self.get_project(project_json[0]['id']),
                       demographic=schema.Demographic("not hispanic or latino","male","white"),
-                      #primary_site=project_json[0]['primary_site']
-                      primary_site="Stool")]),
+                      primary_site=project_json[0]['primary_site'])]),
+                      #primary_site="Stool")]),
                 file_id=file_json[0]['file_id'])
 
+    # get annotations (currently not in use)
     def get_case_annotation(self):
         return schema.CaseAnnotation()
 
+    # get ids of all files from db
     def get_current_files(self):
 
         files_json=self.fetch_results("select `id` from `file_sample`")
         return schema.Files(hits=[item['id'] for item in files_json])
 
+    # get ids of all cases from db
     def get_current_cases(self):
 
         cases_json=self.fetch_results("select id from participant")
         return schema.RepositoryCases(hits=[case['id'] for case in cases_json])
 
+    # get details of case object from db
     def get_case(self,id):
 
         case_json=self.fetch_results("select * from participant where id="+str(id))
@@ -194,24 +207,44 @@ class Data(object):
         file_size=file_size_json[0]['filesize']
 
         proj_query="select distinct file_sample.project, project.id as proj_id "
-        proj_query=proj_query+"from file_sample, project where file_sample.participant='" 
+        proj_query=proj_query+"from file_sample, project where file_sample.participant='"
         proj_query=proj_query+str(part_id)+"' and project.project_id=file_sample.project limit 1"
         proj_json=self.fetch_results(proj_query)
         proj_id=proj_json[0]['proj_id']
 
+        # query to get files from file_sample table
         files_json=self.fetch_results("select * from file_sample where participant="+str(part_id))
+
+        # query to get metadata from prticipant table
+        metadata_part_json=self.fetch_results(
+            "select * from participant where entity_participant_id="+str(part_id))
+        metadata_part_values=[]
+        for key, value in metadata_part_json[0].items():
+                metadata_part_values.append(value)
+        metadata_participant=schema.MetadataParticipant(metadata_part_values)
+
+       # query to get metadata from sample table
+        metadata_json=self.fetch_results("select * from sample where participant="+str(part_id))
+        metadata_list=[]
+        for metadata in metadata_json:
+            metadata_values=[]
+            for key, value in metadata.items():
+                metadata_values.append(value)
+            metadata_list.append(schema.MetadataSample(metadata_values))
 
         return schema.Case(id,
                     case_id=part_id,
                     primary_site="Stool",
                     demographic=schema.Demographic("not hispanic or latino","male","white"),
+                    metadata_participant=metadata_participant,
+                    metadata_sample=metadata_list,
                     project=self.get_project(proj_id),
                     summary=schema.Summary(
                       case_count=case_count,
                       file_count=file_count,
                       file_size=file_size,
                       data_categories=self.get_data_categories("participant",part_id)),
-                     # experimental_strategies=self.get_experimental_strategies("participant",part_id)),
+                      #experimental_strategies=self.get_experimental_strategies("participant",part_id)),
                     files=schema.CaseFiles(hits=[schema.CaseFile(
                                case_file['id'],
                                experimental_strategy=case_file['experimental_strategy'],
@@ -219,6 +252,7 @@ class Data(object):
                                data_format=case_file['data_format'],
                                platform=case_file['platform'],
                                access=case_file['access']) for case_file in files_json]))
+
 
 
     def get_project_aggregations(self, projects):
@@ -252,7 +286,7 @@ class Data(object):
 
         return project_aggregates
 
-
+    # get all  counts for front page summary from db
     def get_current_counts(self):
 
         projects_json = self.fetch_results("select count(`project_id`)as projects_count from project")
@@ -282,6 +316,7 @@ class Data(object):
                     dataFormats=dataFormats,
                     rawFiles=rawFiles,
                     processedFiles=prFiles)
+
 
 
     def get_file_aggregations(self, files):
@@ -321,6 +356,8 @@ class Data(object):
 
         return file_aggregates
 
+
+
     def get_case_aggregations(self, cases):
 
         # aggregate case data
@@ -352,9 +389,12 @@ class Data(object):
 
         return case_aggregates
 
+    # get facet (currently not in use)
     def get_facets(self):
         return "null" # this is not currently being used
 
+
+    # get total size of all files
     def get_cart_file_size(self):
 
         file_json=self.fetch_results("select sum(file_size) as sum_size from  file_sample")

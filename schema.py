@@ -91,10 +91,12 @@ class Demographic(graphene.ObjectType):
     gender = graphene.String()
     race = graphene.String()
 
-class Metadata(graphene.ObjectType):
+class MetadataParticipant(graphene.ObjectType):
     age2012 = graphene.Int()
     totMETs1 = graphene.String()
     weightLbs = graphene.String()
+
+class MetadataSample(graphene.ObjectType):
     DaysSince1Jan12 = graphene.Int()
     drAlcohol = graphene.Float()
     drB12 = graphene.Float()
@@ -311,8 +313,9 @@ class Case(graphene.ObjectType):
     case_id = graphene.String()
     primary_site = graphene.String()
     submitter_id = graphene.String()
-
     demographic = graphene.Field(Demographic)
+    metadata_participant = graphene.Field(MetadataParticipant)
+    metadata_sample = graphene.List(MetadataSample)
     project = graphene.Field(Project)
     summary = graphene.Field(Summary)
     annotations = graphene.Field(CaseAnnotations)
