@@ -169,7 +169,6 @@ class Data(object):
                       project=self.get_project(project_json[0]['id']),
                       demographic=schema.Demographic("not hispanic or latino","male","white"),
                       primary_site=project_json[0]['primary_site'])]),
-                      #primary_site="Stool")]),
                 file_id=file_json[0]['file_id'])
 
     # get annotations (currently not in use)
@@ -218,19 +217,20 @@ class Data(object):
         # query to get metadata from prticipant table
         metadata_part_json=self.fetch_results(
             "select * from participant where entity_participant_id="+str(part_id))
-        metadata_part_values=[]
-        for key, value in metadata_part_json[0].items():
-                metadata_part_values.append(value)
-        metadata_participant=schema.MetadataParticipant(metadata_part_values)
+
+        del metadata_part_json[0]['updated']
+        metadata_part_json[0]['participant'] = metadata_part_json[0]['entity_participant_id']
+        del metadata_part_json[0]['entity_participant_id']
+        metadata_participant=schema.MetadataParticipant(**metadata_part_json[0])
+
 
        # query to get metadata from sample table
         metadata_json=self.fetch_results("select * from sample where participant="+str(part_id))
         metadata_list=[]
         for metadata in metadata_json:
-            metadata_values=[]
-            for key, value in metadata.items():
-                metadata_values.append(value)
-            metadata_list.append(schema.MetadataSample(metadata_values))
+            del metadata['updated']
+            metadata_list.append(schema.MetadataSample(**metadata))
+
 
         return schema.Case(id,
                     case_id=part_id,
@@ -372,6 +372,7 @@ class Data(object):
             add_key_increment(aggregates["primary_site"], case.primary_site[0])
             add_key_increment(aggregates["project__project_id"], case.project.project_id)
             add_key_increment(aggregates["project__program__name"], case.project.program.name)
+
 
         case_aggregates=schema.CaseAggregations(
             demographic__ethnicity=schema.Aggregations(

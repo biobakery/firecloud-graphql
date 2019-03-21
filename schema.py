@@ -92,11 +92,17 @@ class Demographic(graphene.ObjectType):
     race = graphene.String()
 
 class MetadataParticipant(graphene.ObjectType):
-    age2012 = graphene.Int()
+    id = graphene.Int()
+    participant = graphene.Int()
+    age_2012 = graphene.Int()
     totMETs1 = graphene.String()
-    weightLbs = graphene.String()
+    weight_lbs = graphene.String()
 
 class MetadataSample(graphene.ObjectType):
+    id = graphene.Int()
+    project = graphene.String()
+    sample = graphene.String()
+    participant = graphene.Int()
     DaysSince1Jan12 = graphene.Int()
     drAlcohol = graphene.Float()
     drB12 = graphene.Float()
@@ -121,8 +127,6 @@ class MetadataSample(graphene.ObjectType):
     q2Protein = graphene.String()
     Time = graphene.String()
     week = graphene.Int()
-    non_ribosomal_proteins = graphene.Float()
-    ribosomal_Proteins = graphene.Float()
 
 class FileCase(graphene.ObjectType):
     class Meta:
