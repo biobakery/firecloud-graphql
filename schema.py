@@ -428,4 +428,3 @@ class Query(graphene.ObjectType):
         obj_result = utilities.json2obj(json.dumps(json_result))
         return obj_result
 
-
