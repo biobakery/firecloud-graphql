@@ -22,7 +22,7 @@ def parse_arguments(args):
         required=False)
     parser.add_argument(
         "--key-file",
-        default="/home/hutlab_public/compute_engine_service_account_key/biom-mass-8dc9ab934396.json", 
+        default="biom-mass-fdcadb440fdf.json", 
         help="google project service account private key file path\n]", 
         required=False)
     parser.add_argument(
