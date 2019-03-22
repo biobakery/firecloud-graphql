@@ -27,7 +27,7 @@ def parse_arguments(args):
         required=False)
     parser.add_argument(
         "--dataset",
-        default="HPFS_Demo", 
+        default="HPFS_Demo_Clean", 
         help="google big query dataset name \n]", 
         required=False)
     
@@ -102,7 +102,7 @@ def query_bigquery(project, dataset, key):
     values_participant = list()
     for row in query_participant_job:
         values_participant_row = ','.join("'" + str(e)+ "'" for e in row)
-        print ("Participant row",values_participant, "\n")
+        print ("Participant row",values_participant_row, "\n")
         values_participant.append(values_participant_row)
 
     
