@@ -39,6 +39,14 @@ class Data(object):
     def get_user(self):
         return schema.User(username="null")
 
+    # get current version from db
+    def get_version(self):
+       version_json=self.fetch_results("select * from `version` order by updated desc limit 1 ")
+       del  version_json[0]['updated']
+       del  version_json[0]['id']
+       return schema.Version(**version_json[0])
+
+
     # get project object details from db
     def get_project(self,id):
 

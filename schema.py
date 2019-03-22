@@ -43,6 +43,13 @@ class Count(graphene.ObjectType):
 class User(graphene.ObjectType):
     username = graphene.String()
 
+class Version(graphene.ObjectType):
+    data_release = graphene.String()
+    commit = graphene.String()
+    version = graphene.Float()
+    tag = graphene.String()
+    status =graphene.String()
+
 class Program(graphene.ObjectType):
     name = graphene.String()
     program_id = graphene.String()
