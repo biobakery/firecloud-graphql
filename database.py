@@ -16,7 +16,7 @@ class Data(object):
     # connects to db and runs query
     def fetch_results(self,query):
 
-        db_conn = mariadb.connect(user='biom_mass', password='', db='portal_ui')
+        db_conn = mariadb.connect(user='biom_mass', password='DanDa1osh', db='portal_ui')
         cursor = db_conn.cursor(buffered=True)
         cursor.execute(query)
         # response json
@@ -362,6 +362,8 @@ class Data(object):
 
         # aggregate case data
         aggregates = {"demographic__ethnicity": {}, "demographic__gender": {},
+                      "metadata_participant__age_2012": {}, "metadata_participant__totMETs1": {},
+                      "metadata_participant__weight_lbs": {},
                       "demographic__race": {}, "primary_site": {}, "project__project_id": {},
                       "project__program__name": {}}
 
@@ -369,6 +371,9 @@ class Data(object):
             add_key_increment(aggregates["demographic__ethnicity"], case.demographic.ethnicity)
             add_key_increment(aggregates["demographic__gender"], case.demographic.gender)
             add_key_increment(aggregates["demographic__race"], case.demographic.race)
+            add_key_increment(aggregates["metadata_participant__age_2012"],case.metadata_participant.age_2012)
+            add_key_increment(aggregates["metadata_participant__totMETs1"],case.metadata_participant.totMETs1)
+            add_key_increment(aggregates["metadata_participant__weight_lbs"], case.metadata_participant.weight_lbs)
             add_key_increment(aggregates["primary_site"], case.primary_site[0])
             add_key_increment(aggregates["project__project_id"], case.project.project_id)
             add_key_increment(aggregates["project__program__name"], case.project.program.name)
@@ -381,6 +386,12 @@ class Data(object):
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__gender"].items()]),
             demographic__race=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__race"].items()]),
+            metadata_participant__age_2012=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["metadata_participant__age_2012"].items()]),
+            metadata_participant__totMETs1=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["metadata_participant__totMETs1"].items()]),
+            metadata_participant__weight_lbs=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["metadata_participant__weight_lbs"].items()]),
             primary_site=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["primary_site"].items()]),
             project__project_id=schema.Aggregations(

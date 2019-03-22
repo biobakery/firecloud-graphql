@@ -23,16 +23,59 @@ type Case implements Node {
   primary_site: String
   submitter_id: String
   demographic: Demographic
+  metadata_participant: MetadataParticipant
+  metadata_sample: [MetadataSample]
   project: Project
   summary: Summary
   annotations: CaseAnnotations
   files: CaseFiles
 }
 
+type MetadataParticipant {
+  id: Int
+  participant: Int
+  age_2012: Int
+  totMETs1: String
+  weight_lbs: String
+}
+
+type MetadataSample 
+  id: Int
+  project: String
+  sample: String
+  participant: Int
+  DaysSince1Jan12: Int
+  drAlcohol: Float
+  drB12: Float
+  drCalories: Float
+  drCarbs: Float
+  drCholine: Float
+  drFat: Float
+  drFiber: Float
+  drFolate: Float
+  drIron: Float
+  drProtein: Float
+  participant: Int
+  q2Alcohol: String
+  q2B12: String
+  q2Calories: String
+  q2Carbs: String
+  q2Choline: String
+  q2Fat: String
+  q2Fiber: String
+  q2Folate: String
+  q2Iron: String
+  q2Protein: String
+  Time: String
+  week: Int
+
 type CaseAggregations {
   demographic__ethnicity: Aggregations
   demographic__gender: Aggregations
   demographic__race: Aggregations
+  metadata_participant__age_2012: Aggregations
+  metadata_participant__totMETs1: Aggregations
+  metadata_participant__weight_lbs: Aggregations
   primary_site: Aggregations
   project__project_id: Aggregations
   project__program__name: Aggregations
