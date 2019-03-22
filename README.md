@@ -4,7 +4,7 @@
 ## GraphQL Server
 
 To install: 
-`` $ pip install firecloud flask graphene>=2.0.0 flask-graphql ``
+`` $ pip install firecloud flask graphene>=2.0.0 flask-graphql flask-cors``
 
 * Also [firecloud-tools](https://github.com/broadinstitute/firecloud-tools) are required for the Firecloud API queries.
 

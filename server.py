@@ -10,6 +10,7 @@
 import os
 
 import flask
+import flask_cors
 import flask_graphql
 import graphene
 
@@ -41,6 +42,8 @@ def process_query(request, schema):
 def main():
     # create the graphql flask app
     app = flask.Flask(NAME)
+    # allow initial OPTIONS requests
+    flask_cors.CORS(app)
 
     # add the root graphql queries
     @app.route('/graphql', methods=["POST"])
