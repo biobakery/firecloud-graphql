@@ -42,7 +42,9 @@ class Data(object):
         return self.data.CURRENT_USER
 
     # get current version from db
-    def get_version(self):
+    def get_current_version(self):
+       import schema
+
        version_data=self.fetch_results("select * from version order by updated desc limit 1 ")
        del  version_data[0]['updated']
        del  version_data[0]['id']
