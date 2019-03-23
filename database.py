@@ -1,6 +1,6 @@
 # Calls to obtain values from the data structures (to be populated by the local database next)
 import mysql.connector as mariadb
-import json
+import os
 import const
 
 def add_key_increment(dictionary, key):
@@ -10,22 +10,24 @@ def add_key_increment(dictionary, key):
 
 class Data(object):
 
+    db_conn = mariadb.connect(user='biom_mass', password=os.environ['BIOM_MASS'], db='portal_ui')
+
     # connects to db and runs query
     def fetch_results(self,query):
 
-        db_conn = mariadb.connect(user='biom_mass', password='', db='portal_ui')
-        cursor = db_conn.cursor(buffered=True)
+        cursor = self.db_conn.cursor(buffered=True)
         cursor.execute(query)
-        # response json
+
+        # response
         row_headers=[x[0] for x in cursor.description]
         rows = cursor.fetchall()
-        json_data=[]
+        data=[]
         for row in rows:
-            json_data.append(dict(zip(row_headers,row)))
-        cursor.close()
-        db_conn.close()
+            data.append(dict(zip(row_headers,row)))
 
-        return json_data
+        cursor.close()
+
+        return data
 
 
     def load_data(self):
@@ -102,33 +104,20 @@ class Data(object):
     def get_current_counts(self):
         import schema
 
-        projects_json = self.fetch_results("select count(`project_id`)as projects_count from project")
-        projects = projects_json[0]['projects_count']
-
-        participants_json = self.fetch_results("select count(`entity_participant_id`) as participants_count from `participant`")
-        participants = participants_json[0]['participants_count']
-
-        samples_json = self.fetch_results("select count(`sample`) as samples_count from `sample`")
-        samples =  samples_json[0]['samples_count']
-
-        dataFormats_json = self.fetch_results("select count(distinct `data_format`) as data_format_count from `file_sample`")
-        dataFormats = dataFormats_json[0]['data_format_count']
-
-        rawFiles_json = self.fetch_results(
-            "select count(`id`) as rawfiles_count from `file_sample` where type='rawFiles'")
-        rawFiles = rawFiles_json[0]['rawfiles_count']
-
-        prFiles_json = self.fetch_results(
-            "select count(`id`) as prfiles_count from `file_sample` where type='processedFiles'")
-        prFiles = prFiles_json[0]['prfiles_count']
+        counts_data = self.fetch_results('''select count(id) as countid from project
+                                            union all select count(id) as countid from participant
+                                            union all select count(id) as countid from sample
+                                            union all select count(distinct data_format) as countid from file_sample
+                                            union all select count(id) as countid from file_sample where  type="rawFiles"
+                                            union all select count(id) as countid from file_sample where type="processedFiles"''')
 
         return schema.Count(
-                    projects=projects,
-                    participants=participants,
-                    samples=samples,
-                    dataFormats=dataFormats,
-                    rawFiles=rawFiles,
-                    processedFiles=prFiles)
+                    projects=counts_data[0]['countid'],
+                    participants=counts_data[1]['countid'],
+                    samples=counts_data[2]['countid'],
+                    dataFormats=counts_data[3]['countid'],
+                    rawFiles=counts_data[4]['countid'],
+                    processedFiles=counts_data[5]['countid'])
 
 
     def get_file_aggregations(self, files):
