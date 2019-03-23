@@ -41,6 +41,13 @@ class Data(object):
         self.load_data()
         return self.data.CURRENT_USER
 
+    # get current version from db
+    def get_version(self):
+       version_data=self.fetch_results("select * from version order by updated desc limit 1 ")
+       del  version_data[0]['updated']
+       del  version_data[0]['id']
+       return schema.Version(**version_data[0])
+
     def get_project(self,id):
         self.load_data()
         return self.data.CURRENT_PROJECTS[id]

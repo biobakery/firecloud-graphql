@@ -1,3 +1,4 @@
+
 type Aggregations {
   buckets: [Bucket]
 }
@@ -112,6 +113,14 @@ type Count {
   dataFormats: String
   rawFiles: String
   processedFiles: String
+}
+
+type Version{
+  data_release: String
+  commit: String
+  version: Float
+  tag: String
+  status: String
 }
 
 type DataCategories {
