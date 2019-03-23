@@ -137,8 +137,9 @@ then run
 1. ``CREATE USER 'username'@'localhost' IDENTIFIED BY 'password';``
 2. ``GRANT ALL PRIVILEGES ON *.* TO 'username'@'localhost' WITH GRANT OPTION;``
 3. ``flush privileges;``
-
 More information https://dev.mysql.com/doc/refman/5.5/en/adding-users.html
+4. Set environment variable BIOM_MASS that holds user's password
+   ``export BIOM_MASS="password"``
 
 load_local_database.py script needs mysql.connect module.
 
