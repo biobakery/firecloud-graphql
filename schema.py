@@ -434,6 +434,7 @@ class Root(graphene.ObjectType):
     repository = graphene.Field(Repository)
     projects = graphene.Field(Projects)
     cart_summary = graphene.Field(CartSummary)
+    version = graphene.Field(Version)
 
     def resolve_user(self, info):
         return data.get_user()
@@ -449,6 +450,9 @@ class Root(graphene.ObjectType):
 
     def resolve_cart_summary(self, info):
         return CartSummary(self)
+
+    def resolve_version(self, info):
+         return data.get_current_version()
 
 class Query(graphene.ObjectType):
 
