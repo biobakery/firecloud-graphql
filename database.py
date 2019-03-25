@@ -76,41 +76,29 @@ class Data(object):
                 primary_site=[project_data[0]['primary_site']])
 
 
-    # get data categories file and case counts from db for a project or a participant 
+    # get data categories file and case counts from db for a project or a participant
     def get_data_categories(self,table,id):
 
         data_cat_data=self.fetch_results(
             "select distinct data_category from file_sample where "+ table+"='" + str(id)+"'")
+
         data_cat=[]
         for item in data_cat_data:
+             count_query="select count(id) as total from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'"
+             count_query=count_query+" union all "
+             count_query=count_query+"select count(distinct participant) as total from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'"
+             count_data=self.fetch_results(count_query)
 
-            if table is "participant":
-                item_files_data=self.fetch_results(
-                   "select count(id) as file_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
-                file_count=0
-                if len(item_files_data) > 0:
-                    file_count=item_files_data[0]['file_count']
-
-                data_cat.append(
+             data_cat.append(
                     schema.DataCategories(
-                      file_count=file_count,
-                      data_category=item['data_category']))
-            elif table is "project":
-                item_part_data=self.fetch_results(
-                   "select count(distinct participant) as case_count from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'")
-
-                case_count=0
-                if  len(item_part_data) > 0:
-                    case_count=item_part_data[0]['case_count']
-                data_cat.append(
-                    schema.DataCategories(
-                        case_count=case_count,
+                        case_count=count_data[1]['total'],
+                        file_count=count_data[0]['total'],
                         data_category=item['data_category']))
 
         return data_cat
 
 
-    # get experimental strategies file count from db for a project 
+    # get experimental strategies file count from db for a project
     def get_experimental_strategies(self,table,id):
 
         exp_str_data=self.fetch_results(
@@ -118,22 +106,14 @@ class Data(object):
 
         exp_str=[]
         for item in exp_str_data:
-            item_files_data=self.fetch_results(
-               "select count(id) as filecount from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'")
-#           item_part_data=self.fetch_results(
-#              "select count(distinct participant) as case_count from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'")
-#
-#           case_count=0
-#           if len(item_part_data) > 0:
-#                case_count=item_part_data[0]['case_count']
-
-            file_count=0
-            if len(item_files_data) > 0:
-                file_count=item_files_data[0]['filecount']
+            count_query="select count(id) as total from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'"
+            count_query=count_query+" union all "
+            count_query=count_query+ "select count(distinct participant) as total from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'"
+            count_data=self.fetch_results(count_query)
             exp_str.append(
                 schema.ExperimentalStrategies(
-#                   case_count=case_count,
-                    file_count=file_count,
+                    case_count=count_data[1]['total'],
+                    file_count=count_data[0]['total'],
                     experimental_strategy=item['experimental_strategy']))
 
         return exp_str
@@ -241,8 +221,8 @@ class Data(object):
                       case_count=counts_data[0]['total'],
                       file_count=counts_data[1]['total'],
                       file_size=counts_data[2]['total'],
-                      data_categories=self.get_data_categories("participant",part_id)),
-                      #experimental_strategies=self.get_experimental_strategies("participant",part_id)),
+                      data_categories=self.get_data_categories("participant",part_id),
+                      experimental_strategies=self.get_experimental_strategies("participant",part_id)),
                     files=schema.CaseFiles(hits=[schema.CaseFile(
                                case_file['id'],
                                experimental_strategy=case_file['experimental_strategy'],
@@ -257,7 +237,7 @@ class Data(object):
 
         # compile aggregations from project
         aggregates = {"primary_site": {}, "program__name": {},
-                      "project_id": {}, 
+                      "project_id": {},
                       "summary__data_categories__data_category": {},
                       "summary__experimental_strategies__experimental_strategy": {}}
 
