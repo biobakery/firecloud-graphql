@@ -13,7 +13,11 @@ def add_key_increment(dictionary, key):
 
 class Data(object):
 
+#    def __init__(self):
+      #  self.db_conn = mariadb.connect(user='biom_mass', password=os.environ['BIOM_MASS'], db='portal_ui')
 
+#    def __exit__(self):
+      #  self.db.conn.close()
 
     # connects to db and runs query
     def fetch_results(self,query):
@@ -21,7 +25,7 @@ class Data(object):
         db_conn = mariadb.connect(user='biom_mass', password=os.environ['BIOM_MASS'], db='portal_ui')
         cursor = db_conn.cursor(buffered=True)
         cursor.execute(query)
-        # response json
+        # response list of json data
         row_headers=[x[0] for x in cursor.description]
         rows = cursor.fetchall()
         data=[]
@@ -171,7 +175,9 @@ class Data(object):
     # get details of case object from db
     def get_case(self,id):
 
-        case_data=self.fetch_results("select * from participant where id="+str(id))
+        # get entity_participant_id and file info from db
+        case_data=self.fetch_results('''select participant.entity_participant_id, file_sample.* from participant, file_sample
+             where participant.id='''+str(id)+" and file_sample.participant=participant.entity_participant_id")
         part_id=case_data[0]['entity_participant_id']
 
         counts_query="select count(id) as total from participant where entity_participant_id="+str(part_id)
@@ -189,8 +195,6 @@ class Data(object):
 
         proj_id=proj_data[0]['p_id']
 
-        # query to get files from file_sample table
-        files_data=self.fetch_results("select * from file_sample where participant="+str(part_id))
 
         # query to get metadata from prticipant table
         metadata_part_data=self.fetch_results(
@@ -229,7 +233,7 @@ class Data(object):
                                data_category=case_file['data_category'],
                                data_format=case_file['data_format'],
                                platform=case_file['platform'],
-                               access=case_file['access']) for case_file in files_data]))
+                               access=case_file['access']) for case_file in case_data]))
 
 
 
