@@ -10,7 +10,11 @@ def add_key_increment(dictionary, key):
 
 class Data(object):
 
-    db_conn = mariadb.connect(user='biom_mass', password=os.environ['BIOM_MASS'], db='portal_ui')
+    def __init__(self):
+        self.db_conn = mariadb.connect(user='biom_mass', password=os.environ['BIOM_MASS'], db='portal_ui')
+
+    def __exit__(self):
+        self.db.conn.close()
 
     # connects to db and runs query
     def fetch_results(self,query):
