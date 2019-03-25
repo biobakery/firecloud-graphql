@@ -43,6 +43,13 @@ class Count(graphene.ObjectType):
 class User(graphene.ObjectType):
     username = graphene.String()
 
+class Version(graphene.ObjectType):
+    data_release = graphene.String()
+    commit = graphene.String()
+    version = graphene.Float()
+    tag = graphene.String()
+    status =graphene.String()
+
 class Program(graphene.ObjectType):
     name = graphene.String()
     program_id = graphene.String()
@@ -90,6 +97,43 @@ class Demographic(graphene.ObjectType):
     ethnicity = graphene.String()
     gender = graphene.String()
     race = graphene.String()
+
+class MetadataParticipant(graphene.ObjectType):
+    id = graphene.Int()
+    participant = graphene.Int()
+    age_2012 = graphene.Int()
+    totMETs1 = graphene.String()
+    weight_lbs = graphene.String()
+
+class MetadataSample(graphene.ObjectType):
+    id = graphene.Int()
+    project = graphene.String()
+    sample = graphene.String()
+    participant = graphene.Int()
+    DaysSince1Jan12 = graphene.Int()
+    drAlcohol = graphene.Float()
+    drB12 = graphene.Float()
+    drCalories = graphene.Float()
+    drCarbs = graphene.Float()
+    drCholine = graphene.Float()
+    drFat = graphene.Float()
+    drFiber = graphene.Float()
+    drFolate = graphene.Float()
+    drIron = graphene.Float()
+    drProtein = graphene.Float()
+    participant = graphene.Int()
+    q2Alcohol = graphene.String()
+    q2B12 = graphene.String()
+    q2Calories = graphene.String()
+    q2Carbs = graphene.String()
+    q2Choline = graphene.String()
+    q2Fat = graphene.String()
+    q2Fiber = graphene.String()
+    q2Folate = graphene.String()
+    q2Iron = graphene.String()
+    q2Protein = graphene.String()
+    Time = graphene.String()
+    week = graphene.Int()
 
 class FileCase(graphene.ObjectType):
     class Meta:
@@ -214,6 +258,9 @@ class CaseAggregations(graphene.ObjectType):
     demographic__ethnicity = graphene.Field(Aggregations)
     demographic__gender = graphene.Field(Aggregations)
     demographic__race = graphene.Field(Aggregations)
+    metadata_participant__age_2012 = graphene.Field(Aggregations)
+    metadata_participant__totMETs1 = graphene.Field(Aggregations)
+    metadata_participant__weight_lbs = graphene.Field(Aggregations)
     primary_site = graphene.Field(Aggregations)
     project__project_id = graphene.Field(Aggregations)
     project__program__name = graphene.Field(Aggregations)
@@ -280,8 +327,9 @@ class Case(graphene.ObjectType):
     case_id = graphene.String()
     primary_site = graphene.String()
     submitter_id = graphene.String()
-
     demographic = graphene.Field(Demographic)
+    metadata_participant = graphene.Field(MetadataParticipant)
+    metadata_sample = graphene.List(MetadataSample)
     project = graphene.Field(Project)
     summary = graphene.Field(Summary)
     annotations = graphene.Field(CaseAnnotations)
@@ -386,6 +434,7 @@ class Root(graphene.ObjectType):
     repository = graphene.Field(Repository)
     projects = graphene.Field(Projects)
     cart_summary = graphene.Field(CartSummary)
+    version = graphene.Field(Version)
 
     def resolve_user(self, info):
         return data.get_user()
@@ -401,6 +450,9 @@ class Root(graphene.ObjectType):
 
     def resolve_cart_summary(self, info):
         return CartSummary(self)
+
+    def resolve_version(self, info):
+         return data.get_current_version()
 
 class Query(graphene.ObjectType):
 
