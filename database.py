@@ -14,7 +14,7 @@ class Data(object):
 
     def __init__(self):
         self.conn_pool = mysql.connector.connect(use_pure=False, pool_name="portal",
-                                                 pool_size=32,
+                                                 pool_size=10,
                                                  pool_reset_session=True,
                                                  database='portal_ui',
                                                  user='biom_mass',
