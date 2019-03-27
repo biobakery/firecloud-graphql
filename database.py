@@ -21,7 +21,7 @@ class Data(object):
                                                  password=os.environ['BIOM_MASS'])
 
     def __exit__(self):
-        self.conn.close()
+        self.conn_pool.close()
 
     # connects to db and runs query
     def fetch_results(self,query):
