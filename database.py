@@ -16,13 +16,11 @@ class Data(object):
 
     def __init__(self):
         self.conn_pool=mysql.connector.connect(use_pure=False, pool_name="portal",
-                                                 pool_size=32,
+                                                 pool_size=10,
                                                  pool_reset_session=True,
                                                  database='portal_ui',
                                                  user='biom_mass',
                                                  password=os.environ['BIOM_MASS'])
-
-       # print("Use Pure is--------", use_pure)
 
     def __exit__(self):
         self.conn_pool.close()
@@ -38,9 +36,10 @@ class Data(object):
         conn = mysql.connector.connect(pool_name="portal")
         cursor = conn.cursor(buffered=True,dictionary=True)
         projects_data=self.fetch_results(cursor,"select id from project")
+        project_object=[self.get_project(project['id'],cursor) for project in projects_data]
         cursor.close()
         conn.close()
-        return [self.get_project(project['id']) for project in projects_data]
+        return project_object
 
     # get user (currently none)
     def get_user(self):
@@ -60,10 +59,10 @@ class Data(object):
 
 
     # get project object details from db
-    def get_project(self,id):
+    def get_project(self,id,cursor):
 
-        conn = mysql.connector.connect(pool_name="portal")
-        cursor = conn.cursor(buffered=True,dictionary=True)
+        #conn = mysql.connector.connect(pool_name="portal")
+        #cursor = conn.cursor(buffered=True,dictionary=True)
         project_data=self.fetch_results(cursor,
                                         "select * from project where  id =" + str(id))
         project_id=project_data[0]['project_id']
@@ -74,10 +73,8 @@ class Data(object):
         counts_query=counts_query+" union all "
         counts_query=counts_query+"select sum(file_size) as total from file_sample where project='"+project_id+"'"
         proj_counts_data=self.fetch_results(cursor,counts_query)
-        cursor.close()
-        conn.close()
 
-        return schema.Project(
+        project_object=schema.Project(
                 id=id,
                 project_id=project_id,
                 name=project_data[0]['name'],
@@ -85,16 +82,19 @@ class Data(object):
                 summary=schema.Summary(
                     case_count=proj_counts_data[1]['total'],
                     file_count=proj_counts_data[0]['total'],
-                    data_categories=self.get_data_categories("project",project_id),
-                    experimental_strategies=self.get_experimental_strategies("project",project_id),
+                    data_categories=self.get_data_categories("project",project_id,cursor),
+                    experimental_strategies=self.get_experimental_strategies("project",project_id,cursor),
                     file_size=proj_counts_data[2]['total']),
                 primary_site=[project_data[0]['primary_site']])
 
+        #cursor.close()
+        #conn.close()
+        return project_object
 
     # get data categories file and case counts from db for a project or a participant
-    def get_data_categories(self,table,id):
-        conn = mysql.connector.connect(pool_name="portal")
-        cursor = conn.cursor(buffered=True,dictionary=True)
+    def get_data_categories(self,table,id,cursor):
+        #conn = mysql.connector.connect(pool_name="portal")
+        #cursor = conn.cursor(buffered=True,dictionary=True)
         data_cat_data=self.fetch_results(cursor,
             "select distinct data_category from file_sample where "+ table+"='" + str(id)+"'")
         data_cat=[]
@@ -110,15 +110,15 @@ class Data(object):
                         file_count=count_data[0]['total'],
                         data_category=item['data_category']))
 
-        cursor.close()
-        conn.close()
+        #cursor.close()
+        #conn.close()
         return data_cat
 
 
     # get experimental strategies file count from db for a project
-    def get_experimental_strategies(self,table,id):
-        conn = mysql.connector.connect(pool_name="portal")
-        cursor = conn.cursor(buffered=True,dictionary=True)
+    def get_experimental_strategies(self,table,id,cursor):
+        #conn = mysql.connector.connect(pool_name="portal")
+        #cursor = conn.cursor(buffered=True,dictionary=True)
         exp_str_data=self.fetch_results(cursor,
             "select distinct experimental_strategy from file_sample where "+ table+"='" + str(id) +"'")
         exp_str=[]
@@ -133,8 +133,8 @@ class Data(object):
                     file_count=count_data[0]['total'],
                     experimental_strategy=item['experimental_strategy']))
 
-        cursor.close()
-        conn.close()
+        #cursor.close()
+        #conn.close()
         return exp_str
 
 
@@ -150,10 +150,8 @@ class Data(object):
         file_query=file_query+''' and file_sample.project=project.project_id and
                                   file_sample.participant=participant.entity_participant_id'''
         file_data=self.fetch_results(cursor,file_query)
-        cursor.close()
-        conn.close()
 
-        return schema.File(
+        file_object=schema.File(
                 id=id,
                 name=file_data[0]['file_name'],
                 participant=file_data[0]['participant'],
@@ -169,10 +167,14 @@ class Data(object):
                       hits=[schema.FileCase(
                       file_data[0]['part_id'],
                       case_id=file_data[0]['participant'],
-                      project=self.get_project(file_data[0]['p_id']),
+                      project=self.get_project(file_data[0]['p_id'],cursor),
                       demographic=schema.Demographic("not hispanic or latino","male","white"),
                       primary_site=file_data[0]['primary_site'])]),
                 file_id=file_data[0]['file_id'])
+
+        cursor.close()
+        conn.close()
+        return  file_object
 
 
     # get annotations (currently not in use)
@@ -239,22 +241,19 @@ class Data(object):
             del metadata['updated']
             metadata_list.append(schema.MetadataSample(**metadata))
 
-        cursor.close()
-        conn.close()
-
-        return schema.Case(id,
+        case_object=schema.Case(id,
                     case_id=part_id,
                     primary_site=proj_data[0]['primary_site'],
                     demographic=schema.Demographic("not hispanic or latino","male","white"),
                     metadata_participant=metadata_participant,
                     metadata_sample=metadata_list,
-                    project=self.get_project(proj_id),
+                    project=self.get_project(proj_id,cursor),
                     summary=schema.Summary(
                       case_count=counts_data[0]['total'],
                       file_count=counts_data[1]['total'],
                       file_size=counts_data[2]['total'],
-                      data_categories=self.get_data_categories("participant",part_id),
-                      experimental_strategies=self.get_experimental_strategies("participant",part_id)),
+                      data_categories=self.get_data_categories("participant",part_id,cursor),
+                      experimental_strategies=self.get_experimental_strategies("participant",part_id,cursor)),
                     files=schema.CaseFiles(hits=[schema.CaseFile(
                                case_file['id'],
                                experimental_strategy=case_file['experimental_strategy'],
@@ -263,6 +262,11 @@ class Data(object):
                                platform=case_file['platform'],
                                access=case_file['access']) for case_file in case_data]))
 
+
+        cursor.close()
+        conn.close()
+
+        return case_object
 
 
     def get_project_aggregations(self, projects):
