@@ -1,7 +1,6 @@
 # Calls to obtain values from  database
 
 import mysql.connector
-#from mysql.connector.connection import MySQLConnection
 from mysql.connector import pooling
 import os
 import schema
@@ -16,37 +15,31 @@ def add_key_increment(dictionary, key):
 class Data(object):
 
     def __init__(self):
-       # self.db_conn = mysql.connector.connect(user='biom_mass', password=os.environ['BIOM_MASS'], db='portal_ui', use_pure = False)
-
-        self.conn_pool = mysql.connector.connect(use_pure=False, pool_name="portal",
+        self.conn_pool=mysql.connector.connect(use_pure=False, pool_name="portal",
                                                  pool_size=32,
                                                  pool_reset_session=True,
                                                  database='portal_ui',
                                                  user='biom_mass',
                                                  password=os.environ['BIOM_MASS'])
+
        # print("Use Pure is--------", use_pure)
 
     def __exit__(self):
         self.conn_pool.close()
 
-    # connects to db and runs query
-    def fetch_results(self,query):
-
-        # db_conn = mysql.connector.connect(user='biom_mass', password=os.environ['BIOM_MASS'], db='portal_ui', use_pure = False
-        conn = mysql.connector.connect(pool_name="portal")
-        cursor = conn.cursor(buffered=True,dictionary=True)
+    #  runs query and returns result
+    def fetch_results(self,cursor,query):
         cursor.execute(query)
+        return [row for row in cursor]
 
-        # response list of dict
-        data=[row for row in cursor]
-        cursor.close()
-        conn.close()
-
-        return data
 
     # get all projects from db
     def get_current_projects(self):
-        projects_data=self.fetch_results("select `id` from `project`")
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        projects_data=self.fetch_results(cursor,"select id from project")
+        cursor.close()
+        conn.close()
         return [self.get_project(project['id']) for project in projects_data]
 
     # get user (currently none)
@@ -55,7 +48,12 @@ class Data(object):
 
     # get current version from db
     def get_current_version(self):
-       version_data=self.fetch_results("select * from `version` order by updated desc limit 1 ")
+       conn = mysql.connector.connect(pool_name="portal")
+       cursor = conn.cursor(buffered=True,dictionary=True)
+       version_data=self.fetch_results(cursor,
+                                       "select * from version order by updated desc limit 1 ")
+       cursor.close()
+       conn.close()
        del  version_data[0]['updated']
        del  version_data[0]['id']
        return version_data[0]
@@ -64,7 +62,10 @@ class Data(object):
     # get project object details from db
     def get_project(self,id):
 
-        project_data=self.fetch_results("select * from  `project` where  `id` =" + str(id))
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        project_data=self.fetch_results(cursor,
+                                        "select * from project where  id =" + str(id))
         project_id=project_data[0]['project_id']
 
         counts_query="select count(id) as total from  file_sample where project='"+project_id+"'"
@@ -72,7 +73,9 @@ class Data(object):
         counts_query=counts_query+"select count(distinct participant) as total from file_sample where project='"+project_id+"'"
         counts_query=counts_query+" union all "
         counts_query=counts_query+"select sum(file_size) as total from file_sample where project='"+project_id+"'"
-        proj_counts_data=self.fetch_results(counts_query)
+        proj_counts_data=self.fetch_results(cursor,counts_query)
+        cursor.close()
+        conn.close()
 
         return schema.Project(
                 id=id,
@@ -90,16 +93,16 @@ class Data(object):
 
     # get data categories file and case counts from db for a project or a participant
     def get_data_categories(self,table,id):
-
-        data_cat_data=self.fetch_results(
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        data_cat_data=self.fetch_results(cursor,
             "select distinct data_category from file_sample where "+ table+"='" + str(id)+"'")
-
         data_cat=[]
         for item in data_cat_data:
              count_query="select count(id) as total from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'"
              count_query=count_query+" union all "
              count_query=count_query+"select count(distinct participant) as total from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'"
-             count_data=self.fetch_results(count_query)
+             count_data=self.fetch_results(cursor,count_query)
 
              data_cat.append(
                     schema.DataCategories(
@@ -107,40 +110,48 @@ class Data(object):
                         file_count=count_data[0]['total'],
                         data_category=item['data_category']))
 
+        cursor.close()
+        conn.close()
         return data_cat
 
 
     # get experimental strategies file count from db for a project
     def get_experimental_strategies(self,table,id):
-
-        exp_str_data=self.fetch_results(
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        exp_str_data=self.fetch_results(cursor,
             "select distinct experimental_strategy from file_sample where "+ table+"='" + str(id) +"'")
-
         exp_str=[]
         for item in exp_str_data:
             count_query="select count(id) as total from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'"
             count_query=count_query+" union all "
             count_query=count_query+ "select count(distinct participant) as total from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'"
-            count_data=self.fetch_results(count_query)
+            count_data=self.fetch_results(cursor,count_query)
             exp_str.append(
                 schema.ExperimentalStrategies(
                     case_count=count_data[1]['total'],
                     file_count=count_data[0]['total'],
                     experimental_strategy=item['experimental_strategy']))
 
+        cursor.close()
+        conn.close()
         return exp_str
 
 
    # get details of file object from db
     def get_file(self,id):
 
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
         file_query='''select file_sample.*,
                       project.id as p_id, project.project_id as proj_id,project.primary_site,
                       participant.id as part_id
                       from file_sample,project,participant where file_sample.id='''+str(id)
         file_query=file_query+''' and file_sample.project=project.project_id and
                                   file_sample.participant=participant.entity_participant_id'''
-        file_data=self.fetch_results(file_query)
+        file_data=self.fetch_results(cursor,file_query)
+        cursor.close()
+        conn.close()
 
         return schema.File(
                 id=id,
@@ -170,21 +181,29 @@ class Data(object):
 
     # get ids of all files from db
     def get_current_files(self):
-
-        files_data=self.fetch_results("select `id` from `file_sample`")
-        return schema.Files(hits=[item['id'] for item in files_data])
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        files_data=self.fetch_results(cursor,"select `id` from `file_sample`")
+        cursor.close()
+        conn.close()
+        return schema.Files(hits=[file['id'] for file in files_data])
 
     # get ids of all cases from db
     def get_current_cases(self):
-
-        cases_data=self.fetch_results("select id from participant")
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        cases_data=self.fetch_results(cursor,"select id from participant")
+        cursor.close()
+        conn.close()
         return schema.RepositoryCases(hits=[case['id'] for case in cases_data])
 
     # get details of case object from db
     def get_case(self,id):
 
         # get entity_participant_id and file info from db
-        case_data=self.fetch_results('''select participant.entity_participant_id, file_sample.* from participant, file_sample
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        case_data=self.fetch_results(cursor,'''select participant.entity_participant_id, file_sample.* from participant, file_sample
              where participant.id='''+str(id)+" and file_sample.participant=participant.entity_participant_id")
         part_id=case_data[0]['entity_participant_id']
 
@@ -193,21 +212,19 @@ class Data(object):
         counts_query=counts_query+ "select count(id) as total from file_sample where participant="+str(part_id)
         counts_query=counts_query+" union all "
         counts_query= counts_query+"select sum(file_size) as total from file_sample where participant="+str(part_id)
-
-        counts_data=self.fetch_results(counts_query)
+        counts_data=self.fetch_results(cursor,counts_query)
 
         proj_query="select distinct file_sample.project, project.id as p_id, project.primary_site "
         proj_query=proj_query+"from file_sample, project where file_sample.participant='"
         proj_query=proj_query+str(part_id)+"' and project.project_id=file_sample.project limit 1"
-        proj_data=self.fetch_results(proj_query)
+        proj_data=self.fetch_results(cursor,proj_query)
 
         proj_id=proj_data[0]['p_id']
 
 
         # query to get metadata from prticipant table
-        metadata_part_data=self.fetch_results(
+        metadata_part_data=self.fetch_results(cursor,
             "select * from participant where entity_participant_id="+str(part_id))
-
         del metadata_part_data[0]['updated']
         metadata_part_data[0]['participant'] = metadata_part_data[0]['entity_participant_id']
         del metadata_part_data[0]['entity_participant_id']
@@ -215,12 +232,15 @@ class Data(object):
 
 
        # query to get metadata from sample table
-        metadata_data=self.fetch_results("select * from sample where participant="+str(part_id))
+        metadata_data=self.fetch_results(cursor,
+             "select * from sample where participant="+str(part_id))
         metadata_list=[]
         for metadata in metadata_data:
             del metadata['updated']
             metadata_list.append(schema.MetadataSample(**metadata))
 
+        cursor.close()
+        conn.close()
 
         return schema.Case(id,
                     case_id=part_id,
@@ -281,13 +301,16 @@ class Data(object):
     # get all  counts for front page summary from db
     def get_current_counts(self):
 
-        counts_data = self.fetch_results('''select count(id) as countid from project
-                                            union all select count(id) as countid from participant
-                                            union all select count(id) as countid from sample
-                                            union all select count(distinct data_format) as countid from file_sample
-                                            union all select count(id) as countid from file_sample where  type="rawFiles"
-                                            union all select count(id) as countid from file_sample where type="processedFiles"''')
-
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        counts_data=self.fetch_results(cursor,'''select count(id) as countid from project
+                               union all select count(id) as countid from participant
+                               union all select count(id) as countid from sample
+                               union all select count(distinct data_format) as countid from file_sample
+                               union all select count(id) as countid from file_sample where  type="rawFiles"
+                               union all select count(id) as countid from file_sample where type="processedFiles"''')
+        cursor.close()
+        conn.close()
         return schema.Count(
                     projects=counts_data[0]['countid'],
                     participants=counts_data[1]['countid'],
@@ -387,8 +410,11 @@ class Data(object):
 
     # get total size of all files
     def get_cart_file_size(self):
-
-        file_data=self.fetch_results("select sum(file_size) as sum_size from  file_sample")
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        file_data=self.fetch_results(cursor,"select sum(file_size) as sum_size from  file_sample")
+        cursor.close()
+        conn.close()
         return schema.FileSize(file_data[0]['sum_size'])
 
 data = Data()
