@@ -1,8 +1,10 @@
 # Calls to obtain values from the data structures (to be populated by the local database next)
-import mysql.connector as mariadb
+import mysql.connector
+from mysql.connector import pooling
 import os
 import const
 
+# add increment for aggregations
 def add_key_increment(dictionary, key):
     if not key in dictionary:
         dictionary[key]=0
@@ -11,27 +13,38 @@ def add_key_increment(dictionary, key):
 class Data(object):
 
     def __init__(self):
-        self.db_conn = mariadb.connect(user='biom_mass', password=os.environ['BIOM_MASS'], db='portal_ui')
+        self.conn_pool = mysql.connector.connect(use_pure=False, pool_name="portal",
+                                                 pool_size=32,
+                                                 pool_reset_session=True,
+                                                 database='portal_ui',
+                                                 user='biom_mass',
+                                                 password=os.environ['BIOM_MASS'])
 
     def __exit__(self):
-        self.db.conn.close()
+        self.conn.close()
 
     # connects to db and runs query
     def fetch_results(self,query):
 
-        cursor = self.db_conn.cursor(buffered=True)
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
         cursor.execute(query)
 
         # response
-        row_headers=[x[0] for x in cursor.description]
-        rows = cursor.fetchall()
         data=[]
-        for row in rows:
-            data.append(dict(zip(row_headers,row)))
+        for row in cursor:
+            data.append(row)
 
         cursor.close()
-
+        conn.close()
         return data
+
+    # get current version from db
+    def get_current_version(self):
+        version_data=self.fetch_results("select * from version order by updated desc limit 1 ")
+        del  version_data[0]['updated']
+        del  version_data[0]['id']
+        return version_data[0]
 
 
     def load_data(self):
@@ -44,15 +57,6 @@ class Data(object):
     def get_user(self):
         self.load_data()
         return self.data.CURRENT_USER
-
-    # get current version from db
-    def get_current_version(self):
-       import schema
-
-       version_data=self.fetch_results("select * from version order by updated desc limit 1 ")
-       del  version_data[0]['updated']
-       del  version_data[0]['id']
-       return schema.Version(**version_data[0])
 
     def get_project(self,id):
         self.load_data()
@@ -212,3 +216,6 @@ class Data(object):
         return self.data.CURRENT_FILE_SIZE
 
 data = Data()
+
+VERSION = data.get_current_version()
+

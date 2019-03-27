@@ -115,14 +115,6 @@ type Count {
   processedFiles: String
 }
 
-type Version{
-  data_release: String
-  commit: String
-  version: Float
-  tag: String
-  status: String
-}
-
 type DataCategories {
   case_count: Int
   file_count: Int
