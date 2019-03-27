@@ -23,25 +23,17 @@ class Data(object):
     def __exit__(self):
         self.conn_pool.close()
 
-    # connects to db and runs query
-    def fetch_results(self,query):
-
-        conn = mysql.connector.connect(pool_name="portal")
-        cursor = conn.cursor(buffered=True,dictionary=True)
+    # runs query and returns results
+    def fetch_results(self,cursor,query):
         cursor.execute(query)
-
-        # response
-        data=[]
-        for row in cursor:
-            data.append(row)
-
-        cursor.close()
-        conn.close()
-        return data
+        return [row for row in cursor]
 
     # get current version from db
     def get_current_version(self):
-        version_data=self.fetch_results("select * from version order by updated desc limit 1 ")
+
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        version_data=self.fetch_results(cursor,"select * from version order by updated desc limit 1 ")
         del  version_data[0]['updated']
         del  version_data[0]['id']
         return version_data[0]
@@ -121,7 +113,10 @@ class Data(object):
     def get_current_counts(self):
         import schema
 
-        counts_data = self.fetch_results('''select count(id) as countid from project
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        counts_data = self.fetch_results(cursor,
+                                            '''select count(id) as countid from project
                                             union all select count(id) as countid from participant
                                             union all select count(id) as countid from sample
                                             union all select count(distinct data_format) as countid from file_sample
