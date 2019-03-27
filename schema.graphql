@@ -28,15 +28,7 @@ type Case implements Node {
   project: Project
   summary: Summary
   annotations: CaseAnnotations
-  files: CaseFiles
-}
-
-type Version{
-    data_release: String
-    commit: String
-    version: Float
-    tag: String
-    status: String
+  files: CaseFile
 }
 
 type MetadataParticipant {

@@ -1,6 +1,8 @@
 # Calls to obtain values from  database
 
-import mysql.connector as mariadb
+import mysql.connector
+#from mysql.connector.connection import MySQLConnection
+from mysql.connector import pooling
 import os
 import schema
 
@@ -13,26 +15,32 @@ def add_key_increment(dictionary, key):
 
 class Data(object):
 
-#    def __init__(self):
-      #  self.db_conn = mariadb.connect(user='biom_mass', password=os.environ['BIOM_MASS'], db='portal_ui')
+    def __init__(self):
+       # self.db_conn = mysql.connector.connect(user='biom_mass', password=os.environ['BIOM_MASS'], db='portal_ui', use_pure = False)
 
-#    def __exit__(self):
-      #  self.db.conn.close()
+        self.conn_pool = mysql.connector.connect(use_pure=False, pool_name="portal",
+                                                 pool_size=32,
+                                                 pool_reset_session=True,
+                                                 database='portal_ui',
+                                                 user='biom_mass',
+                                                 password=os.environ['BIOM_MASS'])
+       # print("Use Pure is--------", use_pure)
+
+    def __exit__(self):
+        self.conn_pool.close()
 
     # connects to db and runs query
     def fetch_results(self,query):
 
-        db_conn = mariadb.connect(user='biom_mass', password=os.environ['BIOM_MASS'], db='portal_ui')
-        cursor = db_conn.cursor(buffered=True)
+        # db_conn = mysql.connector.connect(user='biom_mass', password=os.environ['BIOM_MASS'], db='portal_ui', use_pure = False
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
         cursor.execute(query)
-        # response list of json data
-        row_headers=[x[0] for x in cursor.description]
-        rows = cursor.fetchall()
-        data=[]
-        for row in rows:
-            data.append(dict(zip(row_headers,row)))
+
+        # response list of dict
+        data=[row for row in cursor]
         cursor.close()
-        db_conn.close()
+        conn.close()
 
         return data
 
@@ -50,7 +58,7 @@ class Data(object):
        version_data=self.fetch_results("select * from `version` order by updated desc limit 1 ")
        del  version_data[0]['updated']
        del  version_data[0]['id']
-       return schema.Version(**version_data[0])
+       return version_data[0]
 
 
     # get project object details from db
@@ -384,3 +392,5 @@ class Data(object):
         return schema.FileSize(file_data[0]['sum_size'])
 
 data = Data()
+
+VERSION = data.get_current_version()

@@ -10,11 +10,13 @@
 import os
 
 import flask
+import flask_cors
 import flask_graphql
 import graphene
 
 import schema
 import const
+import database
 
 NAME = "firecloud_graphql"
 HOST = "0.0.0.0"
@@ -41,7 +43,8 @@ def process_query(request, schema):
 def main():
     # create the graphql flask app
     app = flask.Flask(NAME)
-
+    # allow initial OPTIONS requests
+    flask_cors.CORS(app)
     # add the root graphql queries
     @app.route('/graphql', methods=["POST"])
     def get_root_schema():
@@ -55,8 +58,8 @@ def main():
     # add static endpoint for version/status
     @app.route('/status', methods=["GET"])
     def get_version():
-        return flask.jsonify(const.VERSION)
-
+        return flask.jsonify(database.VERSION)
+    # app.debug = True
     # add end point for graphql gui
     app.add_url_rule('/test', view_func=flask_graphql.GraphQLView.as_view(
         'test', schema=graphene.Schema(query=schema.Query, auto_camelcase=False), graphiql=True))
