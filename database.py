@@ -23,17 +23,26 @@ class Data(object):
     def __exit__(self):
         self.conn_pool.close()
 
+    def get_pool(self):
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        return conn, cursor
+
+    def release_pool(self,conn,cursor):
+        cursor.close()
+        conn.close()
+
     # runs query and returns results
-    def fetch_results(self,cursor,query):
+    def fetch_results(self,query):
+        conn,cursor=self.get_pool()
         cursor.execute(query)
-        return [row for row in cursor]
+        data=[row for row in cursor]
+        self.release_pool(conn,cursor)
+        return data
 
     # get current version from db
     def get_current_version(self):
-
-        conn = mysql.connector.connect(pool_name="portal")
-        cursor = conn.cursor(buffered=True,dictionary=True)
-        version_data=self.fetch_results(cursor,"select * from version order by updated desc limit 1 ")
+        version_data=self.fetch_results("select * from version order by updated desc limit 1 ")
         del  version_data[0]['updated']
         del  version_data[0]['id']
         return version_data[0]
@@ -113,10 +122,7 @@ class Data(object):
     def get_current_counts(self):
         import schema
 
-        conn = mysql.connector.connect(pool_name="portal")
-        cursor = conn.cursor(buffered=True,dictionary=True)
-        counts_data = self.fetch_results(cursor,
-                                            '''select count(id) as countid from project
+        counts_data = self.fetch_results('''select count(id) as countid from project
                                             union all select count(id) as countid from participant
                                             union all select count(id) as countid from sample
                                             union all select count(distinct data_format) as countid from file_sample
@@ -212,5 +218,4 @@ class Data(object):
 
 data = Data()
 
-VERSION = data.get_current_version()
 
