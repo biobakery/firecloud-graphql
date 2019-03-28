@@ -21,9 +21,18 @@ class Data(object):
                                                  database='portal_ui',
                                                  user='biom_mass',
                                                  password=os.environ['BIOM_MASS'])
+#        conn = mysql.connector.connect(pool_name="portal")
+#        cursor = conn.cursor(buffered=True,dictionary=True)
+#        projects_data=self.fetch_results(cursor,"select id from project")
+#        self.projects={}
+#        for project in projects_data:
+#            self.projects[project['id']]=self.get_project(project['id'],cursor)
+#        print(self.projects)
+#        cursor.close()
+#        conn.close()
 
-    def __exit__(self):
-        self.conn_pool.close()
+#    def __exit__(self):
+#        self.conn_pool.close()
 
     #  runs query and returns result
     def fetch_results(self,cursor,query):
@@ -168,6 +177,7 @@ class Data(object):
                       file_data[0]['part_id'],
                       case_id=file_data[0]['participant'],
                       project=self.get_project(file_data[0]['p_id'],cursor),
+                     # project=self.projects[file_data[0]['p_id']].getValue(),
                       demographic=schema.Demographic("not hispanic or latino","male","white"),
                       primary_site=file_data[0]['primary_site'])]),
                 file_id=file_data[0]['file_id'])
@@ -248,6 +258,7 @@ class Data(object):
                     metadata_participant=metadata_participant,
                     metadata_sample=metadata_list,
                     project=self.get_project(proj_id,cursor),
+                    #project=self.projects[proj_id].getValue(),
                     summary=schema.Summary(
                       case_count=counts_data[0]['total'],
                       file_count=counts_data[1]['total'],
