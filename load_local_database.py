@@ -256,7 +256,7 @@ def main():
            new_version = str(0.1)
 
     now = datetime.datetime.now()
-    release_date ="Date Release "+new_version+" "+ now.strftime("%b %d, %Y")
+    release_date ="Data Release "+new_version+" - "+ now.strftime("%b %d, %Y")
     commit ="commit_"+now.strftime("%m%d%Y")
     query_insert_version ='''INSERT INTO `version` (
            commit,
