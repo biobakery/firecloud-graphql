@@ -23,11 +23,13 @@ class Data(object):
     def __exit__(self):
         self.conn_pool.close()
 
+    # get connection from pool
     def get_pool(self):
         conn = mysql.connector.connect(pool_name="portal")
         cursor = conn.cursor(buffered=True,dictionary=True)
         return conn, cursor
 
+    # release connection back to pool
     def release_pool(self,conn,cursor):
         cursor.close()
         conn.close()
@@ -217,5 +219,3 @@ class Data(object):
         return self.data.CURRENT_FILE_SIZE
 
 data = Data()
-
-
