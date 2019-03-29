@@ -49,14 +49,12 @@ class Data(object):
 
     # get all projects from db
     def get_current_projects(self):
-        conn = mysql.connector.connect(pool_name="portal")
-        cursor = conn.cursor(buffered=True,dictionary=True)
+        conn,cursor=self.get_pool()
         projects_data=self.fetch_results(cursor,"select id from project")
         project_object=[self.get_project(project['id'],cursor) for project in projects_data]
         for project in projects_data:
            self.projects[str(project['id'])]=self.get_project(project['id'],cursor)
-        cursor.close()
-        conn.close()
+        self.release_pool(conn,cursor)
         return project_object
 
     # get user (currently none)
@@ -65,10 +63,10 @@ class Data(object):
 
     # get current version from db
     def get_current_version(self):
-       conn,cursor=get_pull
+       conn,cursor=self.get_pool()
        version_data=self.fetch_results(cursor,
                                        "select * from version order by updated desc limit 1 ")
-       release_pool(conn,cursor)
+       self.release_pool(conn,cursor)
        del  version_data[0]['updated']
        del  version_data[0]['id']
        return version_data[0]
@@ -147,7 +145,7 @@ class Data(object):
    # get details of file object from db
     def get_file(self,id):
 
-        conn,cursor=get_pool()
+        conn,cursor=self.get_pool()
         file_query='''select file_sample.*,
                       project.id as p_id, project.project_id as proj_id,project.primary_site,
                       participant.id as part_id
@@ -178,7 +176,7 @@ class Data(object):
                       primary_site=file_data[0]['primary_site'])]),
                 file_id=file_data[0]['file_id'])
 
-        release_pool(conn,cursor)
+        self.release_pool(conn,cursor)
         return  file_object
 
 
@@ -188,23 +186,23 @@ class Data(object):
 
     # get ids of all files from db
     def get_current_files(self):
-        conn,cursor=get_pool()
+        conn,cursor=self.get_pool()
         files_data=self.fetch_results(cursor,"select `id` from `file_sample`")
-        release_pool(conn,cursor)
+        self.release_pool(conn,cursor)
         return schema.Files(hits=[file['id'] for file in files_data])
 
     # get ids of all cases from db
     def get_current_cases(self):
-        conn,cursor=get_pool()
+        conn,cursor=self.get_pool()
         cases_data=self.fetch_results(cursor,"select id from participant")
-        release_pool(conn,cursor)
+        self.release_pool(conn,cursor)
         return schema.RepositoryCases(hits=[case['id'] for case in cases_data])
 
     # get details of case object from db
     def get_case(self,id):
 
         # get entity_participant_id and file info from db
-        conn,cursor=get_pool()
+        conn,cursor=self.get_pool()
         case_data=self.fetch_results(cursor,'''select participant.entity_participant_id, file_sample.* from participant, file_sample
              where participant.id='''+str(id)+" and file_sample.participant=participant.entity_participant_id")
         part_id=case_data[0]['entity_participant_id']
@@ -264,7 +262,7 @@ class Data(object):
                                access=case_file['access']) for case_file in case_data]))
 
 
-        release_pool(conn,cursor)
+        self.release_pool(conn,cursor)
         return case_object
 
 
@@ -304,14 +302,14 @@ class Data(object):
     # get all  counts for front page summary from db
     def get_current_counts(self):
 
-        conn,cursor=get_pool()
+        conn,cursor=self.get_pool()
         counts_data=self.fetch_results(cursor,'''select count(id) as countid from project
                                union all select count(id) as countid from participant
                                union all select count(id) as countid from sample
                                union all select count(distinct data_format) as countid from file_sample
                                union all select count(id) as countid from file_sample where  type="rawFiles"
                                union all select count(id) as countid from file_sample where type="processedFiles"''')
-        release_pool(conn,cursor)
+        self.release_pool(conn,cursor)
         return schema.Count(
                     projects=counts_data[0]['countid'],
                     participants=counts_data[1]['countid'],
@@ -411,9 +409,9 @@ class Data(object):
 
     # get total size of all files
     def get_cart_file_size(self):
-        conn,cursor=get_pull()
+        conn,cursor=self.get_pool()
         file_data=self.fetch_results(cursor,"select sum(file_size) as sum_size from  file_sample")
-        release_pool(conn,cursor)
+        self.release_pool(conn,cursor)
         return schema.FileSize(file_data[0]['sum_size'])
 
 data = Data()
