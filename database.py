@@ -51,9 +51,12 @@ class Data(object):
     def get_current_projects(self):
         conn,cursor=self.get_pool()
         projects_data=self.fetch_results(cursor,"select id from project")
-        project_object=[self.get_project(project['id'],cursor) for project in projects_data]
+       # project_object=[self.get_project(project['id'],cursor) for project in projects_data]
+        project_object=[]
         for project in projects_data:
-           self.projects[str(project['id'])]=self.get_project(project['id'],cursor)
+           getproject=self.get_project(project['id'],cursor)
+           self.projects[str(project['id'])]=getproject
+           project_object.append(getproject)
         self.release_pool(conn,cursor)
         return project_object
 
