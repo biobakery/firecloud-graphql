@@ -95,8 +95,8 @@ class MetadataParticipant(graphene.ObjectType):
     id = graphene.Int()
     participant = graphene.Int()
     age_2012 = graphene.Int()
-    totMETs1 = graphene.String()
-    weight_lbs = graphene.String()
+    totMETs1 = graphene.Float()
+    weight_lbs = graphene.Float()
 
 class MetadataSample(graphene.ObjectType):
     id = graphene.Int()
