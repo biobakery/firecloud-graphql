@@ -3,18 +3,16 @@
 
 # Values from the const data structures (to be replaced by local database values next)
 
-VERSION = {
-  "commit": "abcde",
-  "data_release": "Data Release 0.1 - February 18, 2019",
-  "status": "OK",
-  "tag": "0.1",
-  "version": 0.1
-}
-
 class DB(object):
     def __init__(self):
         import schema
     
+        self.VERSION = {"commit": "abcde",
+                        "data_release": "Data Release 0.1 - February 18, 2019",
+                        "status": "OK",
+                        "tag": "0.1",
+                        "version": 0.1
+        }
 
         self.CURRENT_FILE_SIZE = schema.FileSize(65000000000) # this is the total amount of files in repo table shown
         self.CURRENT_PROGRAMS = [schema.Program(name="NHSII")]

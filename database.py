@@ -33,6 +33,10 @@ class Data(object):
         self.load_data()
         return self.data.CURRENT_COUNTS
 
+    def get_version(self):
+        self.load_data()
+        return self.data.VERSION
+
     #############################################################################
     ## Aggregations section
     ## These functions create aggregations of the object lists they are provided.

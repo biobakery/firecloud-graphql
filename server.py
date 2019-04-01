@@ -16,6 +16,7 @@ import graphene
 
 import schema
 import const
+from database import data
 
 NAME = "firecloud_graphql"
 HOST = "0.0.0.0"
@@ -58,7 +59,7 @@ def main():
     # add static endpoint for version/status
     @app.route('/status', methods=["GET"])
     def get_version():
-        return flask.jsonify(const.VERSION)
+        return flask.jsonify(data.get_version())
 
     # add end point for graphql gui
     app.add_url_rule('/test', view_func=flask_graphql.GraphQLView.as_view(
