@@ -133,7 +133,7 @@ class File(graphene.ObjectType):
     type = graphene.String()
 
     def resolve_file_id(self, info):
-        return self.name
+        return self.id
 
     def resolve_type(self, info):
         return self.data_format
