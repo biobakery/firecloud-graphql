@@ -2,6 +2,7 @@
 # Calls to obtain values from the data structures (to be populated by the local database next)
 
 import const
+import schema
 
 def add_key_increment(dictionary, key):
     if not key in dictionary:
@@ -45,10 +46,6 @@ class Data(object):
         return self.data.TEST_CASES[id]
 
     def get_project_aggregations(self, projects):
-        import schema
-
-        self.load_data()
-
         # compile aggregations from project
         aggregates = {"primary_site": {}, "program__name": {},
                       "project_id": {}, 
@@ -83,9 +80,6 @@ class Data(object):
         return self.data.CURRENT_COUNTS
 
     def get_file_aggregations(self, files):
-        import schema
-
-        self.load_data()
         # aggregate file data
         aggregates = {"data_category": {}, "experimental_strategy": {},
                       "data_format": {}, "platform": {}, "cases__primary_site": {},
@@ -120,10 +114,6 @@ class Data(object):
         return file_aggregates
 
     def get_case_aggregations(self, cases):
-        import schema
-
-        self.load_data()
-
         # aggregate case data
         aggregates = {"demographic__ethnicity": {}, "demographic__gender": {},
                       "demographic__race": {}, "primary_site": {}, "project__project_id": {},
