@@ -15,11 +15,7 @@ class Data(object):
 
     def get_current_projects(self):
         self.load_data()
-        return [self.get_project(project_id) for project_id in self.data.CURRENT_PROJECTS.keys()]
-
-    def get_project(self,id):
-        self.load_data()
-        return self.data.CURRENT_PROJECTS[id]
+        return self.data.CURRENT_PROJECTS.values()
 
     def get_current_files(self):
         self.load_data()

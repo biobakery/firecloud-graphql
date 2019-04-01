@@ -82,10 +82,6 @@ class Project(graphene.ObjectType):
     summary = graphene.Field(Summary)
     primary_site = graphene.List(graphene.String)
 
-    @classmethod
-    def get_node(cls, info, id):
-        return data.get_project(id)
-
 class Demographic(graphene.ObjectType):
     ethnicity = graphene.String()
     gender = graphene.String()
