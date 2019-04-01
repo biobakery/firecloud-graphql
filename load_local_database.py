@@ -111,6 +111,20 @@ def main():
     cursor.execute("USE " + local_db)
     mariadb_connection.commit()
 
+    # Get the version of the existing database
+    try:
+        cursor.execute("SELECT max(version) as maxversion, updated from  `version`")
+        rows = cursor.fetchall()
+    except mariadb.errors.ProgrammingError:
+        rows = []
+        new_version = str(0.1)
+
+    for maxversion, updated in rows:
+        if maxversion:
+           new_version = str(float(str(maxversion)) + 0.1)
+        else:
+           new_version = str(0.1)
+
     # Drop tables if exist
     cursor.execute("SET FOREIGN_KEY_CHECKS=0")
     mariadb_connection.commit()
@@ -119,6 +133,7 @@ def main():
     cursor.execute("DROP TABLE IF EXISTS participant")
     cursor.execute("DROP TABLE IF EXISTS file_sample")
     cursor.execute("DROP TABLE IF EXISTS project")
+    cursor.execute("DROP TABLE IF EXISTS version")
     mariadb_connection.commit()
 
 
@@ -235,16 +250,6 @@ def main():
         updated timestamp)'''
     cursor.execute(query_create_version)
     mariadb_connection.commit()
-
-    # Construct and execute insert into version
-    cursor.execute("SELECT max(version) as maxversion, updated from  `version`")
-    rows = cursor.fetchall()
-
-    for maxversion, updated in rows:
-        if maxversion:
-           new_version = str(float(str(maxversion)) + 0.1)
-        else:
-           new_version = str(0.1)
 
     now = datetime.datetime.now()
     release_date ="Data Release v"+new_version+" - "+ now.strftime("%b %d, %Y")
