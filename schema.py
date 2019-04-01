@@ -142,10 +142,6 @@ class File(graphene.ObjectType):
     def resolve_type(self, info):
         return self.data_format
 
-    @classmethod
-    def get_node(cls, info, id):
-        return data.get_file(id)
-
 class ProjectConnection(graphene.relay.Connection):
     class Meta:
         node = Project
@@ -197,13 +193,13 @@ class Files(graphene.ObjectType):
         aggregations_filter_themselves=graphene.Boolean())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        all_files = [data.get_file(file_id) for file_id in self.hits]
+        all_files = data.get_current_files()
         filtered_files = utilities.filter_hits(all_files, filters, "files")
         sorted_files = utilities.sort_hits(filtered_files, sort)
         return sorted_files
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        all_files = [data.get_file(file_id) for file_id in self.hits]
+        all_files = data.get_current_files()
         filtered_files = utilities.filter_hits(all_files, filters, "files")
         return data.get_file_aggregations(filtered_files)
 
@@ -315,13 +311,13 @@ class RepositoryCases(graphene.ObjectType):
         facets=graphene.List(graphene.String))
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        all_cases = [data.get_case(case_id) for case_id in self.hits]
+        all_cases = data.get_current_cases()
         filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
         sorted_cases = utilities.sort_hits(filtered_cases, sort)
         return sorted_cases
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        all_cases = [data.get_case(case_id) for case_id in self.hits]
+        all_cases = data.get_current_cases()
         filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
         case_aggregations = data.get_case_aggregations(filtered_cases)
         return case_aggregations

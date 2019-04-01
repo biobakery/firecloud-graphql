@@ -21,10 +21,6 @@ class Data(object):
         self.load_data()
         return self.data.CURRENT_PROJECTS[id]
 
-    def get_file(self,id):
-        self.load_data()
-        return self.data.TEST_FILES[id]
-
     def get_current_files(self):
         self.load_data()
         return self.data.CURRENT_FILES
@@ -32,10 +28,6 @@ class Data(object):
     def get_current_cases(self):
         self.load_data()
         return self.data.CURRENT_CASES
-
-    def get_case(self,id):
-        self.load_data()
-        return self.data.TEST_CASES[id]
 
     def get_cart_file_size(self):
         self.load_data()

@@ -167,6 +167,6 @@ class DB(object):
                     files=schema.CaseFiles(hits=[self.CASE_FILES["10"],self.CASE_FILES["11"],self.CASE_FILES["12"]]))
         }
 
-        self.CURRENT_FILES = schema.Files(hits=self.TEST_FILES.keys())
-        self.CURRENT_CASES = schema.RepositoryCases(hits=self.TEST_CASES.keys())
+        self.CURRENT_FILES = self.TEST_FILES.values()
+        self.CURRENT_CASES = self.TEST_CASES.values()
 
