@@ -212,7 +212,6 @@ def main():
         project_id varchar(100),
         name varchar(100),
         program  varchar(100),
-        summary  varchar(250),
         primary_site  varchar(100),
         updated timestamp)'''
     cursor.execute(query_create_project)
@@ -227,11 +226,10 @@ def main():
            project_id,
            name,
            program,
-           summary,
            primary_site
            ) VALUES'''
 
-        project_row_values ="('" + str(project) + "','" + str(project) + "'," + "'HPFS','Project Summary', 'Stool')"
+        project_row_values ="('" + str(project) + "','" + str(project) + "'," + "'" + str(project.split("_")[0]) + "', 'Stool')"
         query_insert_project = query_insert_project +  project_row_values
 
         print(query_insert_project)
