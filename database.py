@@ -44,12 +44,65 @@ class Data(object):
         return self.data.CURRENT_PROJECTS.values()
 
     def get_current_files(self):
-        self.load_data()
-        return self.data.CURRENT_FILES
+        query = "SELECT file_sample.id, file_sample.file_name, file_sample.participant, file_sample.sample, " +\
+                 "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
+                 "file_sample.platform, file_sample.experimental_strategy, file_sample.project, project.id, project.primary_site, " +\
+                 "participant.id, project.program " +\
+                 "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id " +\
+                 "INNER JOIN participant ON file_sample.participant=participant.entity_participant_id"
+        db_results = self.query_database(query)
+        files = []
+        for row in db_results:
+            files.append(schema.File(
+                name=row[1],
+                participant=row[2],
+                sample=row[3],
+                access=row[4],
+                file_size=row[5],
+                data_category=row[6],
+                data_format=row[7],
+                platform=row[8],
+                experimental_strategy=row[9],
+                file_name=row[1],
+                cases=schema.FileCases(
+                    hits=[schema.FileCase(
+                        id=row[13],
+                        case_id=row[2],
+                        project=schema.Project(
+                            id=row[11],
+                            project_id=row[10],
+                            name=row[10],
+                            program=row[14],
+                            primary_site=row[12]),
+                        demographic=schema.Demographic("not hispanic or latino","male","white"), 
+                        primary_site=row[12])]
+                ),
+                file_id=row[0],
+                type=row[7]
+            ))
+        return files
 
     def get_current_cases(self):
         self.load_data()
-        return self.data.CURRENT_CASES
+        query = "SELECT participant.id, participant.entity_participant_id, project.primary_site, " +\
+                 " project.project_id " +\
+                 "FROM sample INNER JOIN participant ON sample.participant=participant.entity_participant_id " +\
+                 "INNER JOIN project ON sample.project=project.project_id"
+        db_results = self.query_database(query)
+        cases = []
+        for row in db_results:
+            cases.append(schema.Case(
+                id=row[0],
+                case_id=row[1],
+                primary_site=row[2],
+                demographic=schema.Demographic("not hispanic or latino","male","white"),
+                project=self.data.CURRENT_PROJECTS["1"],
+                summary=schema.Summary(case_count=1,file_count=1,file_size=1,
+                        data_categories=self.data.DATA_CATEGORIES_SINGLE_CASE),
+                files=schema.CaseFiles(hits=[self.data.CASE_FILES["1"],self.data.CASE_FILES["2"],self.data.CASE_FILES["3"]])
+            ))
+        #return self.data.CURRENT_CASES
+        return cases
 
     def get_cart_file_size(self):
         db_results = self.query_database("SELECT SUM(file_size) from file_sample").fetchall()[0][0]
