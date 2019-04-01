@@ -8,6 +8,9 @@ import utilities
 import const
 import schema
 
+RAW_FILE_TYPE = "rawFiles"
+PROCESSED_FILE_TYPE = "processedFiles"
+
 class Data(object):
 
     def __init__(self):
@@ -53,11 +56,22 @@ class Data(object):
         return self.data.CURRENT_FILE_SIZE
 
     def get_current_counts(self):
-        self.load_data()
-        return self.data.CURRENT_COUNTS
+        query = "SELECT COUNT(distinct project), COUNT(distinct participant), COUNT(distinct sample), " +\
+                "COUNT(distinct data_format), COUNT(IF(type='"+RAW_FILE_TYPE+"',1,NULL)), " +\
+                "COUNT(IF(type='"+PROCESSED_FILE_TYPE+"',1,NULL)) FROM file_sample"
+        db_results = self.query_database(query).fetchall()[0]
+        counts = schema.Count(
+            projects=db_results[0],
+            participants=db_results[1],
+            samples=db_results[2],
+            dataFormats=db_results[3],
+            rawFiles=db_results[4], 
+            processedFiles=db_results[5]
+        )
+        return counts
 
     def get_version(self):
-        db_results = self.query_database("SELECT commit, data_release, status, tag, version from version").fetchall()[0]
+        db_results = self.query_database("SELECT commit, data_release, status, tag, version FROM version").fetchall()[0]
         return dict(db_results.items())
 
     #############################################################################
