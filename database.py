@@ -1,15 +1,38 @@
 
-# Calls to obtain values from the data structures (to be populated by the local database next)
+# Calls to obtain values from the data structures, populated by the local cache database
 
+import sqlalchemy
+import sys
+
+import utilities
 import const
 import schema
 
-def add_key_increment(dictionary, key):
-    if not key in dictionary:
-        dictionary[key]=0
-    dictionary[key]+=1
-
 class Data(object):
+
+    def __init__(self):
+        # get the database environment variables
+        username, password, database = utilities.get_database_variables()
+
+        # create a pool of connections, recycle so they do not become stale
+        database_url = "mysql://{username}:{password}@localhost/{database}".format(username = username,
+            password = password, database = database)
+
+        try:
+            self.engine = sqlalchemy.create_engine(database_url, pool_size=32, pool_recycle=3600)
+        except EnvironmentError as e:
+            print("Unable to connect to local database")
+            print("Database url {}".format(database_url))
+            sys.exit(e)
+
+    def query_database(self, query):
+        # obtain connection from pool, run query
+        # then release connection back to pool
+        connection = self.engine.connect()
+        results = connection.execute(query)
+        connection.close()
+        return results
+
     def load_data(self):
         self.data = const.DB()
 
@@ -34,8 +57,8 @@ class Data(object):
         return self.data.CURRENT_COUNTS
 
     def get_version(self):
-        self.load_data()
-        return self.data.VERSION
+        db_results = self.query_database("SELECT commit, data_release, status, tag, version from version").fetchall()[0]
+        return dict(db_results.items())
 
     #############################################################################
     ## Aggregations section
@@ -50,13 +73,13 @@ class Data(object):
                       "summary__experimental_strategies__experimental_strategy": {}}
 
         for project in projects:
-            add_key_increment(aggregates["primary_site"], project.primary_site[0])
-            add_key_increment(aggregates["project_id"], project.project_id)
-            add_key_increment(aggregates["program__name"], project.program.name)
+            utilities.add_key_increment(aggregates["primary_site"], project.primary_site[0])
+            utilities.add_key_increment(aggregates["project_id"], project.project_id)
+            utilities.add_key_increment(aggregates["program__name"], project.program.name)
             for item in project.summary.data_categories:
-                add_key_increment(aggregates["summary__data_categories__data_category"], item.data_category)
+                utilities.add_key_increment(aggregates["summary__data_categories__data_category"], item.data_category)
             for item in project.summary.experimental_strategies:
-                add_key_increment(aggregates["summary__experimental_strategies__experimental_strategy"], item.experimental_strategy)
+                utilities.add_key_increment(aggregates["summary__experimental_strategies__experimental_strategy"], item.experimental_strategy)
 
         project_aggregates=schema.ProjectAggregations(
             primary_site=schema.Aggregations(
@@ -79,14 +102,14 @@ class Data(object):
                       "cases__project__project_id": {}, "access": {}}
 
         for file in files:
-            add_key_increment(aggregates["data_category"], file.data_category)
-            add_key_increment(aggregates["experimental_strategy"], file.experimental_strategy)
-            add_key_increment(aggregates["data_format"], file.data_format)
-            add_key_increment(aggregates["platform"], file.platform)
-            add_key_increment(aggregates["access"], file.access)
+            utilities.add_key_increment(aggregates["data_category"], file.data_category)
+            utilities.add_key_increment(aggregates["experimental_strategy"], file.experimental_strategy)
+            utilities.add_key_increment(aggregates["data_format"], file.data_format)
+            utilities.add_key_increment(aggregates["platform"], file.platform)
+            utilities.add_key_increment(aggregates["access"], file.access)
             project = file.cases.hits[0].project
-            add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
-            add_key_increment(aggregates["cases__project__project_id"], project.project_id)
+            utilities.add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
+            utilities.add_key_increment(aggregates["cases__project__project_id"], project.project_id)
 
         file_aggregates = schema.FileAggregations(
             data_category=schema.Aggregations(
@@ -113,12 +136,12 @@ class Data(object):
                       "project__program__name": {}}
 
         for case in cases:
-            add_key_increment(aggregates["demographic__ethnicity"], case.demographic.ethnicity)
-            add_key_increment(aggregates["demographic__gender"], case.demographic.gender)
-            add_key_increment(aggregates["demographic__race"], case.demographic.race)
-            add_key_increment(aggregates["primary_site"], case.primary_site)
-            add_key_increment(aggregates["project__project_id"], case.project.project_id)
-            add_key_increment(aggregates["project__program__name"], case.project.program.name)
+            utilities.add_key_increment(aggregates["demographic__ethnicity"], case.demographic.ethnicity)
+            utilities.add_key_increment(aggregates["demographic__gender"], case.demographic.gender)
+            utilities.add_key_increment(aggregates["demographic__race"], case.demographic.race)
+            utilities.add_key_increment(aggregates["primary_site"], case.primary_site)
+            utilities.add_key_increment(aggregates["project__project_id"], case.project.project_id)
+            utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
 
         case_aggregates=schema.CaseAggregations(
             demographic__ethnicity=schema.Aggregations(
