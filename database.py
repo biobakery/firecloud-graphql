@@ -17,10 +17,6 @@ class Data(object):
         self.load_data()
         return [self.get_project(project_id) for project_id in self.data.CURRENT_PROJECTS.keys()]
 
-    def get_user(self):
-        self.load_data()
-        return self.data.CURRENT_USER
-
     def get_project(self,id):
         self.load_data()
         return self.data.CURRENT_PROJECTS[id]
@@ -28,10 +24,6 @@ class Data(object):
     def get_file(self,id):
         self.load_data()
         return self.data.TEST_FILES[id]
-
-    def get_case_annotation(self):
-        self.load_data()
-        return self.data.CURRENT_CASE_ANNOTATION
 
     def get_current_files(self):
         self.load_data()
@@ -143,11 +135,23 @@ class Data(object):
 
         return case_aggregates
 
-    def get_facets(self):
-        return "null" # this is not currently being used
-
     def get_cart_file_size(self):
         self.load_data()
         return self.data.CURRENT_FILE_SIZE
+
+    #############################################################################
+    ## Default constant section
+    ## These functions return default constants are they are not currently in use.
+    ## They will be placed in use in later versions of the server.
+    #############################################################################
+
+    def get_user(self):
+        return schema.User(username="null") # no users currently set
+    
+    def get_case_annotation(self):
+        return schema.CaseAnnotation() # not currently used
+
+    def get_facets(self):
+        return "null" # this is not currently being used
 
 data = Data()

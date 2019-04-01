@@ -15,12 +15,8 @@ class DB(object):
     def __init__(self):
         import schema
     
-        self.CURRENT_CASE_ANNOTATION = schema.CaseAnnotation() # not currently used
-
-        self.CURRENT_USER = schema.User(username="null") # no users are currently being used
 
         self.CURRENT_FILE_SIZE = schema.FileSize(65000000000) # this is the total amount of files in repo table shown
-
         self.CURRENT_PROGRAMS = [schema.Program(name="NHSII")]
 
         self.DATA_CATEGORIES = [schema.DataCategories(case_count=2, data_category="Raw Reads"),
