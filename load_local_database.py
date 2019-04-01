@@ -11,6 +11,8 @@ import string
 import query_firecloud
 import query_bigquery
 
+import utilities
+
 def parse_arguments(args):
     """ Parse the arguments from the user """
     parser = argparse.ArgumentParser(
@@ -31,20 +33,6 @@ def parse_arguments(args):
         default="HPFS_Demo_Clean",
         help="google big query dataset name \n]",
         required=False)
-    parser.add_argument(
-        "--local-db",
-        default="portal_ui",
-        help="local mysql/mariadb database name \n",
-        required=False)
-    parser.add_argument(
-        "--mysql-user",
-        default="biom_mass",
-        help="local mysql/mariadb user \n",
-        required=False)
-    parser.add_argument(
-        "--mysql-psw",
-        help="local mysql/mariadb password \n",
-        required=True)
 
     return parser.parse_args()
 
@@ -77,11 +65,14 @@ def main():
     # parse arguments from the user
     args = parse_arguments(sys.argv)
 
+    # get the database environment variables
+    mysql_user, mysql_psw, local_db = utilities.get_database_variables()
+
     # Get data from  big query
     values_participant,values_sample,columns_participant,columns_sample=query_bigquery.query_bigquery(args.project,args.dataset,args.key_file)
 
     # Construct query to  create db in mariadb
-    query_create_db = "CREATE DATABASE IF NOT EXISTS "+args.local_db
+    query_create_db = "CREATE DATABASE IF NOT EXISTS "+local_db
 
     # Construct query to  create table  participant in  mariadb
     columns_participant_desc = columns_participant.replace(","," varchar(100),")
@@ -111,13 +102,13 @@ def main():
     print(query_create_participant,query_create_sample)
 
     # Connect to mariadb
-    mariadb_connection = mariadb.connect(user=args.mysql_user, password=args.mysql_psw)
+    mariadb_connection = mariadb.connect(user=mysql_user, password=mysql_psw)
     cursor = mariadb_connection.cursor(buffered=True)
 
     # Execute create db
     cursor.execute(query_create_db)
     mariadb_connection.commit()
-    cursor.execute("USE " + args.local_db)
+    cursor.execute("USE " + local_db)
     mariadb_connection.commit()
 
     # Drop tables if exist
@@ -256,7 +247,7 @@ def main():
            new_version = str(0.1)
 
     now = datetime.datetime.now()
-    release_date ="Date Release "+new_version+" "+ now.strftime("%b %d, %Y")
+    release_date ="Data Release v"+new_version+" - "+ now.strftime("%b %d, %Y")
     commit ="commit_"+now.strftime("%m%d%Y")
     query_insert_version ='''INSERT INTO `version` (
            commit,

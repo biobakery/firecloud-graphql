@@ -1,7 +1,24 @@
 
+import os
 import json
 import ast
 import collections
+
+def add_key_increment(dictionary, key):
+    if not key in dictionary:
+        dictionary[key]=0
+    dictionary[key]+=1
+
+def get_database_variables():
+    try:
+        username = os.environ['DB_USER']
+        password = os.environ['DB_PASSWORD']
+        database = os.environ['DB_DATABASE']
+    except KeyError as e:
+        print("Unable to find database settings in env variables")
+        sys.exit(e)
+
+    return username, password, database
 
 def get_class_member_value(obj, levels, subset=False):
     final_value = obj

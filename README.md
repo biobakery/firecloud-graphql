@@ -4,7 +4,7 @@
 ## GraphQL Server
 
 To install: 
-`` $ pip install firecloud flask graphene>=2.0.0 flask-graphql flask-cors``
+`` $ pip install firecloud flask graphene>=2.0.0 flask-graphql flask-cors sqlalchemy``
 
 * Also [firecloud-tools](https://github.com/broadinstitute/firecloud-tools) are required for the Firecloud API queries.
 
@@ -25,7 +25,8 @@ The script that loads the local database with data from the Firecloud workspaces
 
 Script calls functions from other 2 scripts query_firecloud.py and query_bigquery.py. These 2 scripts can be run to view data in Firecloud and BigQuery
 
-Before running the script first set up the environment for the external API calls and have mariadb running.
+Before running the script first set up the environment for the external API calls and have mariadb running. This script requires the same three
+environment variables to query the local database as the server.
 
 ### Firecloud API
 
