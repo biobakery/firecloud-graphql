@@ -28,13 +28,22 @@ class Data(object):
             print("Database url {}".format(database_url))
             sys.exit(e)
 
-    def query_database(self, query):
+    def query_database(self, query, fetchall=False):
         # obtain connection from pool, run query
         # then release connection back to pool
         connection = self.engine.connect()
         results = connection.execute(query)
-        connection.close()
-        return results
+  
+        # if fetchall then get all results (to close cursor)
+        # and then close connection
+        # if not, then return connction so function can
+        # iterate on results and then close connection
+        if fetchall:
+            results = results.fetchall()
+            connection.close()
+            return results
+        else:
+            return connection, results
 
     def load_data(self):
         self.data = const.DB()
@@ -50,7 +59,7 @@ class Data(object):
                  "participant.id, project.program " +\
                  "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id " +\
                  "INNER JOIN participant ON file_sample.participant=participant.entity_participant_id"
-        db_results = self.query_database(query)
+        connection, db_results = self.query_database(query)
         files = []
         for row in db_results:
             files.append(schema.File(
@@ -80,6 +89,7 @@ class Data(object):
                 file_id=row[0],
                 type=row[7]
             ))
+        connection.close()
         return files
 
     def get_current_cases(self):
@@ -88,7 +98,7 @@ class Data(object):
                  " project.project_id " +\
                  "FROM sample INNER JOIN participant ON sample.participant=participant.entity_participant_id " +\
                  "INNER JOIN project ON sample.project=project.project_id"
-        db_results = self.query_database(query)
+        connection, db_results = self.query_database(query)
         cases = []
         for row in db_results:
             cases.append(schema.Case(
@@ -102,17 +112,18 @@ class Data(object):
                 files=schema.CaseFiles(hits=[self.data.CASE_FILES["1"],self.data.CASE_FILES["2"],self.data.CASE_FILES["3"]])
             ))
         #return self.data.CURRENT_CASES
+        connection.close()
         return cases
 
     def get_cart_file_size(self):
-        db_results = self.query_database("SELECT SUM(file_size) from file_sample").fetchall()[0][0]
+        db_results = self.query_database("SELECT SUM(file_size) from file_sample", fetchall=True)[0][0]
         return schema.FileSize(db_results)
 
     def get_current_counts(self):
         query = "SELECT COUNT(distinct project), COUNT(distinct participant), COUNT(distinct sample), " +\
                 "COUNT(distinct data_format), COUNT(IF(type='"+RAW_FILE_TYPE+"',1,NULL)), " +\
                 "COUNT(IF(type='"+PROCESSED_FILE_TYPE+"',1,NULL)) FROM file_sample"
-        db_results = self.query_database(query).fetchall()[0]
+        db_results = self.query_database(query, fetchall=True)[0]
         counts = schema.Count(
             projects=db_results[0],
             participants=db_results[1],
@@ -124,7 +135,7 @@ class Data(object):
         return counts
 
     def get_version(self):
-        db_results = self.query_database("SELECT commit, data_release, status, tag, version FROM version").fetchall()[0]
+        db_results = self.query_database("SELECT commit, data_release, status, tag, version FROM version", fetchall=True)[0]
         return dict(db_results.items())
 
     #############################################################################
