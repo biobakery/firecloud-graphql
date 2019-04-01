@@ -81,7 +81,7 @@ class Data(object):
                             id=row[11],
                             project_id=row[10],
                             name=row[10],
-                            program=row[14],
+                            program=schema.Program(name=row[14]),
                             primary_site=row[12]),
                         demographic=schema.Demographic("not hispanic or latino","male","white"), 
                         primary_site=row[12])]
@@ -95,7 +95,7 @@ class Data(object):
     def get_current_cases(self):
         self.load_data()
         query = "SELECT participant.id, participant.entity_participant_id, project.primary_site, " +\
-                 " project.project_id " +\
+                 " project.id, project.project_id, project.program " +\
                  "FROM sample INNER JOIN participant ON sample.participant=participant.entity_participant_id " +\
                  "INNER JOIN project ON sample.project=project.project_id"
         connection, db_results = self.query_database(query)
@@ -106,12 +106,16 @@ class Data(object):
                 case_id=row[1],
                 primary_site=row[2],
                 demographic=schema.Demographic("not hispanic or latino","male","white"),
-                project=self.data.CURRENT_PROJECTS["1"],
+                project=schema.Project(
+                    id=row[3],
+                    project_id=row[4],
+                    name=row[4],
+                    program=schema.Program(name=row[5]),
+                    primary_site=row[2]),
                 summary=schema.Summary(case_count=1,file_count=1,file_size=1,
                         data_categories=self.data.DATA_CATEGORIES_SINGLE_CASE),
                 files=schema.CaseFiles(hits=[self.data.CASE_FILES["1"],self.data.CASE_FILES["2"],self.data.CASE_FILES["3"]])
             ))
-        #return self.data.CURRENT_CASES
         connection.close()
         return cases
 
