@@ -37,6 +37,19 @@ class Data(object):
         self.load_data()
         return self.data.TEST_CASES[id]
 
+    def get_cart_file_size(self):
+        self.load_data()
+        return self.data.CURRENT_FILE_SIZE
+
+    def get_current_counts(self):
+        self.load_data()
+        return self.data.CURRENT_COUNTS
+
+    #############################################################################
+    ## Aggregations section
+    ## These functions create aggregations of the object lists they are provided.
+    #############################################################################
+
     def get_project_aggregations(self, projects):
         # compile aggregations from project
         aggregates = {"primary_site": {}, "program__name": {},
@@ -66,10 +79,6 @@ class Data(object):
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["summary__experimental_strategies__experimental_strategy"].items()]))
 
         return project_aggregates
-
-    def get_current_counts(self):
-        self.load_data()
-        return self.data.CURRENT_COUNTS
 
     def get_file_aggregations(self, files):
         # aggregate file data
@@ -134,10 +143,6 @@ class Data(object):
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__program__name"].items()]))
 
         return case_aggregates
-
-    def get_cart_file_size(self):
-        self.load_data()
-        return self.data.CURRENT_FILE_SIZE
 
     #############################################################################
     ## Default constant section
