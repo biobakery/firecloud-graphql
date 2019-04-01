@@ -52,8 +52,8 @@ class Data(object):
         return self.data.CURRENT_CASES
 
     def get_cart_file_size(self):
-        self.load_data()
-        return self.data.CURRENT_FILE_SIZE
+        db_results = self.query_database("SELECT SUM(file_size) from file_sample").fetchall()[0][0]
+        return schema.FileSize(db_results)
 
     def get_current_counts(self):
         query = "SELECT COUNT(distinct project), COUNT(distinct participant), COUNT(distinct sample), " +\
