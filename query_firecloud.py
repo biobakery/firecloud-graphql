@@ -35,20 +35,23 @@ def get_workspaces(namespace):
         if namespace == space['workspace']['namespace']:
             yield space['workspace']['name']
 
-def get_all_workspace_data():
+def get_all_workspace_data(verbose=False):
     # search through all of the workspaces in the namespace
     all_participants= list()
     all_samples= list()
     for workspace in get_workspaces(NAMESPACE):
-        print("Gather data from " + workspace)
+        if verbose:
+            print("Gather data from " + workspace)
         samples = get_entities(NAMESPACE,workspace,"sample")
         sample_attributes = dict([(item['attributes']['sample'],item['attributes']) for item in samples])
-        print("sample names")
-        print(sample_attributes.keys())
+        if verbose:
+            print("sample names")
+            print(sample_attributes.keys())
         participants = get_entities(NAMESPACE,workspace,"participant")
         participant_names = [item['name'] for item in participants]
-        print("participant names")
-        print(participant_names)
+        if verbose:
+            print("participant names")
+            print(participant_names)
         for item in samples:
             item['attributes']['project']=workspace
         all_samples.append(samples)
@@ -57,4 +60,4 @@ def get_all_workspace_data():
     return all_samples, all_participants   
 
 if __name__ == "__main__":
-    get_all_workspace_data()
+    get_all_workspace_data(verbose=True)

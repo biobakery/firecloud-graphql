@@ -28,12 +28,16 @@ def parse_arguments(args):
         default="HPFS_Demo_Clean",
         help="google big query dataset name \n]",
         required=False)
+    parser.add_argument(
+        "--verbose",
+        help="print each data set loaded to screen",
+        action='store_true')
 
     return parser.parse_args()
 
-def get_firecloud_data():
+def get_firecloud_data(verbose):
 
-    all_samples,all_participants = query_firecloud.get_all_workspace_data()
+    all_samples,all_participants = query_firecloud.get_all_workspace_data(verbose)
 
     values_file_samples = list()
     values_participants = list()
@@ -61,6 +65,7 @@ def main():
     args = parse_arguments(sys.argv)
 
     # get the database environment variables
+    print("Getting local database settings")
     mysql_user, mysql_psw, local_db = utilities.get_database_variables()
 
     # get the location of the auth key (for firecloud and also google big query)
@@ -72,7 +77,8 @@ def main():
         sys.exit(e)
 
     # Get data from  big query
-    values_participant,values_sample,columns_participant,columns_sample=query_bigquery.query_bigquery(args.project,args.dataset,key_file)
+    print("Calling Google BigQuery API")
+    values_participant,values_sample,columns_participant,columns_sample=query_bigquery.query_bigquery(args.project,args.dataset,key_file,args.verbose)
 
     # Construct query to  create db in mariadb
     query_create_db = "CREATE DATABASE IF NOT EXISTS "+local_db
@@ -102,9 +108,11 @@ def main():
     query_create_sample = query_create_sample.replace("participant varchar(100)","participant varchar(100) not null")
     query_create_participant = query_create_participant.replace(
         "entity_participant_id varchar(100)","entity_participant_id varchar(100) not null  UNIQUE KEY")
-    print(query_create_participant,query_create_sample)
+    if args.verbose:
+        print(query_create_participant,query_create_sample)
 
     # Connect to mariadb
+    print("Connecting to local database")
     mariadb_connection = mariadb.connect(user=mysql_user, password=mysql_psw)
     cursor = mariadb_connection.cursor(buffered=True)
 
@@ -115,30 +123,35 @@ def main():
     mariadb_connection.commit()
 
     # Get the version of the existing database
+    print("Get latest database version")
     try:
         cursor.execute("SELECT max(version) as maxversion, updated from  `version`")
         rows = cursor.fetchall()
     except mariadb.errors.ProgrammingError:
         rows = []
+        prior_version = "NA"
         new_version = str(0.1)
 
     for maxversion, updated in rows:
         if maxversion:
+           prior_version = maxversion
            new_version = str(float(str(maxversion)) + 0.1)
         else:
+           prior_version = "NA"
            new_version = str(0.1)
+    print("** Prior database version was {}".format(prior_version))
 
     # Drop tables if exist
     cursor.execute("SET FOREIGN_KEY_CHECKS=0")
     mariadb_connection.commit()
 
+    print("Dropping existing tables")
     cursor.execute("DROP TABLE IF EXISTS sample")
     cursor.execute("DROP TABLE IF EXISTS participant")
     cursor.execute("DROP TABLE IF EXISTS file_sample")
     cursor.execute("DROP TABLE IF EXISTS project")
     cursor.execute("DROP TABLE IF EXISTS version")
     mariadb_connection.commit()
-
 
     # Run create table participant statement
     cursor.execute(query_create_participant)
@@ -151,19 +164,23 @@ def main():
     # Construct and exxecute insert participants into mariadb participant statement
     for row in values_participant:
         insert_participant = "INSERT into participant (" + columns_participant + ") VALUES(" + row + ")"
-        print(insert_participant)
+        if args.verbose:
+            print(insert_participant)
         cursor.execute(insert_participant)
     mariadb_connection.commit()
+    print("** {} total rows added to participant table".format(len(values_participant)))
 
     # Construct and execute insert samples into mariadb sample table
     for row in values_sample:
         insert_sample = "INSERT into sample (" + columns_sample + ") VALUES(" + row + ")"
-        print(insert_sample)
+        if args.verbose:
+            print(insert_sample)
         cursor.execute(insert_sample)
     mariadb_connection.commit()
+    print("** {} total rows added to sample table".format(len(values_sample)))
 
     # Get data from FireCloud workspaces
-    values_file_samples,keys_file_samples,participants=get_firecloud_data()
+    values_file_samples,keys_file_samples,participants=get_firecloud_data(args.verbose)
 
     # Construct query to create table file_sample in mariadb
     columns_file_sample =','.join(keys_file_samples[0])
@@ -186,7 +203,8 @@ def main():
         "entity_sample_id varchar(100)","entity_sample_id varchar(100) not null")
     query_create_file_sample = query_create_file_sample.replace("participant varchar(100)","participant varchar(100) not null")
 
-    print(query_create_file_sample)
+    if args.verbose:
+        print(query_create_file_sample)
 
     # Execure create table file_sample
     cursor.execute(query_create_file_sample)
@@ -197,14 +215,17 @@ def main():
         column_names = ','.join(keys_file_samples[index])
         row_values = ','.join("'" + str(e) + "'" for e in values_file_samples[index])
         insert_file_sample = "INSERT into file_sample (" + column_names + ") VALUES(" + row_values + ")"
-        print(insert_file_sample)
+        if args.verbose:
+            print(insert_file_sample)
         cursor.execute(insert_file_sample)
     mariadb_connection.commit()
+    print("** {} total rows added to file_sample table".format(len(values_file_samples)))
 
     # Update sample tables  'project' field
     for row in values_file_samples:
         update_sample_query="UPDATE sample set project='"+row[3]+"' where sample='"+row[6]+"'"
-        print(update_sample_query)
+        if args.verbose:
+            print(update_sample_query)
         cursor.execute(update_sample_query)
 
     mariadb_connection.commit()
@@ -234,9 +255,10 @@ def main():
 
         project_row_values ="('" + str(project) + "','" + str(project) + "'," + "'" + str(project.split("_")[0]) + "', 'Stool')"
         query_insert_project = query_insert_project +  project_row_values
-
-        print(query_insert_project)
+        if args.verbose:
+            print(query_insert_project)
         cursor.execute(query_insert_project)
+    print("** {} total rows added to project table".format(len(rows)))
 
     mariadb_connection.commit()
 
@@ -264,15 +286,15 @@ def main():
            ) VALUES'''
     version_row_values ="('"+commit+"','"+release_date+"','OK','"+new_version+"','"+new_version+"')"
     query_insert_version = query_insert_version +  version_row_values
-    print(query_insert_version)
+    if args.verbose:
+        print(query_insert_version)
     cursor.execute(query_insert_version)
     mariadb_connection.commit()
+    print("** New version table created with version {}".format(new_version))
 
     cursor.close()
     mariadb_connection.close()
 
-
-    print("--All data loaded---")
 
 if __name__ == "__main__":
     main()

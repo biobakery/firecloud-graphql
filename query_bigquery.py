@@ -61,7 +61,7 @@ def get_columns_query(project,dataset,table):
 
     return query
 
-def query_bigquery(project, dataset, key):
+def query_bigquery(project, dataset, key, verbose=False):
 
     import google.cloud
     from google.cloud import bigquery
@@ -87,7 +87,8 @@ def query_bigquery(project, dataset, key):
        
     for row in query_sample_cols_job:
         columns_sample = row[0]
-        print("Sample column", columns_sample, "\n")
+        if verbose:
+            print("Sample column", columns_sample, "\n")
 
     # Construct query to get columns of  participant table in big query
     QUERY_PART_COLS = get_columns_query(project,dataset,"participant")
@@ -96,13 +97,15 @@ def query_bigquery(project, dataset, key):
     query_part_cols_job = client.query(QUERY_PART_COLS)
     for row in query_part_cols_job:
         columns_participant = row[0]
-        print("Participant column", columns_participant, "\n")
+        if verbose:
+            print("Participant column", columns_participant, "\n")
    
     # Get participant values 
     values_participant = list()
     for row in query_participant_job:
         values_participant_row = ','.join("'" + str(e)+ "'" for e in row)
-        print ("Participant row",values_participant_row, "\n")
+        if verbose:
+            print ("Participant row",values_participant_row, "\n")
         values_participant.append(values_participant_row)
 
     
@@ -110,7 +113,8 @@ def query_bigquery(project, dataset, key):
     values_sample = list()
     for row in query_sample_job:
         values_sample_row = ','.join("'" + str(e)+ "'" for e in row)
-        print ("Sample row", values_sample_row, "\n")
+        if verbose:
+            print ("Sample row", values_sample_row, "\n")
         values_sample.append(values_sample_row)
 
     return values_participant, values_sample, columns_participant, columns_sample
