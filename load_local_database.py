@@ -23,7 +23,7 @@ def parse_arguments(args):
         required=False)
     parser.add_argument(
         "--key-file",
-        default="biom-mass-fdcadb440fdf.json",
+        default="/home/hutlab_public/compute_engine_service_account_key/biom-mass-8dc9ab934396.json",
         help="google project service account private key file path\n]",
         required=False)
     parser.add_argument(
@@ -256,7 +256,7 @@ def main():
            new_version = str(0.1)
 
     now = datetime.datetime.now()
-    release_date ="Date Release "+new_version+" "+ now.strftime("%b %d, %Y")
+    release_date ="Data Release "+new_version+" - "+ now.strftime("%b %d, %Y")
     commit ="commit_"+now.strftime("%m%d%Y")
     query_insert_version ='''INSERT INTO `version` (
            commit,

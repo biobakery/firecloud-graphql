@@ -1,14 +1,56 @@
-
 # Calls to obtain values from the data structures (to be populated by the local database next)
-
+import mysql.connector
+from mysql.connector import pooling
+import os
+import dbqueries
 import const
 
+# add increment for aggregations
 def add_key_increment(dictionary, key):
     if not key in dictionary:
         dictionary[key]=0
     dictionary[key]+=1
 
 class Data(object):
+
+    def __init__(self):
+        self.conn_pool = mysql.connector.connect(use_pure=False, pool_name="portal",
+                                                 pool_size=10,
+                                                 pool_reset_session=True,
+                                                 database='portal_ui',
+                                                 user='biom_mass',
+                                                 password=os.environ['BIOM_MASS'])
+
+    def __exit__(self):
+        self.conn_pool.close()
+
+    # get connection from pool
+    def get_pool(self):
+        conn = mysql.connector.connect(pool_name="portal")
+        cursor = conn.cursor(buffered=True,dictionary=True)
+        return conn, cursor
+
+    # release connection back to pool
+    def release_pool(self,conn,cursor):
+        cursor.close()
+        conn.close()
+
+    # runs query and returns results
+    def fetch_results(self,query):
+        conn,cursor=self.get_pool()
+        cursor.execute(query)
+        data=[row for row in cursor]
+        self.release_pool(conn,cursor)
+        return data
+
+    # get current version from db
+    def get_current_version(self):
+        version_data=self.fetch_results(dbqueries.version_query)
+        del  version_data[0]['updated']
+        del  version_data[0]['id']
+        return version_data[0]
+
+
     def load_data(self):
         self.data = const.DB()
 
@@ -78,9 +120,21 @@ class Data(object):
 
         return project_aggregates
 
+
+   # get all  counts for front page summary from db
     def get_current_counts(self):
-        self.load_data()
-        return self.data.CURRENT_COUNTS
+        import schema
+
+        counts_data = self.fetch_results(dbqueries.all_counts_query)
+
+        return schema.Count(
+                    projects=counts_data[0]['total'],
+                    participants=counts_data[1]['total'],
+                    samples=counts_data[2]['total'],
+                    dataFormats=counts_data[3]['total'],
+                    rawFiles=counts_data[4]['total'],
+                    processedFiles=counts_data[5]['total'])
+
 
     def get_file_aggregations(self, files):
         import schema
