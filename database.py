@@ -103,28 +103,28 @@ class Data(object):
         for row in db_results:
             if not row['participant'] in case_files:
                 case_files[row['participant']] = []
-            case_files[row['participant']].append(row)
+            case_files[row['participant']].append(dict(row.items()))
         connection.close()
 
         # gather participant data
-        query = "SELECT participant.id, participant.entity_participant_id, project.primary_site, " +\
-                 " project.id, project.project_id, project.program " +\
+        query = "SELECT participant.id as participant_id, participant.entity_participant_id as participant_name, project.primary_site as primary_site, " +\
+                 " project.id as project_id, project.project_id as project_name, project.program as program_name " +\
                  "FROM sample INNER JOIN participant ON sample.participant=participant.entity_participant_id " +\
                  "INNER JOIN project ON sample.project=project.project_id"
         connection, db_results = self.query_database(query)
         cases = []
         for row in db_results:
-            current_case_files = case_files[row[1]]
+            current_case_files = case_files[row['participant_name']]
             # create data categories
             data_categories_counts={}
-            for row in current_case_files:
-                data_categories_counts[row[3]]=data_categories_counts.get(row[3],0)+1
+            for case_row in current_case_files:
+                data_categories_counts[case_row['data_category']]=data_categories_counts.get(case_row['data_category'],0)+1
             data_categories = [schema.DataCategories(case_count=value, data_category=key) for key, value in data_categories_counts.items()]
  
             # create participant summary
             summary=schema.Summary(case_count=1, 
                                    file_count=len(current_case_files),
-                                   file_size=sum(map(int, [i[2] for i in current_case_files])),
+                                   file_size=sum(map(int, [case_row['file_size'] for case_row in current_case_files])),
                                    data_categories=data_categories)
 
             # create participant casefiles
@@ -132,23 +132,23 @@ class Data(object):
             for index, file_info in enumerate(current_case_files):
                 casefiles.append(schema.CaseFile(
                     id=index,
-                    data_category=file_info[3],
-                    experimental_strategy=file_info[4],
-                    data_format=file_info[5],
-                    platform=file_info[6],
-                    access=file_info[7]))
-            print row[2]
+                    data_category=file_info['data_category'],
+                    experimental_strategy=file_info['experimental_strategy'],
+                    data_format=file_info['data_format'],
+                    platform=file_info['platform'],
+                    access=file_info['access']))
+
             cases.append(schema.Case(
-                id=row[0],
-                case_id=row[1],
-                primary_site=row[2],
+                id=row['participant_id'],
+                case_id=row['participant_name'],
+                primary_site=row['primary_site'],
                 demographic=schema.Demographic("not hispanic or latino","male","white"),
                 project=schema.Project(
-                    id=row[3],
-                    project_id=row[4],
-                    name=row[4],
-                    program=schema.Program(name=row[5]),
-                    primary_site=[row[2]]),
+                    id=row['project_id'],
+                    project_id=row['project_name'],
+                    name=row['project_name'],
+                    program=schema.Program(name=row['program_name']),
+                    primary_site=[row['primary_site']]),
                 summary=summary,
                 files=schema.CaseFiles(hits=casefiles)
             ))
