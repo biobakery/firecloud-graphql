@@ -2,6 +2,7 @@
 import mysql.connector
 from mysql.connector import pooling
 import os
+import dbqueries
 import const
 
 # add increment for aggregations
@@ -44,7 +45,7 @@ class Data(object):
 
     # get current version from db
     def get_current_version(self):
-        version_data=self.fetch_results("select * from version order by updated desc limit 1 ")
+        version_data=self.fetch_results(dbqueries.version_query)
         del  version_data[0]['updated']
         del  version_data[0]['id']
         return version_data[0]
@@ -124,20 +125,15 @@ class Data(object):
     def get_current_counts(self):
         import schema
 
-        counts_data = self.fetch_results('''select count(id) as countid from project
-                                            union all select count(id) as countid from participant
-                                            union all select count(id) as countid from sample
-                                            union all select count(distinct data_format) as countid from file_sample
-                                            union all select count(id) as countid from file_sample where  type="rawFiles"
-                                            union all select count(id) as countid from file_sample where type="processedFiles"''')
+        counts_data = self.fetch_results(dbqueries.all_counts_query)
 
         return schema.Count(
-                    projects=counts_data[0]['countid'],
-                    participants=counts_data[1]['countid'],
-                    samples=counts_data[2]['countid'],
-                    dataFormats=counts_data[3]['countid'],
-                    rawFiles=counts_data[4]['countid'],
-                    processedFiles=counts_data[5]['countid'])
+                    projects=counts_data[0]['total'],
+                    participants=counts_data[1]['total'],
+                    samples=counts_data[2]['total'],
+                    dataFormats=counts_data[3]['total'],
+                    rawFiles=counts_data[4]['total'],
+                    processedFiles=counts_data[5]['total'])
 
 
     def get_file_aggregations(self, files):
