@@ -1,3 +1,7 @@
+#  This file holds all queries run in database.py
+
+
+
 all_counts_query='''select count(id) as total from project
                     union all select count(id) as total from participant
                     union all select count(id) as total from sample
