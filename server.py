@@ -15,7 +15,6 @@ import flask_graphql
 import graphene
 
 import schema
-import const
 from database import data
 
 NAME = "firecloud_graphql"
