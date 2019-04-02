@@ -63,6 +63,7 @@ class Data(object):
         files = []
         for row in db_results:
             files.append(schema.File(
+                id=row[0],
                 name=row[1],
                 participant=row[2],
                 sample=row[3],
@@ -82,7 +83,7 @@ class Data(object):
                             project_id=row[10],
                             name=row[10],
                             program=schema.Program(name=row[14]),
-                            primary_site=row[12]),
+                            primary_site=[row[12]]),
                         demographic=schema.Demographic("not hispanic or latino","male","white"), 
                         primary_site=row[12])]
                 ),
@@ -94,6 +95,18 @@ class Data(object):
 
     def get_current_cases(self):
         self.load_data()
+        # gather file data for participants
+        query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
+                "data_format, platform, access from file_sample"
+        connection, db_results = self.query_database(query)
+        case_files = {}
+        for row in db_results:
+            if not row['participant'] in case_files:
+                case_files[row['participant']] = []
+            case_files[row['participant']].append(row)
+        connection.close()
+
+        # gather participant data
         query = "SELECT participant.id, participant.entity_participant_id, project.primary_site, " +\
                  " project.id, project.project_id, project.program " +\
                  "FROM sample INNER JOIN participant ON sample.participant=participant.entity_participant_id " +\
@@ -101,6 +114,30 @@ class Data(object):
         connection, db_results = self.query_database(query)
         cases = []
         for row in db_results:
+            current_case_files = case_files[row[1]]
+            # create data categories
+            data_categories_counts={}
+            for row in current_case_files:
+                data_categories_counts[row[3]]=data_categories_counts.get(row[3],0)+1
+            data_categories = [schema.DataCategories(case_count=value, data_category=key) for key, value in data_categories_counts.items()]
+ 
+            # create participant summary
+            summary=schema.Summary(case_count=1, 
+                                   file_count=len(current_case_files),
+                                   file_size=sum(map(int, [i[2] for i in current_case_files])),
+                                   data_categories=data_categories)
+
+            # create participant casefiles
+            casefiles=[]
+            for index, file_info in enumerate(current_case_files):
+                casefiles.append(schema.CaseFile(
+                    id=index,
+                    data_category=file_info[3],
+                    experimental_strategy=file_info[4],
+                    data_format=file_info[5],
+                    platform=file_info[6],
+                    access=file_info[7]))
+            print row[2]
             cases.append(schema.Case(
                 id=row[0],
                 case_id=row[1],
@@ -111,10 +148,9 @@ class Data(object):
                     project_id=row[4],
                     name=row[4],
                     program=schema.Program(name=row[5]),
-                    primary_site=row[2]),
-                summary=schema.Summary(case_count=1,file_count=1,file_size=1,
-                        data_categories=self.data.DATA_CATEGORIES_SINGLE_CASE),
-                files=schema.CaseFiles(hits=[self.data.CASE_FILES["1"],self.data.CASE_FILES["2"],self.data.CASE_FILES["3"]])
+                    primary_site=[row[2]]),
+                summary=summary,
+                files=schema.CaseFiles(hits=casefiles)
             ))
         connection.close()
         return cases
