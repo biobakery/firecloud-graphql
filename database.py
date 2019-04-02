@@ -70,6 +70,7 @@ class Data(object):
             for count_type in ["data_category", "experimental_strategy"]:
                 project_info[id][count_type][row[count_type]]=project_info[id][count_type].get(row[count_type],0)+1
 
+        connection.close()
         projects = []
         for id, info in project_info.items():
             projects.append(schema.Project(
