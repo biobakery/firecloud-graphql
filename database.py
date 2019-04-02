@@ -5,7 +5,6 @@ import sqlalchemy
 import sys
 
 import utilities
-import const
 import schema
 
 RAW_FILE_TYPE = "rawFiles"
@@ -45,12 +44,47 @@ class Data(object):
         else:
             return connection, results
 
-    def load_data(self):
-        self.data = const.DB()
-
     def get_current_projects(self):
-        self.load_data()
-        return self.data.CURRENT_PROJECTS.values()
+        query = "SELECT file_sample.id as file_id, file_sample.participant, " +\
+                 "file_sample.file_size, file_sample.data_category, " +\
+                 "file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
+                 "participant.id as participant_id, project.program " +\
+                 "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id " +\
+                 "INNER JOIN participant ON file_sample.participant=participant.entity_participant_id"
+        connection, db_results = self.query_database(query)
+        project_info = {}
+        for row in db_results:
+            id = row['project_id']
+            if not id in project_info:
+                project_info[id]={"file_size":0, "file_count":0, "participants":set(), "data_category": {}, "experimental_strategy": {}}
+                project_info[id]['name']=row['project']
+                project_info[id]['program']=row['program']
+                project_info[id]['primary_site']=row['primary_site']
+            # compile file size
+            project_info[id]['file_size']+=int(row['file_size'])
+            # compile file count
+            project_info[id]['file_count']+=1
+            # compile cases
+            project_info[id]['participants'].add(row['participant_id'])
+            # count data category and experimental strategy
+            for count_type in ["data_category", "experimental_strategy"]:
+                project_info[id][count_type][row[count_type]]=project_info[id][count_type].get(row[count_type],0)+1
+
+        projects = []
+        for id, info in project_info.items():
+            projects.append(schema.Project(
+                id=id,
+                project_id=info['name'],
+                name=info['name'],
+                program=schema.Program(name=info['program']),
+                summary=schema.Summary(case_count=len(list(info['participants'])),
+                    file_count=info['file_count'],
+                    data_categories=[schema.DataCategories(case_count=value, data_category=key) for key,value in info['data_category'].items()],
+                    experimental_strategies=[schema.ExperimentalStrategies(file_count=value, experimental_strategy=key) for key,value in info['experimental_strategy'].items()],
+                    file_size=info['file_size']),
+                primary_site=[info['primary_site']]))
+
+        return projects
 
     def get_current_files(self):
         query = "SELECT file_sample.id as file_id, file_sample.file_name, file_sample.participant, file_sample.sample, " +\
@@ -94,7 +128,6 @@ class Data(object):
         return files
 
     def get_current_cases(self):
-        self.load_data()
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
                 "data_format, platform, access from file_sample"
