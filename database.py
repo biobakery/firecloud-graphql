@@ -53,42 +53,42 @@ class Data(object):
         return self.data.CURRENT_PROJECTS.values()
 
     def get_current_files(self):
-        query = "SELECT file_sample.id, file_sample.file_name, file_sample.participant, file_sample.sample, " +\
+        query = "SELECT file_sample.id as file_id, file_sample.file_name, file_sample.participant, file_sample.sample, " +\
                  "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
-                 "file_sample.platform, file_sample.experimental_strategy, file_sample.project, project.id, project.primary_site, " +\
-                 "participant.id, project.program " +\
+                 "file_sample.platform, file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
+                 "participant.id as participant_id, project.program " +\
                  "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id " +\
                  "INNER JOIN participant ON file_sample.participant=participant.entity_participant_id"
         connection, db_results = self.query_database(query)
         files = []
         for row in db_results:
             files.append(schema.File(
-                id=row[0],
-                name=row[1],
-                participant=row[2],
-                sample=row[3],
-                access=row[4],
-                file_size=row[5],
-                data_category=row[6],
-                data_format=row[7],
-                platform=row[8],
-                experimental_strategy=row[9],
-                file_name=row[1],
+                id=row['file_id'],
+                name=row['file_name'],
+                participant=row['participant'],
+                sample=row['sample'],
+                access=row['access'],
+                file_size=row['file_size'],
+                data_category=row['data_category'],
+                data_format=row['data_format'],
+                platform=row['platform'],
+                experimental_strategy=row['experimental_strategy'],
+                file_name=row['file_name'],
                 cases=schema.FileCases(
                     hits=[schema.FileCase(
-                        id=row[13],
-                        case_id=row[2],
+                        id=row['participant_id'],
+                        case_id=row['participant'],
                         project=schema.Project(
-                            id=row[11],
-                            project_id=row[10],
-                            name=row[10],
-                            program=schema.Program(name=row[14]),
-                            primary_site=[row[12]]),
+                            id=row['project_id'],
+                            project_id=row['project'],
+                            name=row['project'],
+                            program=schema.Program(name=row['program']),
+                            primary_site=[row['primary_site']]),
                         demographic=schema.Demographic("not hispanic or latino","male","white"), 
-                        primary_site=row[12])]
+                        primary_site=row['primary_site'])]
                 ),
-                file_id=row[0],
-                type=row[7]
+                file_id=row['file_id'],
+                type=row['data_format']
             ))
         connection.close()
         return files
