@@ -24,11 +24,6 @@ def parse_arguments(args):
         help="google project name \n]",
         required=False)
     parser.add_argument(
-        "--key-file",
-        default="biom-mass-fdcadb440fdf.json",
-        help="google project service account private key file path\n]",
-        required=False)
-    parser.add_argument(
         "--dataset",
         default="HPFS_Demo_Clean",
         help="google big query dataset name \n]",
@@ -68,8 +63,16 @@ def main():
     # get the database environment variables
     mysql_user, mysql_psw, local_db = utilities.get_database_variables()
 
+    # get the location of the auth key (for firecloud and also google big query)
+    # check for key here to prevent error with firecloud auth later
+    try:
+        key_file = os.environ['GOOGLE_APPLICATION_CREDENTIALS']
+    except KeyError as e:
+        print("Unable to find key file from env setting")
+        sys.exit(e)
+
     # Get data from  big query
-    values_participant,values_sample,columns_participant,columns_sample=query_bigquery.query_bigquery(args.project,args.dataset,args.key_file)
+    values_participant,values_sample,columns_participant,columns_sample=query_bigquery.query_bigquery(args.project,args.dataset,key_file)
 
     # Construct query to  create db in mariadb
     query_create_db = "CREATE DATABASE IF NOT EXISTS "+local_db
