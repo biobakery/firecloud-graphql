@@ -4,6 +4,7 @@ import mysql.connector
 from mysql.connector import pooling
 import os
 import schema
+import dbqueries
 
 
 # increments key for aggregations
@@ -17,7 +18,7 @@ class Data(object):
     def __init__(self):
 
         self.conn_pool=mysql.connector.connect(use_pure=False, pool_name="portal",
-                                                 pool_size=10,
+                                                 pool_size=15,
                                                  pool_reset_session=True,
                                                  database='portal_ui',
                                                  user='biom_mass',
@@ -50,8 +51,7 @@ class Data(object):
     # get all projects from db
     def get_current_projects(self):
         conn,cursor=self.get_pool()
-        projects_data=self.fetch_results(cursor,"select id from project")
-       # project_object=[self.get_project(project['id'],cursor) for project in projects_data]
+        projects_data=self.fetch_results(cursor,dbqueries.projects_query)
         project_object=[]
         for project in projects_data:
            getproject=self.get_project(project['id'],cursor)
@@ -67,8 +67,7 @@ class Data(object):
     # get current version from db
     def get_current_version(self):
        conn,cursor=self.get_pool()
-       version_data=self.fetch_results(cursor,
-                                       "select * from version order by updated desc limit 1 ")
+       version_data=self.fetch_results(cursor,dbqueries.version_query)
        self.release_pool(conn,cursor)
        del  version_data[0]['updated']
        del  version_data[0]['id']
@@ -78,16 +77,9 @@ class Data(object):
     # get project object details from db
     def get_project(self,id,cursor):
 
-        project_data=self.fetch_results(cursor,
-                                        "select * from project where  id =" + str(id))
+        project_data=self.fetch_results(cursor,dbqueries.project_query(id))
         project_id=project_data[0]['project_id']
-
-        counts_query="select count(id) as total from  file_sample where project='"+project_id+"'"
-        counts_query=counts_query+" union all "
-        counts_query=counts_query+"select count(distinct participant) as total from file_sample where project='"+project_id+"'"
-        counts_query=counts_query+" union all "
-        counts_query=counts_query+"select sum(file_size) as total from file_sample where project='"+project_id+"'"
-        proj_counts_data=self.fetch_results(cursor,counts_query)
+        proj_counts_data=self.fetch_results(cursor,dbqueries.project_counts_query(project_id))
 
         return schema.Project(
                 id=id,
@@ -106,16 +98,12 @@ class Data(object):
     # get data categories file and case counts from db for a project or a participant
     def get_data_categories(self,table,id,cursor):
 
-        data_cat_data=self.fetch_results(cursor,
-            "select distinct data_category from file_sample where "+ table+"='" + str(id)+"'")
+        data_cat_data=self.fetch_results(cursor,dbqueries.data_cat_query(table,id))
         data_cat=[]
         for item in data_cat_data:
-             count_query="select count(id) as total from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'"
-             count_query=count_query+" union all "
-             count_query=count_query+"select count(distinct participant) as total from file_sample where data_category='"+item['data_category']+"' and "+table+"='"+str(id)+"'"
-             count_data=self.fetch_results(cursor,count_query)
+            count_data=self.fetch_results(cursor,dbqueries.data_cat_counts_query(table,id,item['data_category']))
 
-             data_cat.append(
+            data_cat.append(
                     schema.DataCategories(
                         case_count=count_data[1]['total'],
                         file_count=count_data[0]['total'],
@@ -127,14 +115,10 @@ class Data(object):
     # get experimental strategies file count from db for a project
     def get_experimental_strategies(self,table,id,cursor):
 
-        exp_str_data=self.fetch_results(cursor,
-            "select distinct experimental_strategy from file_sample where "+ table+"='" + str(id) +"'")
+        exp_str_data=self.fetch_results(cursor,dbqueries.exp_str_query(table,id))
         exp_str=[]
         for item in exp_str_data:
-            count_query="select count(id) as total from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'"
-            count_query=count_query+" union all "
-            count_query=count_query+ "select count(distinct participant) as total from file_sample where experimental_strategy='"+item['experimental_strategy']+"' and "+table+"='"+str(id)+"'"
-            count_data=self.fetch_results(cursor,count_query)
+            count_data=self.fetch_results(cursor,dbqueries.exp_str_counts_query(table,id,item['experimental_strategy']))
             exp_str.append(
                 schema.ExperimentalStrategies(
                     case_count=count_data[1]['total'],
@@ -149,13 +133,7 @@ class Data(object):
     def get_file(self,id):
 
         conn,cursor=self.get_pool()
-        file_query='''select file_sample.*,
-                      project.id as p_id, project.project_id as proj_id,project.primary_site,
-                      participant.id as part_id
-                      from file_sample,project,participant where file_sample.id='''+str(id)
-        file_query=file_query+''' and file_sample.project=project.project_id and
-                                  file_sample.participant=participant.entity_participant_id'''
-        file_data=self.fetch_results(cursor,file_query)
+        file_data=self.fetch_results(cursor,dbqueries.file_query(id))
 
         file_object=schema.File(
                 id=id,
@@ -173,7 +151,6 @@ class Data(object):
                       hits=[schema.FileCase(
                       file_data[0]['part_id'],
                       case_id=file_data[0]['participant'],
-                      #project=self.get_project(file_data[0]['p_id'],cursor),
                       project=self.projects[str(file_data[0]['p_id'])],
                       demographic=schema.Demographic("not hispanic or latino","male","white"),
                       primary_site=file_data[0]['primary_site'])]),
@@ -190,14 +167,14 @@ class Data(object):
     # get ids of all files from db
     def get_current_files(self):
         conn,cursor=self.get_pool()
-        files_data=self.fetch_results(cursor,"select `id` from `file_sample`")
+        files_data=self.fetch_results(cursor,dbqueries.files_query)
         self.release_pool(conn,cursor)
         return schema.Files(hits=[file['id'] for file in files_data])
 
     # get ids of all cases from db
     def get_current_cases(self):
         conn,cursor=self.get_pool()
-        cases_data=self.fetch_results(cursor,"select id from participant")
+        cases_data=self.fetch_results(cursor, dbqueries.cases_query)
         self.release_pool(conn,cursor)
         return schema.RepositoryCases(hits=[case['id'] for case in cases_data])
 
@@ -206,28 +183,14 @@ class Data(object):
 
         # get entity_participant_id and file info from db
         conn,cursor=self.get_pool()
-        case_data=self.fetch_results(cursor,'''select participant.entity_participant_id, file_sample.* from participant, file_sample
-             where participant.id='''+str(id)+" and file_sample.participant=participant.entity_participant_id")
+        case_data=self.fetch_results(cursor,dbqueries.case_query(id))
         part_id=case_data[0]['entity_participant_id']
-
-        counts_query="select count(id) as total from participant where entity_participant_id="+str(part_id)
-        counts_query=counts_query+" union all "
-        counts_query=counts_query+ "select count(id) as total from file_sample where participant="+str(part_id)
-        counts_query=counts_query+" union all "
-        counts_query= counts_query+"select sum(file_size) as total from file_sample where participant="+str(part_id)
-        counts_data=self.fetch_results(cursor,counts_query)
-
-        proj_query="select distinct file_sample.project, project.id as p_id, project.primary_site "
-        proj_query=proj_query+"from file_sample, project where file_sample.participant='"
-        proj_query=proj_query+str(part_id)+"' and project.project_id=file_sample.project limit 1"
-        proj_data=self.fetch_results(cursor,proj_query)
-
+        counts_data=self.fetch_results(cursor,dbqueries.case_counts_query(part_id))
+        proj_data=self.fetch_results(cursor,dbqueries.case_project_query(part_id))
         proj_id=proj_data[0]['p_id']
 
-
         # query to get metadata from prticipant table
-        metadata_part_data=self.fetch_results(cursor,
-            "select * from participant where entity_participant_id="+str(part_id))
+        metadata_part_data=self.fetch_results(cursor,dbqueries.metadata_part_query(part_id))
         del metadata_part_data[0]['updated']
         metadata_part_data[0]['participant'] = metadata_part_data[0]['entity_participant_id']
         del metadata_part_data[0]['entity_participant_id']
@@ -235,12 +198,17 @@ class Data(object):
 
 
        # query to get metadata from sample table
-        metadata_data=self.fetch_results(cursor,
-             "select * from sample where participant="+str(part_id))
+        metadata_data=self.fetch_results(cursor,dbqueries.metadata_sample_query(part_id))
         metadata_list=[]
         for metadata in metadata_data:
             del metadata['updated']
             metadata_list.append(schema.MetadataSample(**metadata))
+
+        # create file hits list
+        case_files_list=[]
+        for case_file in case_data:
+            del case_file['entity_participant_id']
+            case_files_list.append(schema.CaseFile(**case_file))
 
         case_object=schema.Case(id,
                     case_id=part_id,
@@ -248,7 +216,6 @@ class Data(object):
                     demographic=schema.Demographic("not hispanic or latino","male","white"),
                     metadata_participant=metadata_participant,
                     metadata_sample=metadata_list,
-                   # project=self.get_project(proj_id,cursor),
                     project=self.projects[str(proj_id)],
                     summary=schema.Summary(
                       case_count=counts_data[0]['total'],
@@ -256,13 +223,7 @@ class Data(object):
                       file_size=counts_data[2]['total'],
                       data_categories=self.get_data_categories("participant",part_id,cursor),
                       experimental_strategies=self.get_experimental_strategies("participant",part_id,cursor)),
-                    files=schema.CaseFiles(hits=[schema.CaseFile(
-                               case_file['id'],
-                               experimental_strategy=case_file['experimental_strategy'],
-                               data_category=case_file['data_category'],
-                               data_format=case_file['data_format'],
-                               platform=case_file['platform'],
-                               access=case_file['access']) for case_file in case_data]))
+                    files=schema.CaseFiles(hits=case_files_list))
 
 
         self.release_pool(conn,cursor)
@@ -306,20 +267,15 @@ class Data(object):
     def get_current_counts(self):
 
         conn,cursor=self.get_pool()
-        counts_data=self.fetch_results(cursor,'''select count(id) as countid from project
-                               union all select count(id) as countid from participant
-                               union all select count(id) as countid from sample
-                               union all select count(distinct data_format) as countid from file_sample
-                               union all select count(id) as countid from file_sample where  type="rawFiles"
-                               union all select count(id) as countid from file_sample where type="processedFiles"''')
+        counts_data=self.fetch_results(cursor,dbqueries.all_counts_query)
         self.release_pool(conn,cursor)
         return schema.Count(
-                    projects=counts_data[0]['countid'],
-                    participants=counts_data[1]['countid'],
-                    samples=counts_data[2]['countid'],
-                    dataFormats=counts_data[3]['countid'],
-                    rawFiles=counts_data[4]['countid'],
-                    processedFiles=counts_data[5]['countid'])
+                    projects=counts_data[0]['total'],
+                    participants=counts_data[1]['total'],
+                    samples=counts_data[2]['total'],
+                    dataFormats=counts_data[3]['total'],
+                    rawFiles=counts_data[4]['total'],
+                    processedFiles=counts_data[5]['total'])
 
 
 
@@ -413,9 +369,21 @@ class Data(object):
     # get total size of all files
     def get_cart_file_size(self):
         conn,cursor=self.get_pool()
-        file_data=self.fetch_results(cursor,"select sum(file_size) as sum_size from  file_sample")
+        file_data=self.fetch_results(cursor,dbqueries.files_size_query)
         self.release_pool(conn,cursor)
         return schema.FileSize(file_data[0]['sum_size'])
+
+    def get_files_total(self):
+        conn,cursor=self.get_pool()
+        files_count_data=self.fetch_results(cursor,dbqueries.files_total_query)
+        self.release_pool(conn,cursor)
+        return files_count_data[0]['total']
+
+    def get_cases_total(self):
+        conn,cursor=self.get_pool()
+        cases_count_data=self.fetch_results(cursor,dbqueries.cases_total_query)
+        self.release_pool(conn,cursor)
+        return cases_count_data[0]['total']
 
 data = Data()
 
