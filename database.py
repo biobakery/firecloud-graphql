@@ -121,9 +121,6 @@ class Data(object):
                             program=schema.Program(name=row['program']),
                             primary_site=[row['primary_site']]),
                         demographic=schema.Demographic(
-                            ethnicity="not hispanic or latino",
-                            gender="male",
-                            race="white",
                             age=row['age'],
                             weight=row['weight'],
                             met=row['met']), 
@@ -185,9 +182,6 @@ class Data(object):
                 case_id=row['participant_name'],
                 primary_site=row['primary_site'],
                 demographic=schema.Demographic(
-                    ethnicity="not hispanic or latino",
-                    gender="male",
-                    race="white",
                     age=row['age'],
                     weight=row['weight'],
                     met=row['met']),
@@ -297,14 +291,10 @@ class Data(object):
 
     def get_case_aggregations(self, cases):
         # aggregate case data
-        aggregates = {"demographic__ethnicity": {}, "demographic__gender": {},
-                      "demographic__race": {}, "primary_site": {}, "project__project_id": {},
+        aggregates = {"primary_site": {}, "project__project_id": {},
                       "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} }
 
         for case in cases:
-            utilities.add_key_increment(aggregates["demographic__ethnicity"], case.demographic.ethnicity)
-            utilities.add_key_increment(aggregates["demographic__gender"], case.demographic.gender)
-            utilities.add_key_increment(aggregates["demographic__race"], case.demographic.race)
             utilities.add_key_increment(aggregates["demographic__age"], case.demographic.age)
             utilities.add_key_increment(aggregates["demographic__weight"], case.demographic.weight)
             utilities.add_key_increment(aggregates["demographic__met"], case.demographic.met)
@@ -313,12 +303,6 @@ class Data(object):
             utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
 
         case_aggregates=schema.CaseAggregations(
-            demographic__ethnicity=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__ethnicity"].items()]),
-            demographic__gender=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__gender"].items()]),
-            demographic__race=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__race"].items()]),
             demographic__age=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__age"].items()]),
             demographic__weight=schema.Aggregations(

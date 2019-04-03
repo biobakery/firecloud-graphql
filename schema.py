@@ -83,9 +83,6 @@ class Project(graphene.ObjectType):
     primary_site = graphene.List(graphene.String)
 
 class Demographic(graphene.ObjectType):
-    ethnicity = graphene.String()
-    gender = graphene.String()
-    race = graphene.String()
     age = graphene.Int()
     weight = graphene.Int()
     met = graphene.Int()
