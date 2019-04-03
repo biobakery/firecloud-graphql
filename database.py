@@ -91,7 +91,8 @@ class Data(object):
         query = "SELECT file_sample.id as file_id, file_sample.file_name, file_sample.participant, file_sample.sample, " +\
                  "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
                  "file_sample.platform, file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
-                 "participant.id as participant_id, project.program " +\
+                 "participant.id as participant_id, project.program, " +\
+                 "participant.age_2012 as age, participant.weight_lbs as weight, participant.totMETs1 as met " +\
                  "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id " +\
                  "INNER JOIN participant ON file_sample.participant=participant.entity_participant_id"
         connection, db_results = self.query_database(query)
@@ -119,7 +120,13 @@ class Data(object):
                             name=row['project'],
                             program=schema.Program(name=row['program']),
                             primary_site=[row['primary_site']]),
-                        demographic=schema.Demographic("not hispanic or latino","male","white"), 
+                        demographic=schema.Demographic(
+                            ethnicity="not hispanic or latino",
+                            gender="male",
+                            race="white",
+                            age=row['age'],
+                            weight=row['weight'],
+                            met=row['met']), 
                         primary_site=row['primary_site'])]
                 ),
                 file_id=row['file_id'],
@@ -142,7 +149,8 @@ class Data(object):
 
         # gather participant data
         query = "SELECT participant.id as participant_id, participant.entity_participant_id as participant_name, project.primary_site as primary_site, " +\
-                 " project.id as project_id, project.project_id as project_name, project.program as program_name " +\
+                 "project.id as project_id, project.project_id as project_name, project.program as program_name, " +\
+                 "participant.age_2012 as age, participant.weight_lbs as weight, participant.totMETs1 as met " +\
                  "FROM sample INNER JOIN participant ON sample.participant=participant.entity_participant_id " +\
                  "INNER JOIN project ON sample.project=project.project_id"
         connection, db_results = self.query_database(query)
@@ -176,7 +184,13 @@ class Data(object):
                 id=row['participant_id'],
                 case_id=row['participant_name'],
                 primary_site=row['primary_site'],
-                demographic=schema.Demographic("not hispanic or latino","male","white"),
+                demographic=schema.Demographic(
+                    ethnicity="not hispanic or latino",
+                    gender="male",
+                    race="white",
+                    age=row['age'],
+                    weight=row['weight'],
+                    met=row['met']),
                 project=schema.Project(
                     id=row['project_id'],
                     project_id=row['project_name'],
@@ -285,12 +299,15 @@ class Data(object):
         # aggregate case data
         aggregates = {"demographic__ethnicity": {}, "demographic__gender": {},
                       "demographic__race": {}, "primary_site": {}, "project__project_id": {},
-                      "project__program__name": {}}
+                      "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} }
 
         for case in cases:
             utilities.add_key_increment(aggregates["demographic__ethnicity"], case.demographic.ethnicity)
             utilities.add_key_increment(aggregates["demographic__gender"], case.demographic.gender)
             utilities.add_key_increment(aggregates["demographic__race"], case.demographic.race)
+            utilities.add_key_increment(aggregates["demographic__age"], case.demographic.age)
+            utilities.add_key_increment(aggregates["demographic__weight"], case.demographic.weight)
+            utilities.add_key_increment(aggregates["demographic__met"], case.demographic.met)
             utilities.add_key_increment(aggregates["primary_site"], case.primary_site)
             utilities.add_key_increment(aggregates["project__project_id"], case.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
@@ -302,6 +319,12 @@ class Data(object):
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__gender"].items()]),
             demographic__race=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__race"].items()]),
+            demographic__age=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__age"].items()]),
+            demographic__weight=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__weight"].items()]),
+            demographic__met=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__met"].items()]),
             primary_site=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["primary_site"].items()]),
             project__project_id=schema.Aggregations(

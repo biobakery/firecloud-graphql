@@ -86,6 +86,9 @@ class Demographic(graphene.ObjectType):
     ethnicity = graphene.String()
     gender = graphene.String()
     race = graphene.String()
+    age = graphene.Int()
+    weight = graphene.Int()
+    met = graphene.Int()
 
 class FileCase(graphene.ObjectType):
     class Meta:
@@ -206,6 +209,9 @@ class CaseAggregations(graphene.ObjectType):
     demographic__ethnicity = graphene.Field(Aggregations)
     demographic__gender = graphene.Field(Aggregations)
     demographic__race = graphene.Field(Aggregations)
+    demographic__age = graphene.Field(Aggregations)
+    demographic__weight = graphene.Field(Aggregations)
+    demographic__met = graphene.Field(Aggregations)
     primary_site = graphene.Field(Aggregations)
     project__project_id = graphene.Field(Aggregations)
     project__program__name = graphene.Field(Aggregations)
