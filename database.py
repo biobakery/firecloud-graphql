@@ -162,7 +162,7 @@ class Data(object):
                           file_data[0]['age_2012'],
                           file_data[0]['totMETs1'],
                           file_data[0]['weight_lbs']),
-                      primary_site=file_data[0]['primary_site'])]),
+                      primary_site=[file_data[0]['primary_site']])]),
                 file_id=file_data[0]['file_id'])
 
         self.release_pool(conn,cursor)
@@ -221,7 +221,7 @@ class Data(object):
 
         case_object=schema.Case(id,
                     case_id=part_id,
-                    primary_site=proj_data[0]['primary_site'],
+                    primary_site=[proj_data[0]['primary_site']],
                     demographic=schema.Demographic("not hispanic or latino","male","white"),
                     metadata_participant=metadata_participant,
                     metadata_sample=metadata_list,
