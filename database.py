@@ -27,7 +27,10 @@ class Data(object):
         self.projects={}
 
     def __exit__(self):
-        self.conn_pool.close()
+        try:
+            self.conn_pool.close()
+        except:
+            print("No connection to close")
 
     # get connection from pool
     def get_pool(self):
@@ -153,6 +156,12 @@ class Data(object):
                       case_id=file_data[0]['participant'],
                       project=self.projects[str(file_data[0]['p_id'])],
                       demographic=schema.Demographic("not hispanic or latino","male","white"),
+                      metadata_participant=schema.MetadataParticipant(
+                          file_data[0]['part_id'],
+                          file_data[0]['participant'],
+                          file_data[0]['age_2012'],
+                          file_data[0]['totMETs1'],
+                          file_data[0]['weight_lbs']),
                       primary_site=file_data[0]['primary_site'])]),
                 file_id=file_data[0]['file_id'])
 
@@ -284,7 +293,9 @@ class Data(object):
         # aggregate file data
         aggregates = {"data_category": {}, "experimental_strategy": {},
                       "data_format": {}, "platform": {}, "cases__primary_site": {},
-                      "cases__project__project_id": {}, "access": {}}
+                      "cases__project__project_id": {}, "cases__metadata_participant__age_2012": {},
+                      "cases__metadata_participant__totMETs1": {},"cases__metadata_participant__weight_lbs": {},
+                      "access": {}}
 
         for file in files:
 
@@ -297,6 +308,11 @@ class Data(object):
             project = file.cases.hits[0].project
             add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
             add_key_increment(aggregates["cases__project__project_id"], project.project_id)
+
+            metadata_participant = file.cases.hits[0].metadata_participant
+            add_key_increment(aggregates["cases__metadata_participant__age_2012"], metadata_participant.age_2012)
+            add_key_increment(aggregates["cases__metadata_participant__totMETs1"], metadata_participant.totMETs1)
+            add_key_increment(aggregates["cases__metadata_participant__weight_lbs"], metadata_participant.weight_lbs)
 
         file_aggregates = schema.FileAggregations(
             data_category=schema.Aggregations(

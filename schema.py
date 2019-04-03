@@ -135,6 +135,7 @@ class FileCase(graphene.ObjectType):
     case_id = graphene.String()
     project = graphene.Field(Project)
     demographic = graphene.Field(Demographic)
+    metadata_participant = graphene.Field(MetadataParticipant)
     primary_site = graphene.String()
 
 class FileCaseConnection(graphene.relay.Connection):
@@ -197,7 +198,8 @@ class FileConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return data.get_files_total()
+       # return data.get_files_total()
+        return len(self.edges)
 
 class Bucket(graphene.ObjectType):
     doc_count = graphene.Int()
@@ -339,7 +341,8 @@ class CaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return data.get_cases_total()
+        #return data.get_cases_total()
+        return len(self.edges)
 
 class RepositoryCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseConnection,

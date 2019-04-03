@@ -223,6 +223,7 @@ type FileCase implements Node {
   case_id: String
   project: Project
   demographic: Demographic
+  metadata_participant: MetadataParticipant
   primary_site: String
 }
 

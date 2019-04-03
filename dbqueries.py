@@ -48,7 +48,7 @@ def exp_str_counts_query(table,p_id,exp_str):
 def file_query(f_id):
     query='''select file_sample.*,
                       project.id as p_id, project.project_id as proj_id,project.primary_site,
-                      participant.id as part_id
+                      participant.id as part_id, participant.age_2012, participant.totMETs1, participant.weight_lbs
                       from file_sample,project,participant where file_sample.id='''+str(f_id)
     query=query+''' and file_sample.project=project.project_id and
                                   file_sample.participant=participant.entity_participant_id'''
