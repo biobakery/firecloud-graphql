@@ -221,7 +221,7 @@ class Data(object):
 
         case_object=schema.Case(id,
                     case_id=part_id,
-                    primary_site=[proj_data[0]['primary_site']],
+                    primary_site=proj_data[0]['primary_site'],
                     demographic=schema.Demographic("not hispanic or latino","male","white"),
                     metadata_participant=metadata_participant,
                     metadata_sample=metadata_list,
@@ -350,7 +350,7 @@ class Data(object):
             add_key_increment(aggregates["metadata_participant__age_2012"],case.metadata_participant.age_2012)
             add_key_increment(aggregates["metadata_participant__totMETs1"],case.metadata_participant.totMETs1)
             add_key_increment(aggregates["metadata_participant__weight_lbs"], case.metadata_participant.weight_lbs)
-            add_key_increment(aggregates["primary_site"], case.primary_site[0])
+            add_key_increment(aggregates["primary_site"], case.primary_site)
             add_key_increment(aggregates["project__project_id"], case.project.project_id)
             add_key_increment(aggregates["project__program__name"], case.project.program.name)
 
