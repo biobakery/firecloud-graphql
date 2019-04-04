@@ -83,9 +83,9 @@ class Project(graphene.ObjectType):
     primary_site = graphene.List(graphene.String)
 
 class Demographic(graphene.ObjectType):
-    age = graphene.Int()
-    weight = graphene.Int()
-    met = graphene.Int()
+    age = graphene.String()
+    weight = graphene.String()
+    met = graphene.String()
 
 class FileCase(graphene.ObjectType):
     class Meta:
