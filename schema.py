@@ -103,7 +103,7 @@ class FileCaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return len(self.edges)
+        return len(self.iterable)
 
 class FileCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(FileCaseConnection,
@@ -144,7 +144,7 @@ class ProjectConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return len(self.edges)
+        return len(self.iterable)
 
 class FileConnection(graphene.relay.Connection):
     class Meta:
@@ -152,7 +152,7 @@ class FileConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return len(self.edges)
+        return len(self.iterable)
 
 class Bucket(graphene.ObjectType):
     doc_count = graphene.Int()
@@ -227,7 +227,7 @@ class CaseAnnotationConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return len(self.edges)
+        return len(self.iterable)
 
 class CaseAnnotations(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseAnnotationConnection,
@@ -259,7 +259,7 @@ class CaseFileConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return len(self.edges)
+        return len(self.iterable)
 
 class CaseFiles(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseFileConnection,
@@ -293,7 +293,7 @@ class CaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return len(self.edges)
+        return len(self.iterable)
 
 class RepositoryCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseConnection,
