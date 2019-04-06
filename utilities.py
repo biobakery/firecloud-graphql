@@ -134,6 +134,15 @@ def sort_hits(hits, sort):
 
     return sorted_hits
 
+def offset_hits(hits, offset):
+    if not offset:
+        offset = 0
+    class TotalList(list):
+        def __init__(self, newlist, total):
+            super(TotalList, self).__init__(newlist)
+            self.total = total
+    return TotalList(hits[offset:], len(hits))
+
 # The functions below were based on code from
 # https://github.com/nderkach/python-grahql-api
 

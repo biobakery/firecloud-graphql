@@ -152,7 +152,7 @@ class FileConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return len(self.iterable)
+        return self.iterable.total
 
 class Bucket(graphene.ObjectType):
     doc_count = graphene.Int()
@@ -192,7 +192,7 @@ class Files(graphene.ObjectType):
         all_files = data.get_current_files()
         filtered_files = utilities.filter_hits(all_files, filters, "files")
         sorted_files = utilities.sort_hits(filtered_files, sort)
-        return sorted_files
+        return utilities.offset_hits(sorted_files, offset)
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         all_files = data.get_current_files()
@@ -293,7 +293,7 @@ class CaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return len(self.iterable)
+        return self.iterable.total
 
 class RepositoryCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseConnection,
@@ -313,7 +313,7 @@ class RepositoryCases(graphene.ObjectType):
         all_cases = data.get_current_cases()
         filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
         sorted_cases = utilities.sort_hits(filtered_cases, sort)
-        return sorted_cases
+        return utilities.offset_hits(sorted_cases, offset)
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         all_cases = data.get_current_cases()
