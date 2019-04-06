@@ -152,7 +152,10 @@ class Data(object):
                  "INNER JOIN project ON sample.project=project.project_id"
         connection, db_results = self.query_database(query)
         cases = []
+        completed_cases = set()
         for row in db_results:
+            if row['participant_id'] in completed_cases:
+                continue
             current_case_files = case_files[row['participant_name']]
             # create data categories
             data_categories_counts={}
@@ -194,6 +197,7 @@ class Data(object):
                 summary=summary,
                 files=schema.CaseFiles(hits=casefiles)
             ))
+            completed_cases.add(row['participant_id'])
         connection.close()
         return cases
 
