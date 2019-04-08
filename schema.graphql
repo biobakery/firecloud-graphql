@@ -33,6 +33,9 @@ type CaseAggregations {
   demographic__ethnicity: Aggregations
   demographic__gender: Aggregations
   demographic__race: Aggregations
+  demographic__age: Aggregations
+  demographic__weight: Aggregations
+  demographic__met: Aggregations
   primary_site: Aggregations
   project__project_id: Aggregations
   project__program__name: Aggregations
@@ -121,9 +124,9 @@ type DataCategories {
 }
 
 type Demographic {
-  ethnicity: String
-  gender: String
-  race: String
+  age: String
+  weight: String
+  met: String
 }
 
 type entitiesWithType {
@@ -305,10 +308,17 @@ type Query {
 type Repository {
   files: Files
   cases: RepositoryCases
+  samples: RepositorySamples
 }
 
 type RepositoryCases {
   hits(first: Int, offset: Int, sort: [Sort], score: String, filters: FiltersArgument, before: String, after: String, last: Int): CaseConnection
+  aggregations(filters: FiltersArgument, aggregations_filter_themselves: Boolean): CaseAggregations
+  facets(filters: FiltersArgument, facets: [String]): JSONString
+}
+
+type RepositorySamples {
+  hits(first: Int, offset: Int, sort: [Sort], score: String, filters: FiltersArgument, before: String, after: String, last: Int): SampleConnection
   aggregations(filters: FiltersArgument, aggregations_filter_themselves: Boolean): CaseAggregations
   facets(filters: FiltersArgument, facets: [String]): JSONString
 }
@@ -319,6 +329,33 @@ type Root {
   repository: Repository
   projects: Projects
   cart_summary: CartSummary
+}
+
+type Sample implements Node {
+  # The ID of the object.
+  id: ID!
+  case_id: String
+  primary_site: String
+  submitter_id: String
+  demographic: Demographic
+  project: Project
+  summary: Summary
+  annotations: CaseAnnotations
+  files: CaseFiles
+}
+
+type SampleConnection {
+  pageInfo: PageInfo!
+  edges: [SampleEdge]!
+  total: Int
+}
+
+type SampleEdge {
+  # The item at the end of the edge
+  node: Sample
+
+  # A cursor for use in pagination
+  cursor: String!
 }
 
 scalar Sort

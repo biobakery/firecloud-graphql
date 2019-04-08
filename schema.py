@@ -295,6 +295,59 @@ class CaseConnection(graphene.relay.Connection):
     def resolve_total(self, info):
         return self.iterable.total
 
+class Sample(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    sample_id = graphene.String()
+    primary_site = graphene.String()
+    submitter_id = graphene.String()
+
+    demographic = graphene.Field(Demographic)
+    project = graphene.Field(Project)
+    summary = graphene.Field(Summary)
+    annotations = graphene.Field(CaseAnnotations)
+
+    files = graphene.Field(CaseFiles)
+
+class SampleConnection(graphene.relay.Connection):
+    class Meta:
+        node = Sample
+
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return self.iterable.total
+
+class RepositorySamples(graphene.ObjectType):
+    hits = graphene.relay.ConnectionField(SampleConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        sort=graphene.List(Sort),
+        score=graphene.String(),
+        filters=FiltersArgument())
+    aggregations = graphene.Field(CaseAggregations,
+        filters=FiltersArgument(),
+        aggregations_filter_themselves=graphene.Boolean())
+
+    facets = graphene.types.json.JSONString(filters=FiltersArgument(),
+        facets=graphene.List(graphene.String))
+
+    def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
+        all_samples = data.get_current_samples()
+        filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
+        sorted_samples = utilities.sort_hits(filtered_samples, sort)
+        return utilities.offset_hits(sorted_samples, offset)
+
+    def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
+        all_samples = data.get_current_samples()
+        filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
+        sample_aggregations = data.get_case_aggregations(filtered_samples)
+        return sample_aggregations
+
+    def resolve_facets(self, info, filters=None, facets=None):
+        return data.get_facets()
+
 class RepositoryCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseConnection,
         first=graphene.Int(),
@@ -327,12 +380,16 @@ class RepositoryCases(graphene.ObjectType):
 class Repository(graphene.ObjectType):
     files = graphene.Field(Files)
     cases = graphene.Field(RepositoryCases)
+    samples = graphene.Field(RepositorySamples)
 
     def resolve_files(self, info):
         return data.get_current_files()
 
     def resolve_cases(self, info):
         return data.get_current_cases()
+
+    def resolve_samples(self, info):
+        return data.get_current_samples()
 
 class ProjectAggregations(graphene.ObjectType):
     primary_site = graphene.Field(Aggregations)
