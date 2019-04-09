@@ -148,7 +148,9 @@ class Data(object):
         query = "SELECT sample.id as id, sample.sample as sample_name, participant.id as participant_id, " +\
                  "participant.entity_participant_id as participant_name, project.primary_site as primary_site, " +\
                  "project.id as project_id, project.project_id as project_name, project.program as program_name, " +\
-                 "participant.age_2012 as age, participant.weight_lbs as weight, participant.totMETs1 as met " +\
+                 "participant.age_2012 as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
+                 "sample.week as week, sample.Time as time, sample.drFiber as fiber, sample.drFat as fat, " +\
+                 "sample.drIron as iron, sample.drAlcohol as alcohol " +\
                  "FROM sample INNER JOIN participant ON sample.participant=participant.entity_participant_id " +\
                  "INNER JOIN project ON sample.project=project.project_id"
         connection, db_results = self.query_database(query)
@@ -193,6 +195,12 @@ class Data(object):
                     program=schema.Program(name=row['program_name']),
                     primary_site=[row['primary_site']]),
                 summary=summary,
+                week=row['week'],
+                time=row['time'],
+                fiber=row['fiber'],
+                fat=row['fat'],
+                iron=row['iron'],
+                alcohol=row['alcohol'],
                 files=schema.CaseFiles(hits=casefiles)
             ))
         connection.close()
@@ -363,7 +371,8 @@ class Data(object):
     def get_sample_aggregations(self, samples):
         # aggregate sample data
         aggregates = {"primary_site": {}, "project__project_id": {},
-                      "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} }
+                      "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} ,
+                      "week" : {}, "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {}}
 
         for sample in samples:
             utilities.add_key_increment(aggregates["demographic__age"], sample.demographic.age)
@@ -372,6 +381,12 @@ class Data(object):
             utilities.add_key_increment(aggregates["primary_site"], sample.primary_site)
             utilities.add_key_increment(aggregates["project__project_id"], sample.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], sample.project.program.name)
+            utilities.add_key_increment(aggregates["week"], sample.week)
+            utilities.add_key_increment(aggregates["time"], sample.time)
+            utilities.add_key_increment(aggregates["fiber"], sample.fiber)
+            utilities.add_key_increment(aggregates["fat"], sample.fat)
+            utilities.add_key_increment(aggregates["iron"], sample.iron)
+            utilities.add_key_increment(aggregates["alcohol"], sample.alcohol)
 
         sample_aggregates=schema.SampleAggregations(
             demographic__age=schema.Aggregations(
@@ -385,7 +400,19 @@ class Data(object):
             project__project_id=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__project_id"].items()]),
             project__program__name=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__program__name"].items()]))
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__program__name"].items()]),
+            week=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["week"].items()]),
+            time=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["time"].items()]),
+            fiber=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["fiber"].items()]),
+            fat=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["fat"].items()]),
+            iron=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["iron"].items()]),
+            alcohol=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["alcohol"].items()]))
 
         return sample_aggregates
 

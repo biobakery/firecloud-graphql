@@ -308,6 +308,13 @@ class Sample(graphene.ObjectType):
     summary = graphene.Field(Summary)
     annotations = graphene.Field(CaseAnnotations)
 
+    week = graphene.String()
+    time = graphene.String()
+    fiber = graphene.String()
+    fat = graphene.String()
+    iron = graphene.String()
+    alcohol = graphene.String()
+
     files = graphene.Field(CaseFiles)
 
     def resolve_submitter_id(self, info):
@@ -320,6 +327,12 @@ class SampleAggregations(graphene.ObjectType):
     primary_site = graphene.Field(Aggregations)
     project__project_id = graphene.Field(Aggregations)
     project__program__name = graphene.Field(Aggregations)
+    week = graphene.Field(Aggregations)
+    time = graphene.Field(Aggregations)
+    fiber = graphene.Field(Aggregations)
+    fat = graphene.Field(Aggregations)
+    iron = graphene.Field(Aggregations)
+    alcohol = graphene.Field(Aggregations)
 
 class SampleConnection(graphene.relay.Connection):
     class Meta:
