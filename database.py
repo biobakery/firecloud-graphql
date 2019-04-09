@@ -360,6 +360,35 @@ class Data(object):
 
         return file_aggregates
 
+    def get_sample_aggregations(self, samples):
+        # aggregate sample data
+        aggregates = {"primary_site": {}, "project__project_id": {},
+                      "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} }
+
+        for sample in samples:
+            utilities.add_key_increment(aggregates["demographic__age"], sample.demographic.age)
+            utilities.add_key_increment(aggregates["demographic__weight"], sample.demographic.weight)
+            utilities.add_key_increment(aggregates["demographic__met"], sample.demographic.met)
+            utilities.add_key_increment(aggregates["primary_site"], sample.primary_site)
+            utilities.add_key_increment(aggregates["project__project_id"], sample.project.project_id)
+            utilities.add_key_increment(aggregates["project__program__name"], sample.project.program.name)
+
+        sample_aggregates=schema.SampleAggregations(
+            demographic__age=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__age"].items()]),
+            demographic__weight=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__weight"].items()]),
+            demographic__met=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__met"].items()]),
+            primary_site=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["primary_site"].items()]),
+            project__project_id=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__project_id"].items()]),
+            project__program__name=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__program__name"].items()]))
+
+        return sample_aggregates
+
     def get_case_aggregations(self, cases):
         # aggregate case data
         aggregates = {"primary_site": {}, "project__project_id": {},

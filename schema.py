@@ -310,6 +310,17 @@ class Sample(graphene.ObjectType):
 
     files = graphene.Field(CaseFiles)
 
+    def resolve_submitter_id(self, info):
+        return self.sample_id
+
+class SampleAggregations(graphene.ObjectType):
+    demographic__age = graphene.Field(Aggregations)
+    demographic__weight = graphene.Field(Aggregations)
+    demographic__met = graphene.Field(Aggregations)
+    primary_site = graphene.Field(Aggregations)
+    project__project_id = graphene.Field(Aggregations)
+    project__program__name = graphene.Field(Aggregations)
+
 class SampleConnection(graphene.relay.Connection):
     class Meta:
         node = Sample
@@ -326,7 +337,7 @@ class RepositorySamples(graphene.ObjectType):
         sort=graphene.List(Sort),
         score=graphene.String(),
         filters=FiltersArgument())
-    aggregations = graphene.Field(CaseAggregations,
+    aggregations = graphene.Field(SampleAggregations,
         filters=FiltersArgument(),
         aggregations_filter_themselves=graphene.Boolean())
 
@@ -342,7 +353,7 @@ class RepositorySamples(graphene.ObjectType):
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         all_samples = data.get_current_samples()
         filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
-        sample_aggregations = data.get_case_aggregations(filtered_samples)
+        sample_aggregations = data.get_sample_aggregations(filtered_samples)
         return sample_aggregations
 
     def resolve_facets(self, info, filters=None, facets=None):
