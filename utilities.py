@@ -25,6 +25,11 @@ def get_class_member_value(obj, levels, subset=False):
     final_value = obj
     for item in levels:
         final_value = getattr(final_value, item)
+        # look for hits subset for possible lists
+        try:
+            final_value = final_value.hits
+        except AttributeError:
+            pass
         if isinstance(final_value, list):
             sub_levels = levels[levels.index(item)+1:]
             if not isinstance(sub_levels, list):
