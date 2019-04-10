@@ -92,9 +92,12 @@ class Data(object):
                  "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
                  "file_sample.platform, file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
                  "participant.id as participant_id, project.program, " +\
-                 "participant.age_2012 as age, participant.weight_lbs as weight, participant.totMETs1 as met " +\
+                 "participant.age_2012 as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
+                 "sample.week as week, sample.Time as time, sample.drFiber as fiber, sample.drFat as fat, " +\
+                 "sample.drIron as iron, sample.drAlcohol as alcohol, sample.id as sample_id " +\
                  "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id " +\
-                 "INNER JOIN participant ON file_sample.participant=participant.entity_participant_id"
+                 "INNER JOIN participant ON file_sample.participant=participant.entity_participant_id "+\
+                 "INNER JOIN sample on file_sample.sample=sample.sample"
         connection, db_results = self.query_database(query)
         files = []
         for row in db_results:
@@ -124,7 +127,16 @@ class Data(object):
                             age=row['age'],
                             weight=row['weight'],
                             met=row['met']), 
-                        primary_site=row['primary_site'])]
+                        primary_site=row['primary_site'],
+                        samples=[schema.CaseSample(
+                            id=row['sample_id'],
+                            week=row['week'],
+                            time=row['time'],
+                            fiber=row['fiber'],
+                            fat=row['fat'],
+                            iron=row['iron'],
+                            alcohol=row['alcohol'],    
+                        )])]
                 ),
                 file_id=row['file_id'],
                 type=row['data_format']

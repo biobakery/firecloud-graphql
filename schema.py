@@ -87,6 +87,18 @@ class Demographic(graphene.ObjectType):
     weight = graphene.String()
     met = graphene.String()
 
+class CaseSample(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    sample_id = graphene.String()
+    week = graphene.String()
+    time = graphene.String()
+    fat = graphene.String()
+    fiber = graphene.String()
+    iron = graphene.String()
+    alcohol = graphene.String()
+
 class FileCase(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
@@ -95,6 +107,8 @@ class FileCase(graphene.ObjectType):
     project = graphene.Field(Project)
     demographic = graphene.Field(Demographic)
     primary_site = graphene.String()
+
+    samples = graphene.List(CaseSample)
 
 class FileCaseConnection(graphene.relay.Connection):
     class Meta:
@@ -273,18 +287,6 @@ class CaseFiles(graphene.ObjectType):
         offset=graphene.Int(),
         sort=graphene.List(Sort),
         filters=FiltersArgument())
-
-class CaseSample(graphene.ObjectType):
-    class Meta:
-        interfaces = (graphene.relay.Node,)
-
-    sample_id = graphene.String()
-    week = graphene.String()
-    time = graphene.String()
-    fat = graphene.String()
-    fiber = graphene.String()
-    iron = graphene.String()
-    alcohol = graphene.String()
 
 class CaseSampleConnection(graphene.relay.Connection):
     class Meta:
