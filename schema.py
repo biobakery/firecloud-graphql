@@ -274,6 +274,34 @@ class CaseFiles(graphene.ObjectType):
         sort=graphene.List(Sort),
         filters=FiltersArgument())
 
+class CaseSample(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    sample_id = graphene.String()
+    week = graphene.String()
+    time = graphene.String()
+    fat = graphene.String()
+    fiber = graphene.String()
+    iron = graphene.String()
+    alcohol = graphene.String()
+
+class CaseSampleConnection(graphene.relay.Connection):
+    class Meta:
+        node = CaseSample
+
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return len(self.iterable)
+
+class CaseSamples(graphene.ObjectType):
+    hits = graphene.relay.ConnectionField(CaseSampleConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        sort=graphene.List(Sort),
+        filters=FiltersArgument())
+
 class Case(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
@@ -288,6 +316,7 @@ class Case(graphene.ObjectType):
     annotations = graphene.Field(CaseAnnotations)
 
     files = graphene.Field(CaseFiles)
+    samples = graphene.Field(CaseSamples)
 
     def resolve_submitter_id(self, info):
         return self.case_id

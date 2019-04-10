@@ -219,6 +219,17 @@ class Data(object):
             case_files[row['participant']].append(dict(row.items()))
         connection.close()
 
+        # gather sample data for participants
+        query = "SELECT id, participant, sample, week, Time as time, drFiber as fiber, " +\
+                "drFat as fat, drFiber as fiber, drIron as iron, drAlcohol as alcohol from sample"
+        connection, db_results = self.query_database(query)
+        case_samples = {}
+        for row in db_results:
+            if not row['participant'] in case_samples:
+                case_samples[row['participant']] = []
+            case_samples[row['participant']].append(dict(row.items()))
+        connection.close()
+        
         # gather participant data
         query = "SELECT participant.id as participant_id, participant.entity_participant_id as participant_name, project.primary_site as primary_site, " +\
                  "project.id as project_id, project.project_id as project_name, project.program as program_name, " +\
@@ -255,6 +266,18 @@ class Data(object):
                     platform=file_info['platform'],
                     access=file_info['access']))
 
+            # create casesamples
+            casesamples=[]
+            for index, sample_info in enumerate(case_samples[row['participant_name']]):
+                casesamples.append(schema.CaseSample(
+                    id=index,
+                    week=sample_info['week'],
+                    time=sample_info['time'],
+                    fiber=sample_info['fiber'],
+                    iron=sample_info['iron'],
+                    fat=sample_info['fat'],
+                    alcohol=sample_info['alcohol']))
+
             cases.append(schema.Case(
                 id=row['participant_id'],
                 case_id=row['participant_name'],
@@ -270,7 +293,8 @@ class Data(object):
                     program=schema.Program(name=row['program_name']),
                     primary_site=[row['primary_site']]),
                 summary=summary,
-                files=schema.CaseFiles(hits=casefiles)
+                files=schema.CaseFiles(hits=casefiles),
+                samples=schema.CaseSamples(hits=casesamples),
             ))
             completed_cases.add(row['participant_id'])
         connection.close()
