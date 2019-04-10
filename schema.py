@@ -217,9 +217,6 @@ class Files(graphene.ObjectType):
         return data.get_facets()
 
 class CaseAggregations(graphene.ObjectType):
-    demographic__ethnicity = graphene.Field(Aggregations)
-    demographic__gender = graphene.Field(Aggregations)
-    demographic__race = graphene.Field(Aggregations)
     demographic__age = graphene.Field(Aggregations)
     demographic__weight = graphene.Field(Aggregations)
     demographic__met = graphene.Field(Aggregations)

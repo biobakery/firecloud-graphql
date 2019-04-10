@@ -30,9 +30,6 @@ type Case implements Node {
 }
 
 type CaseAggregations {
-  demographic__ethnicity: Aggregations
-  demographic__gender: Aggregations
-  demographic__race: Aggregations
   demographic__age: Aggregations
   demographic__weight: Aggregations
   demographic__met: Aggregations
