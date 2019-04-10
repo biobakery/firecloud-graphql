@@ -212,6 +212,12 @@ class CaseAggregations(graphene.ObjectType):
     primary_site = graphene.Field(Aggregations)
     project__project_id = graphene.Field(Aggregations)
     project__program__name = graphene.Field(Aggregations)
+    sample__time = graphene.Field(Aggregations)
+    sample__week = graphene.Field(Aggregations)
+    sample__fiber = graphene.Field(Aggregations)
+    sample__fat = graphene.Field(Aggregations)
+    sample__iron = graphene.Field(Aggregations)
+    sample__alcohol = graphene.Field(Aggregations)
 
 class CaseAnnotation(graphene.ObjectType):
     class Meta:
