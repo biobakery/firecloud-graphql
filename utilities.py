@@ -65,6 +65,21 @@ def check_for_match(value_selected, hit_values, operation):
 
     return match
 
+def get_filtered_set(hits, levels, value_selected, operation, top_level=None):
+    # Search through hits to get filtered set
+    filtered_set=set()
+    for item in hits:
+        if top_level:
+            # find object that contains the search values
+            hit_values = []
+            for search_item in getattr(item, top_level).hits:
+                hit_values+=get_class_member_value(search_item, levels)
+        else:
+            hit_values=get_class_member_value(item,levels)
+        if check_for_match(value_selected, hit_values, operation):
+            filtered_set.add(item)
+    return list(filtered_set)
+
 def filter_hits(hits, filters, object_name):
     # Filter the hits based on the json string provided
 
@@ -81,25 +96,14 @@ def filter_hits(hits, filters, object_name):
         levels = field.split(".")
         top_level = levels.pop(0)
         if top_level != object_name:
-            if not top_level in dir(hits[0]):
-                all_filtered_sets.append(set(hits))
+            if levels[0] in dir(hits[0]):
+                all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation))
+            elif top_level in dir(hits[0]):
+                all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, top_level))
             else:
-                filtered_set=set()
-                for item in hits:
-                    # find object that contains the search values
-                    hit_values = []
-                    for search_item in getattr(item, top_level).hits:
-                        hit_values+=get_class_member_value(search_item, levels)
-                    if check_for_match(value_selected, hit_values, operation):
-                        filtered_set.add(item)
-                all_filtered_sets.append(list(filtered_set))
+                all_filtered_sets.append(set(hits))
         else:
-            filtered_set=set()
-            for item in hits:
-                hit_values=get_class_member_value(item,levels)
-                if check_for_match(value_selected, hit_values, operation):
-                    filtered_set.add(item)
-            all_filtered_sets.append(list(filtered_set))
+            all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation))
 
     # reduce sets
     final_set = set(all_filtered_sets.pop(0))
