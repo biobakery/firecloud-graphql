@@ -96,7 +96,10 @@ def filter_hits(hits, filters, object_name):
         levels = field.split(".")
         top_level = levels.pop(0)
         if top_level != object_name:
-            if levels[0] in dir(hits[0]):
+            if levels[0] == object_name:
+                top_level = levels.pop(0)
+                all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation))
+            elif levels[0] in dir(hits[0]):
                 all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation))
             elif top_level in dir(hits[0]):
                 all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, top_level))
