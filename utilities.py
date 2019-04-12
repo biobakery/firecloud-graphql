@@ -72,8 +72,14 @@ def get_filtered_set(hits, levels, value_selected, operation, top_level=None, tw
         if top_level:
             # find object that contains the search values
             hit_values = []
+            new_search_subset = []
             for search_item in getattr(item, top_level).hits:
-                hit_values+=get_class_member_value(search_item, levels)
+                subset_hit_values = get_class_member_value(search_item, levels)
+                if check_for_match(value_selected, subset_hit_values, operation):
+                    new_search_subset.append(search_item)
+                hit_values+=subset_hit_values
+            # remove filtered objects
+            getattr(item, top_level).hits = new_search_subset
         elif two_top_levels:
             hit_values = []
             for search_item in getattr(item, two_top_levels[0]).hits:
