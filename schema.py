@@ -176,8 +176,14 @@ class Bucket(graphene.ObjectType):
     def resolve_key_as_string(self, info):
         return str(key)
 
+class Stats(graphene.ObjectType):
+    max = graphene.Int()
+    min = graphene.Int()
+    count = graphene.Int()
+
 class Aggregations(graphene.ObjectType):
     buckets = graphene.List(Bucket)
+    stats = graphene.Field(Stats)
 
 class FileAggregations(graphene.ObjectType):
     data_category = graphene.Field(Aggregations)

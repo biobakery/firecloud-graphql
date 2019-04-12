@@ -58,6 +58,20 @@ def str_to_float(values):
         new_values.append(float_value)
     return new_values
 
+def update_max_min(current_values, new_value):
+    # ignore non-numeric values
+    try:
+        new_value = int(float(new_value))
+    except ValueError:
+        return None
+    # update min/max values in dictionary
+    if new_value > current_values.get("max",0):
+        current_values["max"] = new_value
+    if not "min" in current_values:
+        current_values["min"] = new_value
+    elif new_value < current_values["min"]:
+        current_values["min"] = new_value
+
 def add_key_increment(dictionary, key):
     if not key in dictionary:
         dictionary[key]=0

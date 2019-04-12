@@ -409,6 +409,7 @@ class Data(object):
         aggregates = {"primary_site": {}, "project__project_id": {},
                       "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} ,
                       "week" : {}, "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {}}
+        stats = { "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {} }
 
         for sample in samples:
             utilities.add_key_increment(aggregates["demographic__age"], sample.demographic.age)
@@ -423,6 +424,11 @@ class Data(object):
             utilities.add_key_increment(aggregates["fat"], sample.fat)
             utilities.add_key_increment(aggregates["iron"], sample.iron)
             utilities.add_key_increment(aggregates["alcohol"], sample.alcohol)
+            utilities.update_max_min(stats["time"], sample.time)
+            utilities.update_max_min(stats["fiber"], sample.fiber)
+            utilities.update_max_min(stats["fat"], sample.fat)
+            utilities.update_max_min(stats["iron"], sample.iron)
+            utilities.update_max_min(stats["alcohol"], sample.alcohol)
 
         sample_aggregates=schema.SampleAggregations(
             demographic__age=schema.Aggregations(
@@ -440,14 +446,19 @@ class Data(object):
             week=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["week"].items()]),
             time=schema.Aggregations(
+                stats=schema.Stats(max=stats["time"].get("max",0), min=stats["time"].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["time"].items()]),
             fiber=schema.Aggregations(
+                stats=schema.Stats(max=stats["fiber"].get("max",0), min=stats["fiber"].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["fiber"].items()]),
             fat=schema.Aggregations(
+                stats=schema.Stats(max=stats["fat"].get("max",0), min=stats["fat"].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["fat"].items()]),
             iron=schema.Aggregations(
+                stats=schema.Stats(max=stats["iron"].get("max",0), min=stats["iron"].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["iron"].items()]),
             alcohol=schema.Aggregations(
+                stats=schema.Stats(max=stats["alcohol"].get("max",0), min=stats["alcohol"].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["alcohol"].items()]))
 
         return sample_aggregates
