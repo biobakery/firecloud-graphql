@@ -469,6 +469,8 @@ class Data(object):
                       "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} ,
                       "sample__time" : {}, "sample__week" : {},  "sample__fiber" : {},  "sample__fat" : {},  "sample__iron" : {},  "sample__alcohol" : {}}
 
+        stats = {"demographic__age": {}, "demographic__weight": {}, "demographic__met": {} }
+
         for case in cases:
             utilities.add_key_increment(aggregates["demographic__age"], utilities.Range.create(case.demographic.age))
             utilities.add_key_increment(aggregates["demographic__weight"], utilities.Range.create(case.demographic.weight))
@@ -476,6 +478,9 @@ class Data(object):
             utilities.add_key_increment(aggregates["primary_site"], case.primary_site)
             utilities.add_key_increment(aggregates["project__project_id"], case.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
+            utilities.update_max_min(stats["demographic__age"], case.demographic.age)
+            utilities.update_max_min(stats["demographic__weight"], case.demographic.weight)
+            utilities.update_max_min(stats["demographic__met"], case.demographic.met)
             for sample in case.samples.hits:
                 utilities.add_key_increment(aggregates["sample__time"], utilities.Range.create(sample.time))
                 utilities.add_key_increment(aggregates["sample__week"], sample.week)
@@ -486,10 +491,13 @@ class Data(object):
 
         case_aggregates=schema.CaseAggregations(
             demographic__age=schema.Aggregations(
+                stats=schema.Stats(max=stats["demographic__age"].get("max",0), min=stats["demographic__age"].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__age"].items()]),
             demographic__weight=schema.Aggregations(
+                stats=schema.Stats(max=stats["demographic__weight"].get("max",0), min=stats["demographic__weight"].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__weight"].items()]),
             demographic__met=schema.Aggregations(
+                stats=schema.Stats(max=stats["demographic__met"].get("max",0), min=stats["demographic__met"].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__met"].items()]),
             primary_site=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["primary_site"].items()]),
