@@ -5,6 +5,59 @@ import json
 import ast
 import collections
 
+class Range(object):
+    @staticmethod
+    def create(value,offset=1):
+        # generate a range string from the value provided
+        # offset of 1 = 10s, 2 = 100s, 3 = 1000s
+        start="0"*offset
+        end="9"*offset
+        try:
+            bin = str(int(float(value)))[:-1*offset]
+            range = "{0}{1} - {0}{2}".format(bin, start, end)
+        except ValueError:
+            range = "UNK"
+        return range
+
+    @staticmethod
+    def isinstance(value):
+        # check if this is a range
+        delimiter = " - "
+        if not delimiter in value:
+            return False
+
+        match = True
+        try:
+            items = value.split(delimiter)
+            start = int(items[0])
+            end = int(items[1])
+        except ValueError:
+            match = False
+
+        return match
+
+    @staticmethod
+    def match(range, value_list):
+        # check if this value is in the range
+        start, end = range.split(" - ")
+        matches = []
+        for value in str_to_float(value_list):
+            if value >= int(start) and value <= int(end):
+                matches.append(True)
+            else:
+                matches.append(False)
+        return any(matches)
+
+def str_to_float(values):
+    new_values = []
+    for v in values:
+        try:
+            float_value = float(v)
+        except ValueError:
+            float_value = ""
+        new_values.append(float_value)
+    return new_values
+
 def add_key_increment(dictionary, key):
     if not key in dictionary:
         dictionary[key]=0
@@ -45,7 +98,11 @@ def check_for_match(value_selected, hit_values, operation):
 
     def is_match(a, b, operation):
         if operation == "in":
-            return True if a in b else False
+            # check for range
+            if Range.isinstance(a):
+                return Range.match(a,b)
+            else:
+                return True if a in b else False
         elif operation == ">=":
             return any(map(lambda x: x>=a, filter(lambda y: y!='None', b)))
         elif operation == "<=":
