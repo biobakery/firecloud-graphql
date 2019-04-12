@@ -10,6 +10,20 @@ import schema
 RAW_FILE_TYPE = "rawFiles"
 PROCESSED_FILE_TYPE = "processedFiles"
 
+class Range(object):
+    @staticmethod
+    def create(value,offset=1):
+        # generate a range string from the value provided
+        # offset of 1 = 10s, 2 = 100s, 3 = 1000s
+        start="0"*offset
+        end="9"*offset
+        try:
+            bin = str(int(float(value)))[:-1*offset]
+            range = "{0}{1} - {0}{2}".format(bin, start, end)
+        except ValueError:
+            range = "UNK"
+        return range
+
 class Data(object):
 
     def __init__(self):
@@ -459,19 +473,19 @@ class Data(object):
                       "sample__time" : {}, "sample__week" : {},  "sample__fiber" : {},  "sample__fat" : {},  "sample__iron" : {},  "sample__alcohol" : {}}
 
         for case in cases:
-            utilities.add_key_increment(aggregates["demographic__age"], case.demographic.age)
-            utilities.add_key_increment(aggregates["demographic__weight"], case.demographic.weight)
-            utilities.add_key_increment(aggregates["demographic__met"], case.demographic.met)
+            utilities.add_key_increment(aggregates["demographic__age"], Range.create(case.demographic.age))
+            utilities.add_key_increment(aggregates["demographic__weight"], Range.create(case.demographic.weight))
+            utilities.add_key_increment(aggregates["demographic__met"], Range.create(case.demographic.met))
             utilities.add_key_increment(aggregates["primary_site"], case.primary_site)
             utilities.add_key_increment(aggregates["project__project_id"], case.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
             for sample in case.samples.hits:
-                utilities.add_key_increment(aggregates["sample__time"], sample.time)
+                utilities.add_key_increment(aggregates["sample__time"], Range.create(sample.time))
                 utilities.add_key_increment(aggregates["sample__week"], sample.week)
-                utilities.add_key_increment(aggregates["sample__fiber"], sample.fiber)
-                utilities.add_key_increment(aggregates["sample__fat"], sample.fat)
-                utilities.add_key_increment(aggregates["sample__iron"], sample.iron)
-                utilities.add_key_increment(aggregates["sample__alcohol"], sample.alcohol)
+                utilities.add_key_increment(aggregates["sample__fiber"], Range.create(sample.fiber))
+                utilities.add_key_increment(aggregates["sample__fat"], Range.create(sample.fat))
+                utilities.add_key_increment(aggregates["sample__iron"], Range.create(sample.iron))
+                utilities.add_key_increment(aggregates["sample__alcohol"], Range.create(sample.alcohol))
 
         case_aggregates=schema.CaseAggregations(
             demographic__age=schema.Aggregations(
