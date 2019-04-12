@@ -16,7 +16,7 @@ class Range(object):
             bin = str(int(float(value)))[:-1*offset]
             range = "{0}{1} - {0}{2}".format(bin, start, end)
         except ValueError:
-            range = "UNK"
+            range = value
         return range
 
     @staticmethod
