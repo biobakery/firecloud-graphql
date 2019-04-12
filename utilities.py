@@ -104,9 +104,9 @@ def check_for_match(value_selected, hit_values, operation):
             else:
                 return True if a in b else False
         elif operation == ">=":
-            return any(map(lambda x: x>=a, filter(lambda y: y!='None', b)))
+            return any(map(lambda x: x>=float(a), filter(lambda y: y!='None', str_to_float(b))))
         elif operation == "<=":
-            return any(map(lambda x: x<=a, filter(lambda y: y!='None', b)))
+            return any(map(lambda x: x<=float(a), filter(lambda y: y!='None', str_to_float(b))))
         else:
             print("WARNING: Unexpected operation in filter " + operation)
             return True
