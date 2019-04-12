@@ -65,7 +65,7 @@ def check_for_match(value_selected, hit_values, operation):
 
     return match
 
-def get_filtered_set(hits, levels, value_selected, operation, top_level=None):
+def get_filtered_set(hits, levels, value_selected, operation, top_level=None, two_top_levels=None):
     # Search through hits to get filtered set
     filtered_set=set()
     for item in hits:
@@ -74,11 +74,29 @@ def get_filtered_set(hits, levels, value_selected, operation, top_level=None):
             hit_values = []
             for search_item in getattr(item, top_level).hits:
                 hit_values+=get_class_member_value(search_item, levels)
+        elif two_top_levels:
+            hit_values = []
+            for search_item in getattr(item, two_top_levels[0]).hits:
+                for search_item_two in getattr(search_item, two_top_levels[1]):
+                    hit_values+=get_class_member_value(search_item_two, levels)
         else:
             hit_values=get_class_member_value(item,levels)
+
         if check_for_match(value_selected, hit_values, operation):
             filtered_set.add(item)
     return list(filtered_set)
+
+def subhits(single_hit, top_level):
+    # search for item with subhits
+    levels = []
+    for item in dir(single_hit):
+        sub_hit = getattr(single_hit, item)
+        if "hits" in dir(sub_hit):
+            for subitem in dir(sub_hit.hits[0]):
+                if isinstance(getattr(sub_hit.hits[0], subitem), list):
+                    if subitem == top_level:
+                        levels = [item, subitem]
+    return levels
 
 def filter_hits(hits, filters, object_name):
     # Filter the hits based on the json string provided
@@ -104,7 +122,11 @@ def filter_hits(hits, filters, object_name):
             elif top_level in dir(hits[0]):
                 all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, top_level))
             else:
-                all_filtered_sets.append(set(hits))
+                sub_hit_levels = subhits(hits[0],top_level)
+                if sub_hit_levels:
+                    all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, two_top_levels=sub_hit_levels))
+                else:
+                    all_filtered_sets.append(set(hits))
         else:
             all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation))
 
