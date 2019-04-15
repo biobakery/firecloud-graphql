@@ -419,7 +419,7 @@ class Data(object):
             utilities.add_key_increment(aggregates["project__project_id"], sample.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], sample.project.program.name)
             utilities.add_key_increment(aggregates["week"], sample.week)
-            utilities.add_key_increment(aggregates["time"], sample.time)
+            utilities.add_key_increment(aggregates["time"], utilities.Range.create(sample.time))
             utilities.add_key_increment(aggregates["fiber"], sample.fiber)
             utilities.add_key_increment(aggregates["fat"], sample.fat)
             utilities.add_key_increment(aggregates["iron"], sample.iron)
