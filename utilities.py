@@ -7,7 +7,29 @@ import collections
 
 class Range(object):
     @staticmethod
-    def create(value,offset=1):
+    def create_custom(value, offset):
+        # create a custom range based on the offset provided
+        try:
+            value = int(float(value))
+        except ValueError:
+            return value
+
+        search = True
+        start = 0
+        end = offset - 1
+        while search:
+            # check if value is in range
+            if value >= start and value <= end:
+                search = False
+                break
+            end += offset
+            start += offset
+
+        range ="{0} - {1}".format(start, end)
+        return range
+
+    @staticmethod
+    def create(value,offset=1,custom=None):
         # generate a range string from the value provided
         # offset of 1 = 10s, 2 = 100s, 3 = 1000s
         start="0"*offset

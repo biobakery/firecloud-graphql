@@ -473,8 +473,8 @@ class Data(object):
 
         for case in cases:
             utilities.add_key_increment(aggregates["demographic__age"], utilities.Range.create(case.demographic.age))
-            utilities.add_key_increment(aggregates["demographic__weight"], utilities.Range.create(case.demographic.weight))
-            utilities.add_key_increment(aggregates["demographic__met"], utilities.Range.create(case.demographic.met))
+            utilities.add_key_increment(aggregates["demographic__weight"], utilities.Range.create_custom(case.demographic.weight, offset=25))
+            utilities.add_key_increment(aggregates["demographic__met"], utilities.Range.create_custom(case.demographic.met, offset=50))
             utilities.add_key_increment(aggregates["primary_site"], case.primary_site)
             utilities.add_key_increment(aggregates["project__project_id"], case.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
