@@ -8,6 +8,8 @@ import collections
 class Range(object):
     @staticmethod
     def create_custom(value, offset):
+        # require offset to be an int
+        offset = int(offset)
         # create a custom range based on the offset provided
         try:
             value = int(float(value))
@@ -15,8 +17,8 @@ class Range(object):
             return value
 
         search = True
-        start = 0
-        end = offset - 1
+        start = int(value/offset)*offset
+        end = start + offset - 1
         while search:
             # check if value is in range
             if value >= start and value <= end:
