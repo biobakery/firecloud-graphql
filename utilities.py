@@ -5,6 +5,12 @@ import json
 import ast
 import collections
 
+def bytes_to_gb(bytes):
+    try:
+        return float(bytes) / (1024**3.0)
+    except ValueError:
+        return bytes
+
 class Range(object):
     @staticmethod
     def create_custom(value, offset):

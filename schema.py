@@ -187,6 +187,7 @@ class Aggregations(graphene.ObjectType):
 
 class FileAggregations(graphene.ObjectType):
     data_category = graphene.Field(Aggregations)
+    file_size = graphene.Field(Aggregations)
     experimental_strategy = graphene.Field(Aggregations)
     data_format = graphene.Field(Aggregations)
     platform = graphene.Field(Aggregations)

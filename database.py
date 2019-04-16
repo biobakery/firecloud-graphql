@@ -374,7 +374,7 @@ class Data(object):
         # aggregate file data
         aggregates = {"data_category": {}, "experimental_strategy": {},
                       "data_format": {}, "platform": {}, "cases__primary_site": {},
-                      "cases__project__project_id": {}, "access": {}}
+                      "cases__project__project_id": {}, "access": {}, "file_size": {}}
 
         for file in files:
             utilities.add_key_increment(aggregates["data_category"], file.data_category)
@@ -382,6 +382,7 @@ class Data(object):
             utilities.add_key_increment(aggregates["data_format"], file.data_format)
             utilities.add_key_increment(aggregates["platform"], file.platform)
             utilities.add_key_increment(aggregates["access"], file.access)
+            utilities.add_key_increment(aggregates["file_size"], utilities.Range.create_custom(utilities.bytes_to_gb(file.file_size),2))
             project = file.cases.hits[0].project
             utilities.add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
             utilities.add_key_increment(aggregates["cases__project__project_id"], project.project_id)
@@ -400,7 +401,9 @@ class Data(object):
             access=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["access"].items()]),
             cases__project__project_id=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["cases__project__project_id"].items()]))
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["cases__project__project_id"].items()]),
+            file_size=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["file_size"].items()]))
 
         return file_aggregates
 
