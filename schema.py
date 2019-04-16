@@ -275,6 +275,7 @@ class CaseFile(graphene.ObjectType):
     data_format = graphene.String()
     platform = graphene.String()
     access = graphene.String()
+    file_size = graphene.Float()
 
 class CaseFileConnection(graphene.relay.Connection):
     class Meta:

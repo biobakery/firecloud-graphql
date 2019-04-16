@@ -67,7 +67,10 @@ class Range(object):
         return match
 
     @staticmethod
-    def match(range, value_list):
+    def match(range, value_list, field):
+        # apply any unit converion included in field
+        if field.endswith("file_size"):
+            value_list = map(bytes_to_gb, value_list)
         # check if this value is in the range
         start, end = range.split(" - ")
         matches = []
@@ -137,14 +140,14 @@ def get_class_member_value(obj, levels, subset=False):
 
     return final_value
 
-def check_for_match(value_selected, hit_values, operation):
+def check_for_match(value_selected, hit_values, operation, field):
     # check if the values for the hit match one or more of the values selected
 
     def is_match(a, b, operation):
         if operation == "in":
             # check for range
             if Range.isinstance(a):
-                return Range.match(a,b)
+                return Range.match(a,b,field)
             else:
                 return True if a in b else False
         elif operation == ">=":
@@ -166,7 +169,7 @@ def check_for_match(value_selected, hit_values, operation):
 
     return match
 
-def get_filtered_set(hits, levels, value_selected, operation, top_level=None, two_top_levels=None):
+def get_filtered_set(hits, levels, value_selected, operation, field, top_level=None, two_top_levels=None):
     # Search through hits to get filtered set
     filtered_set=set()
     for item in hits:
@@ -176,7 +179,7 @@ def get_filtered_set(hits, levels, value_selected, operation, top_level=None, tw
             new_search_subset = []
             for search_item in getattr(item, top_level).hits:
                 subset_hit_values = get_class_member_value(search_item, levels)
-                if check_for_match(value_selected, subset_hit_values, operation):
+                if check_for_match(value_selected, subset_hit_values, operation, field):
                     new_search_subset.append(search_item)
                 hit_values+=subset_hit_values
             # remove filtered objects
@@ -189,7 +192,7 @@ def get_filtered_set(hits, levels, value_selected, operation, top_level=None, tw
         else:
             hit_values=get_class_member_value(item,levels)
 
-        if check_for_match(value_selected, hit_values, operation):
+        if check_for_match(value_selected, hit_values, operation, field):
             filtered_set.add(item)
     return list(filtered_set)
 
@@ -223,19 +226,19 @@ def filter_hits(hits, filters, object_name):
         if top_level != object_name:
             if levels[0] == object_name:
                 top_level = levels.pop(0)
-                all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation))
+                all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, field))
             elif levels[0] in dir(hits[0]):
-                all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation))
+                all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, field))
             elif top_level in dir(hits[0]):
-                all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, top_level))
+                all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, field, top_level))
             else:
                 sub_hit_levels = subhits(hits[0],top_level)
                 if sub_hit_levels:
-                    all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, two_top_levels=sub_hit_levels))
+                    all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, field, two_top_levels=sub_hit_levels))
                 else:
                     all_filtered_sets.append(set(hits))
         else:
-            all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation))
+            all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, field))
 
     # reduce sets
     final_set = set(all_filtered_sets.pop(0))

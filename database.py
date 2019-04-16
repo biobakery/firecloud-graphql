@@ -190,7 +190,8 @@ class Data(object):
                     experimental_strategy=file_info['experimental_strategy'],
                     data_format=file_info['data_format'],
                     platform=file_info['platform'],
-                    access=file_info['access']))
+                    access=file_info['access'],
+                    file_size=file_info['file_size']))
 
             samples.append(schema.Sample(
                 id=row['id'],
@@ -276,7 +277,8 @@ class Data(object):
                     experimental_strategy=file_info['experimental_strategy'],
                     data_format=file_info['data_format'],
                     platform=file_info['platform'],
-                    access=file_info['access']))
+                    access=file_info['access'],
+                    file_size=file_info['file_size']))
 
             # create casesamples
             casesamples=[]
