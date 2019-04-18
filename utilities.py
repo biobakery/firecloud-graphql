@@ -7,7 +7,7 @@ import collections
 
 def bytes_to_gb(bytes):
     try:
-        return float(bytes) / (1024**3.0)
+        return int( float(bytes) / (1024**3.0) )
     except ValueError:
         return bytes
 
