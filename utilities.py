@@ -112,9 +112,9 @@ def add_key_increment(dictionary, key):
 
 def get_database_variables():
     try:
-        username = os.environ['DB_USER']
-        password = os.environ['DB_PASSWORD']
-        database = os.environ['DB_DATABASE']
+        username = os.environ['MYSQL_USER']
+        password = os.environ['MYSQL_PASSWORD']
+        database = os.environ['MYSQL_DATABASE']
     except KeyError as e:
         print("Unable to find database settings in env variables")
         sys.exit(e)
