@@ -157,6 +157,8 @@ To run: `$ sudo docker run -d --name graphql -e MYSQL_ROOT_PASSWORD=biobakery -e
 
 When running a new container replace passwords in demo command above. This command will reuse the existing database at /opt/database.
 
+The steps to build a new container are included in the script `build.bash`.
+
 To start:
 ```
 $ sudo docker exec -it graphql bash
