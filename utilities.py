@@ -81,13 +81,15 @@ class Range(object):
                 matches.append(False)
         return any(matches)
 
-def str_to_float(values):
+def str_to_float(values, error_zero=False):
     new_values = []
     for v in values:
         try:
             float_value = float(v)
         except ValueError:
             float_value = ""
+            if error_zero:
+                float_value = 0
         new_values.append(float_value)
     return new_values
 
