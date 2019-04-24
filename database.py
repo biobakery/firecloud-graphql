@@ -314,9 +314,12 @@ class Data(object):
         connection.close()
         return cases
 
-    def get_cart_file_size(self):
-        db_results = self.query_database("SELECT SUM(file_size) from file_sample", fetchall=True)[0][0]
-        return schema.FileSize(db_results)
+    def get_cart_file_size(self, filters=None):
+        all_files = self.get_current_files()
+        filtered_files = utilities.filter_hits(all_files, filters, "files")
+        # get the size from the filtered files
+        total_size = sum([utilities.str_to_float([file.file_size], error_zero=True)[0] for file in filtered_files])
+        return schema.CartSummaryAggs(fs=schema.FileSize(value=total_size))
 
     def get_current_counts(self):
         query = "SELECT COUNT(distinct project), COUNT(distinct participant), COUNT(distinct sample), " +\

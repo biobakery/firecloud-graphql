@@ -491,12 +491,12 @@ class FileSize(graphene.ObjectType):
 class CartSummaryAggs(graphene.ObjectType):
     fs = graphene.Field(FileSize)
 
-    def resolve_fs(self, info):
-        return data.get_cart_file_size()
-
 class CartSummary(graphene.ObjectType):
     aggregations = graphene.Field(CartSummaryAggs, 
         filters=FiltersArgument())
+
+    def resolve_aggregations(self, info, filters=None):
+        return data.get_cart_file_size(filters)
 
 class Root(graphene.ObjectType):
     user = graphene.Field(User)
