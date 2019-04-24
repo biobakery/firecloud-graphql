@@ -147,4 +147,20 @@ To install run
 ``pip install mysql-connector-python``
 
 
- 
+## Production
+
+This server runs in a docker container that is hosted by nginx running in the portal-ui container. 
+
+To build: `$ sudo docker sudo docker build -t graphql . `
+
+To run: `$ sudo docker run -d --name graphql -e MYSQL_ROOT_PASSWORD=biobakery -e MYSQL_USER=biom_mass -e MYSQL_PASSWORD=password -e MYSQL_DATABASE=portal_ui -p 5000:5000 -v /opt/database:/var/lib/mysql graphql`
+
+When running a new container replace passwords in demo command above. This command will reuse the existing database at /opt/database.
+
+To start:
+```
+$ sudo docker exec -it graphql bash
+$ cd /usr/local/src
+$ python load_local_database.py (if needed as based on prior db with mount)
+$ nohup python server.py > server.log &
+```
