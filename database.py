@@ -44,7 +44,7 @@ class Data(object):
         else:
             return connection, results
 
-    def get_current_projects(self):
+    def get_current_projects(self, filters=None):
         query = "SELECT file_sample.id as file_id, file_sample.participant, " +\
                  "file_sample.file_size, file_sample.data_category, " +\
                  "file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
@@ -52,9 +52,30 @@ class Data(object):
                  "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id " +\
                  "INNER JOIN participant ON file_sample.participant=participant.entity_participant_id"
         connection, db_results = self.query_database(query)
-        project_info = {}
+
+        # create a set of files for filtering
+        save_db_results=[]
+        all_files=[]
         for row in db_results:
+            all_files.append(schema.File(id=row['file_id'], data_category=row['data_category'], experimental_strategy=row['experimental_strategy']))
+            save_db_results.append(row)
+
+        # apply filtering only for summary/file filters
+        if filters:
+            for content in filters["content"]:
+                field=content["content"]["field"]
+                if "summary" in field:
+                    content["content"]["field"]="files."+field.split(".")[-1]
+            filtered_files = utilities.filter_hits(all_files, filters, "files")
+            selected_file_ids = [file.id for file in filtered_files]
+        else:
+            selected_file_ids = [file.id for file in all_files]
+
+        project_info = {}
+        for row in save_db_results:
             id = row['project_id']
+            if not row['file_id'] in selected_file_ids:
+                continue
             if not id in project_info:
                 project_info[id]={"file_size":0, "file_count":0, "participants":set(), "data_category": {}, "experimental_strategy": {}}
                 project_info[id]['name']=row['project']

@@ -475,7 +475,7 @@ class Projects(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
-        projects = data.get_current_projects()
+        projects = data.get_current_projects(filters)
         filtered_projects = utilities.filter_hits(projects, filters, "projects")
         return filtered_projects
 
