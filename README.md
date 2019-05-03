@@ -153,7 +153,7 @@ This server runs in a docker container that is hosted by nginx running in the po
 
 To build: `$ sudo docker sudo docker build -t graphql . `
 
-To run: `$ sudo docker run -d --name graphql -e MYSQL_ROOT_PASSWORD=biobakery -e MYSQL_USER=biom_mass -e MYSQL_PASSWORD=password -e MYSQL_DATABASE=portal_ui -p 5000:5000 -v /opt/database:/var/lib/mysql graphql`
+To run: `$ sudo docker run -d --name graphql -e MYSQL_ROOT_PASSWORD=biobakery -e MYSQL_USER=biom_mass -e MYSQL_PASSWORD=password -e MYSQL_DATABASE=portal_ui -p 5000:5000 -v /opt/database:/var/lib/mysql -v logs:/usr/local/src/logs/ graphql`
 
 When running a new container replace passwords in demo command above. This command will reuse the existing database at /opt/database.
 
