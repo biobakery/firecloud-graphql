@@ -9,6 +9,7 @@ import schema
 
 RAW_FILE_TYPE = "rawFiles"
 PROCESSED_FILE_TYPE = "processedFiles"
+GENERIC_FILE_NAME_OFFSET = 1000000
 
 class Data(object):
 
@@ -108,6 +109,10 @@ class Data(object):
 
         return projects
 
+    @staticmethod
+    def get_generic_file_name(file_id, extension):
+        return "{0}.{1}".format(int(file_id)+GENERIC_FILE_NAME_OFFSET, extension.lower())
+
     def get_current_files(self):
         query = "SELECT file_sample.id as file_id, file_sample.file_name, file_sample.participant, file_sample.sample, " +\
                  "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
@@ -134,6 +139,7 @@ class Data(object):
                 platform=row['platform'],
                 experimental_strategy=row['experimental_strategy'],
                 file_name=row['file_name'],
+                generic_file_name=self.get_generic_file_name(row['file_id'],row['data_format']),
                 cases=schema.FileCases(
                     hits=[schema.FileCase(
                         id=row['participant_id'],
