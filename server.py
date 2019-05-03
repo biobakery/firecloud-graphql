@@ -14,8 +14,18 @@ import flask_cors
 import flask_graphql
 import graphene
 
+import logging
+
 import schema
 from database import data
+
+# set the name of the log file
+access_log_file=os.path.join(os.path.dirname(__file__),"logs","server.log")
+
+# configure the logger
+logging.basicConfig(filename=access_log_file,format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
+    level='INFO', filemode='a', datefmt='%m/%d/%Y %I:%M:%S %p')
+
 
 NAME = "firecloud_graphql"
 HOST = "0.0.0.0"
@@ -59,6 +69,13 @@ def main():
     @app.route('/status', methods=["GET"])
     def get_version():
         return flask.jsonify(data.get_version())
+
+    # add static endpoint for access
+    @app.route('/access', methods=["POST"])
+    def get_access():
+        data_body=flask.request.get_json()
+        logging.info(data_body)
+        return flask.jsonify({ "access": "no" })
 
     # add end point for graphql gui
     app.add_url_rule('/test', view_func=flask_graphql.GraphQLView.as_view(
