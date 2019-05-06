@@ -10,6 +10,25 @@ import utilities
 import query_firecloud
 from database import data
 
+## Temp utility schema functions ##
+
+def filter_noauth(data):
+    # until we have auth setup, filter out those items that
+    # we would never want to serve without authentication
+
+    # search for two cases
+    try:
+        hits = data["viewer"]["repository"]["cases"]["hits"]["edges"]
+        data["viewer"]["repository"]["cases"]["hits"]["edges"] = []
+    except KeyError:
+        pass
+
+    try:
+        hits = data["viewer"]["repository"]["samples"]["hits"]["edges"]
+        data["viewer"]["repository"]["samples"]["hits"]["edges"] = []
+    except KeyError:
+        pass
+
 ## Firecloud API ##
 
 class entitiesWithType(graphene.ObjectType):

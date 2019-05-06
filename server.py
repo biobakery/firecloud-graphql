@@ -31,20 +31,24 @@ NAME = "firecloud_graphql"
 HOST = "0.0.0.0"
 PORT = "5000"
 
-def process_query(request, schema):
+def process_query(request, schema_query):
     # process the request from the url
     url_hash=request.args.get("hash")
     data_body=request.get_json()
     data_query=data_body["query"]
     data_variables=data_body.get("variables",{})
 
-    firecloud_schema=graphene.Schema(query=schema, auto_camelcase=False)
+    firecloud_schema=graphene.Schema(query=schema_query, auto_camelcase=False)
     result=firecloud_schema.execute(data_query, variables=data_variables)
     if result.errors:
         print("ERROR")
         print(data_query)
         print(data_variables)
         print(result.errors)
+
+    # filter out items that should not be servered without auth
+    schema.filter_noauth(result.data)
+
     json_result=flask.jsonify({"data": result.data})
 
     return json_result
