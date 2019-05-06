@@ -129,7 +129,6 @@ class Data(object):
         for row in db_results:
             files.append(schema.File(
                 id=row['file_id'],
-                name=row['file_name'],
                 participant=row['participant'],
                 sample=row['sample'],
                 access=row['access'],
@@ -138,7 +137,6 @@ class Data(object):
                 data_format=row['data_format'],
                 platform=row['platform'],
                 experimental_strategy=row['experimental_strategy'],
-                file_name=row['file_name'],
                 generic_file_name=self.get_generic_file_name(row['file_id'],row['data_format']),
                 cases=schema.FileCases(
                     hits=[schema.FileCase(

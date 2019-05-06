@@ -158,6 +158,12 @@ class File(graphene.ObjectType):
     def resolve_type(self, info):
         return self.data_format
 
+    def resolve_name(self, info):
+        return self.generic_file_name
+
+    def resolve_file_name(self, info):
+        return self.generic_file_name
+
 class ProjectConnection(graphene.relay.Connection):
     class Meta:
         node = Project
