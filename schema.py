@@ -370,6 +370,7 @@ class Sample(graphene.ObjectType):
     alcohol = graphene.String()
 
     files = graphene.Field(CaseFiles)
+    cases = graphene.Field(FileCases)
 
     def resolve_submitter_id(self, info):
         return self.sample_id

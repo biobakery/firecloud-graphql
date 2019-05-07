@@ -239,7 +239,8 @@ class Data(object):
                 fat=row['fat'],
                 iron=row['iron'],
                 alcohol=row['alcohol'],
-                files=schema.CaseFiles(hits=casefiles)
+                files=schema.CaseFiles(hits=casefiles),
+                cases=schema.FileCases(hits=[schema.FileCase(case_id=row['participant_id'], primary_site=row['primary_site'])])
             ))
         connection.close()
         return samples
