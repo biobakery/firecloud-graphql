@@ -3,6 +3,8 @@
 
 import json
 
+from collections import OrderedDict
+
 import graphene
 from graphene.types import generic
 
@@ -16,18 +18,21 @@ def filter_noauth(data):
     # until we have auth setup, filter out those items that
     # we would never want to serve without authentication
 
-    # search for two cases
-    try:
-        hits = data["viewer"]["repository"]["cases"]["hits"]["edges"]
-        data["viewer"]["repository"]["cases"]["hits"]["edges"] = []
-    except KeyError:
-        pass
+    FILTER_KEYS = ['age','weight','met','week','time','fat','fiber','iron','alcohol']
+    SUBSTITUTE = "1"
 
-    try:
-        hits = data["viewer"]["repository"]["samples"]["hits"]["edges"]
-        data["viewer"]["repository"]["samples"]["hits"]["edges"] = []
-    except KeyError:
-        pass
+    def filter_metadata(data):
+        for key in data.keys():
+            if isinstance(data[key], OrderedDict):
+                filter_metadata(data[key])
+            elif isinstance(data[key], list):
+                for item in data[key]:
+                    filter_metadata(item)
+            elif key in FILTER_KEYS:
+                data[key]=SUBSTITUTE
+
+    filter_metadata(data)
+
 
 ## Portal API ##
 
