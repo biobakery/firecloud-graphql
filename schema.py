@@ -22,6 +22,9 @@ def filter_noauth(data):
     SUBSTITUTE = "1"
 
     def filter_metadata(data):
+        if not isinstance(data, OrderedDict):
+            return None
+
         for key in data.keys():
             if isinstance(data[key], OrderedDict):
                 filter_metadata(data[key])
