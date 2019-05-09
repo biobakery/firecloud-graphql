@@ -17,12 +17,12 @@ class Data(object):
         # get the database environment variables
         username, password, database = utilities.get_database_variables()
 
-        # create a pool of connections, recycle so they do not become stale
+        # create a pool of connections, pre-ping to prevent stale connections
         database_url = "mysql://{username}:{password}@localhost/{database}".format(username = username,
             password = password, database = database)
 
         try:
-            self.engine = sqlalchemy.create_engine(database_url, pool_size=32, pool_recycle=3600)
+            self.engine = sqlalchemy.create_engine(database_url, pool_size=32, pool_pre_ping=True)
         except EnvironmentError as e:
             print("Unable to connect to local database")
             print("Database url {}".format(database_url))
