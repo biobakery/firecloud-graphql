@@ -14,4 +14,4 @@ RUN pip install --upgrade google-cloud-bigquery
 ENV GOOGLE_APPLICATION_CREDENTIALS=/usr/local/src/keys/biom-mass-8dc9ab934396.json
 COPY ./keys/biom-mass-8dc9ab934396.json $GOOGLE_APPLICATION_CREDENTIALS
 
-CMD ["mysqld"]
+CMD ["mysqld", "--wait_timeout=28800"]
