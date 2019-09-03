@@ -14,6 +14,9 @@ import flask_cors
 import flask_graphql
 import graphene
 
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
 import logging
 
 import schema
@@ -30,6 +33,27 @@ logging.basicConfig(filename=access_log_file,format='%(asctime)s - %(name)s - %(
 NAME = "firecloud_graphql"
 HOST = "0.0.0.0"
 PORT = "5000"
+GOOGLE_AUDIENCE = "250496797473-15s2p3k9s7latehllsj4o2cv5qp1jl1c.apps.googleusercontent.com"
+#GOOGLE_AUDIENCE = "250496797473-3tkrt8bluu5l508kik1j2ufurpiamgsn.apps.googleusercontent.com"
+
+
+def verify_user(data_body):
+    # verify the user token is a valid google oauth2 token
+    request = requests.Request()
+
+    token = data_body["tokenObj"]["id_token"]
+
+    try:
+        token_info = id_token.verify_token(
+            token, request, GOOGLE_AUDIENCE)
+    except ValueError:
+        token_info = {'iss': ""}
+
+    # check this has the correct issuer
+    if token_info['iss'] != "accounts.google.com":
+        return token, "", "no"
+    else:
+        return token, token_info["email"], "yes"
 
 def process_query(request, schema_query):
     # process the request from the url
@@ -79,7 +103,12 @@ def main():
     def get_access():
         data_body=flask.request.get_json()
         logging.info(data_body)
-        return flask.jsonify({ "access": "no" })
+        token, email, access = verify_user(data_body)
+        if access == "yes":
+            logging.info("Access GRANTED for user: " + email)
+        else:
+            logging.info("Access DENIED for user request")
+        return flask.jsonify({ "token": token,"access": access })
 
     # add end point for graphql gui
     app.add_url_rule('/test', view_func=flask_graphql.GraphQLView.as_view(
