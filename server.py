@@ -36,6 +36,8 @@ PORT = "5000"
 GOOGLE_AUDIENCE = "250496797473-15s2p3k9s7latehllsj4o2cv5qp1jl1c.apps.googleusercontent.com"
 #GOOGLE_AUDIENCE = "250496797473-3tkrt8bluu5l508kik1j2ufurpiamgsn.apps.googleusercontent.com"
 
+GOOGLE_COOKIE_NAME = "google_access_token"
+
 
 def verify_user(token):
     # verify the user token is a valid google oauth2 token
@@ -59,6 +61,9 @@ def process_query(request, schema_query):
     data_body=request.get_json()
     data_query=data_body["query"]
     data_variables=data_body.get("variables",{})
+
+    # get token
+    token_cookie=request.cookies.get(GOOGLE_COOKIE_NAME,"")
 
     firecloud_schema=graphene.Schema(query=schema_query, auto_camelcase=False)
     result=firecloud_schema.execute(data_query, variables=data_variables)
