@@ -37,11 +37,9 @@ GOOGLE_AUDIENCE = "250496797473-15s2p3k9s7latehllsj4o2cv5qp1jl1c.apps.googleuser
 #GOOGLE_AUDIENCE = "250496797473-3tkrt8bluu5l508kik1j2ufurpiamgsn.apps.googleusercontent.com"
 
 
-def verify_user(data_body):
+def verify_user(token):
     # verify the user token is a valid google oauth2 token
     request = requests.Request()
-
-    token = data_body["tokenObj"]["id_token"]
 
     try:
         token_info = id_token.verify_token(
@@ -102,13 +100,12 @@ def main():
     @app.route('/access', methods=["POST"])
     def get_access():
         data_body=flask.request.get_json()
-        logging.info(data_body)
-        token, email, access = verify_user(data_body)
+        hash_token, email, access = verify_user(data_body["token"])
         if access == "yes":
             logging.info("Access GRANTED for user: " + email)
         else:
-            logging.info("Access DENIED for user request")
-        return flask.jsonify({ "token": token,"access": access })
+            logging.info("Access DENIED for user request from email: " + data_body["email"])
+        return flask.jsonify({ "hash_token": hash_token,"access": access })
 
     # add end point for graphql gui
     app.add_url_rule('/test', view_func=flask_graphql.GraphQLView.as_view(
