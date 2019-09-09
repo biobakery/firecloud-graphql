@@ -28,11 +28,16 @@ class Data(object):
             print("Database url {}".format(database_url))
             sys.exit(e)
 
-    def query_database(self, query, fetchall=False):
+    def query_database(self, query, fetchall=False, no_results=False):
         # obtain connection from pool, run query
         # then release connection back to pool
         connection = self.engine.connect()
-        results = connection.execute(query)
+        if no_results:
+            connection.execute(query)
+            connection.close()
+            return None
+        else:
+            results = connection.execute(query)
   
         # if fetchall then get all results (to close cursor)
         # and then close connection
@@ -44,6 +49,24 @@ class Data(object):
             return results
         else:
             return connection, results
+
+    def add_token(self, email, token):
+        # add or update the token for the user
+        db_results = self.query_database("UPDATE users SET token='{0}' WHERE email='{1}'".format(token,email), no_results=True)
+
+    def valid_token(self, token):
+        db_results = self.query_database("SELECT email FROM users WHERE token='{}'".format(token), fetchall=True)
+        if db_results:
+            return True
+        else:
+            return False
+
+    def valid_user(self, email):
+        db_results = self.query_database("SELECT token FROM users WHERE email='{}'".format(email), fetchall=True)
+        if db_results:
+            return True
+        else:
+            return False
 
     def get_current_projects(self, filters=None):
         query = "SELECT file_sample.id as file_id, file_sample.participant, " +\

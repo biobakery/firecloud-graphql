@@ -14,27 +14,31 @@ from database import data
 
 ## Temp utility schema functions ##
 
-def filter_noauth(data):
-    # until we have auth setup, filter out those items that
+def filter_noauth(return_data,token):
+    # if a valid token is not provided, filter out those items that
     # we would never want to serve without authentication
 
     FILTER_KEYS = ['age','weight','met','week','time','fat','fiber','iron','alcohol']
     SUBSTITUTE = "1"
 
-    def filter_metadata(data):
-        if not isinstance(data, OrderedDict):
+    # check if the token is for a valid user
+    if data.valid_token(token):
+        return return_data
+
+    def filter_metadata(return_data):
+        if not isinstance(return_data, OrderedDict):
             return None
 
-        for key in data.keys():
-            if isinstance(data[key], OrderedDict):
-                filter_metadata(data[key])
-            elif isinstance(data[key], list):
-                for item in data[key]:
+        for key in return_data.keys():
+            if isinstance(return_data[key], OrderedDict):
+                filter_metadata(return_data[key])
+            elif isinstance(return_data[key], list):
+                for item in return_data[key]:
                     filter_metadata(item)
             elif key in FILTER_KEYS:
-                data[key]=SUBSTITUTE
+                return_data[key]=SUBSTITUTE
 
-    filter_metadata(data)
+    filter_metadata(return_data)
 
 
 ## Portal API ##

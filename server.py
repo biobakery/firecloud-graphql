@@ -65,10 +65,13 @@ def verify_user(token, email):
     if token_info['email'] != email:
         verified = False
 
+    if not data.valid_user(token_info['email']):
+        verified = False
+
     if verified:
-        return token_info['email'], hash_access_token(token)
+        return token_info['email'], hash_access_token(token), "granted"
     else:
-        return "error","error"
+        return "error","error","no"
 
 def process_query(request, schema_query):
     # process the request from the url
@@ -89,7 +92,7 @@ def process_query(request, schema_query):
         print(result.errors)
 
     # filter out items that should not be servered without auth
-    schema.filter_noauth(result.data)
+    schema.filter_noauth(result.data,token_cookie)
 
     json_result=flask.jsonify({"data": result.data})
 
@@ -120,9 +123,12 @@ def main():
     @app.route('/access', methods=["POST"])
     def get_access():
         data_body=flask.request.get_json()
-        email, hash_token = verify_user(data_body["token"],data_body["email"])
-        if hash_token:
+        email, hash_token, access = verify_user(data_body["token"],data_body["email"])
+        if access == "granted":
             logging.info("Access GRANTED for user: " + email)
+            # adding token to the database
+            data.add_token(email, hash_token)
+            logging.info("Added token to the database for user")
         else:
             logging.info("Access DENIED for user request from email: " + data_body["email"])
         return flask.jsonify({ "hash_token": hash_token })
