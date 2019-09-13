@@ -36,6 +36,7 @@ logging.basicConfig(filename=access_log_file,format='%(asctime)s - %(name)s - %(
 NAME = "firecloud_graphql"
 HOST = "0.0.0.0"
 PORT = "5000"
+
 GOOGLE_AUDIENCE = "250496797473-15s2p3k9s7latehllsj4o2cv5qp1jl1c.apps.googleusercontent.com"
 #GOOGLE_AUDIENCE = "250496797473-3tkrt8bluu5l508kik1j2ufurpiamgsn.apps.googleusercontent.com"
 
@@ -62,10 +63,12 @@ def verify_user(token, email):
     if token_info['iss'] != "accounts.google.com":
         verified = False
 
-    if token_info['email'] != email:
-        verified = False
-
-    if not data.valid_user(token_info['email']):
+    try:
+        if token_info['email'] != email:
+            verified = False
+        if not data.valid_user(token_info['email']):
+            verified = False
+    except KeyError:
         verified = False
 
     if verified:
