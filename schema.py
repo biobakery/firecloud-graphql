@@ -18,7 +18,7 @@ def filter_noauth(return_data,token):
     # if a valid token is not provided, filter out those items that
     # we would never want to serve without authentication
 
-    FILTER_KEYS = ['age','weight','met','week','time','fat','fiber','iron','alcohol']
+    FILTER_KEYS = ['age','weight','met','week','time','fat','fiber','iron','alcohol', 'b12','calories','carbs','choline','folate','protein','weight','non_ribosomal_proteins','ribosomal_proteins','days']
     SUBSTITUTE = "1"
 
     # check if the token is for a valid user
@@ -115,6 +115,18 @@ class CaseSample(graphene.ObjectType):
     fiber = graphene.String()
     iron = graphene.String()
     alcohol = graphene.String()
+
+    b12 = graphene.String()
+    calories = graphene.String()
+    carbs = graphene.String()
+    choline = graphene.String()
+    folate = graphene.String()
+    protein = graphene.String()
+    weight = graphene.String()
+    met = graphene.String()
+    non_ribosomal_proteins = graphene.String()
+    ribosomal_proteins = graphene.String()
+    days = graphene.String()
 
 class FileCase(graphene.ObjectType):
     class Meta:
@@ -261,6 +273,18 @@ class CaseAggregations(graphene.ObjectType):
     sample__iron = graphene.Field(Aggregations)
     sample__alcohol = graphene.Field(Aggregations)
 
+    sample__b12 = graphene.Field(Aggregations)
+    sample__calories = graphene.Field(Aggregations)
+    sample__carbs = graphene.Field(Aggregations)
+    sample__choline = graphene.Field(Aggregations)
+    sample__folate = graphene.Field(Aggregations)
+    sample__protein = graphene.Field(Aggregations)
+    sample__weight = graphene.Field(Aggregations)
+    sample__met = graphene.Field(Aggregations)
+    sample__non_ribosomal_proteins = graphene.Field(Aggregations)
+    sample__ribosomal_proteins = graphene.Field(Aggregations)
+    sample__days = graphene.Field(Aggregations)
+
 class CaseAnnotation(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
@@ -381,6 +405,18 @@ class Sample(graphene.ObjectType):
     iron = graphene.String()
     alcohol = graphene.String()
 
+    b12 = graphene.String()
+    calories = graphene.String()
+    carbs = graphene.String()
+    choline = graphene.String()
+    folate = graphene.String()
+    protein = graphene.String()
+    weight = graphene.String()
+    met = graphene.String()
+    non_ribosomal_proteins = graphene.String()
+    ribosomal_proteins = graphene.String()
+    days = graphene.String()
+
     files = graphene.Field(CaseFiles)
     cases = graphene.Field(FileCases)
 
@@ -400,6 +436,18 @@ class SampleAggregations(graphene.ObjectType):
     fat = graphene.Field(Aggregations)
     iron = graphene.Field(Aggregations)
     alcohol = graphene.Field(Aggregations)
+
+    b12 = graphene.Field(Aggregations)
+    calories = graphene.Field(Aggregations)
+    carbs = graphene.Field(Aggregations)
+    choline = graphene.Field(Aggregations)
+    folate = graphene.Field(Aggregations)
+    protein = graphene.Field(Aggregations)
+    weight = graphene.Field(Aggregations)
+    met = graphene.Field(Aggregations)
+    non_ribosomal_proteins = graphene.Field(Aggregations)
+    ribosomal_proteins = graphene.Field(Aggregations)
+    days = graphene.Field(Aggregations) 
 
 class SampleConnection(graphene.relay.Connection):
     class Meta:

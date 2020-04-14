@@ -143,6 +143,9 @@ class Data(object):
                  "participant.id as participant_id, project.program, " +\
                  "participant.age_2012 as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
                  "sample.week as week, sample.Time as time, sample.drFiber as fiber, sample.drFat as fat, " +\
+                 "sample.drB12 as b12, sample.drCalories as calories, sample.drCarbs as carbs, sample.drCholine as choline, " +\
+                 "sample.drFolate as folate, sample.drProtein as protein, sample.weight_lbs as weight, " +\
+                 "sample.non_ribosomal_proteins as non_ribosomal_proteins, sample.ribosomal_proteins as ribosomal_proteins, sample.totMETs1 as sample_met," +\
                  "sample.drIron as iron, sample.drAlcohol as alcohol, sample.id as sample_id " +\
                  "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id " +\
                  "INNER JOIN participant ON file_sample.participant=participant.entity_participant_id "+\
@@ -184,6 +187,16 @@ class Data(object):
                             fat=row['fat'],
                             iron=row['iron'],
                             alcohol=row['alcohol'],    
+                            b12=row['b12'],
+                            calories=row['calories'],
+                            carbs=row['carbs'],
+                            choline=row['choline'],
+                            folate=row['folate'],
+                            protein=row['protein'],
+                            weight=row['weight'],
+                            met=row['sample_met'],
+                            non_ribosomal_proteins=row['non_ribosomal_proteins'],
+                            ribosomal_proteins=row['ribosomal_proteins']
                         )])]
                 ),
                 file_id=row['file_id'],
@@ -210,6 +223,9 @@ class Data(object):
                  "project.id as project_id, project.project_id as project_name, project.program as program_name, " +\
                  "participant.age_2012 as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
                  "sample.week as week, sample.Time as time, sample.drFiber as fiber, sample.drFat as fat, " +\
+                 "sample.drB12 as b12, sample.drCalories as calories, sample.drCarbs as carbs, sample.drCholine as choline, " +\
+                 "sample.drFolate as folate, sample.drProtein as protein, sample.weight_lbs as weight, sample.totMETs1 as sample_met," +\
+                 "sample.non_ribosomal_proteins as non_ribosomal_proteins, sample.ribosomal_proteins as ribosomal_proteins, " +\
                  "sample.drIron as iron, sample.drAlcohol as alcohol " +\
                  "FROM sample INNER JOIN participant ON sample.participant=participant.entity_participant_id " +\
                  "INNER JOIN project ON sample.project=project.project_id"
@@ -240,7 +256,7 @@ class Data(object):
                     platform=file_info['platform'],
                     access=file_info['access'],
                     file_size=file_info['file_size']))
-
+            
             samples.append(schema.Sample(
                 id=row['id'],
                 sample_id=row['sample_name'],
@@ -262,6 +278,16 @@ class Data(object):
                 fat=row['fat'],
                 iron=row['iron'],
                 alcohol=row['alcohol'],
+                b12=row['b12'],
+                calories=row['calories'],
+                carbs=row['carbs'],
+                choline=row['choline'],
+                folate=row['folate'],
+                protein=row['protein'],
+                weight=row['weight'],
+                met=row['sample_met'],
+                non_ribosomal_proteins=row['non_ribosomal_proteins'],
+                ribosomal_proteins=row['ribosomal_proteins'],
                 files=schema.CaseFiles(hits=casefiles),
                 cases=schema.FileCases(hits=[schema.FileCase(case_id=row['participant_id'], primary_site=row['primary_site'])])
             ))
@@ -283,6 +309,9 @@ class Data(object):
 
         # gather sample data for participants
         query = "SELECT id, participant, sample, week, Time as time, drFiber as fiber, " +\
+                "drB12 as b12, drCalories as calories, drCarbs as carbs, drCholine as choline, " +\
+                "drFolate as folate, drProtein as protein, weight_lbs as weight, " +\
+                "non_ribosomal_proteins, ribosomal_proteins, totMETs1 as sample_met," +\
                 "drFat as fat, drFiber as fiber, drIron as iron, drAlcohol as alcohol from sample"
         connection, db_results = self.query_database(query)
         case_samples = {}
@@ -339,7 +368,17 @@ class Data(object):
                     fiber=sample_info['fiber'],
                     iron=sample_info['iron'],
                     fat=sample_info['fat'],
-                    alcohol=sample_info['alcohol']))
+                    alcohol=sample_info['alcohol'],
+                    b12=sample_info['b12'],
+                    calories=sample_info['calories'],
+                    carbs=sample_info['carbs'],
+                    choline=sample_info['choline'],
+                    folate=sample_info['folate'],
+                    protein=sample_info['protein'],
+                    weight=sample_info['weight'],
+                    met=sample_info['sample_met'],
+                    non_ribosomal_proteins=sample_info['non_ribosomal_proteins'],
+                    ribosomal_proteins=sample_info['ribosomal_proteins']))
 
             cases.append(schema.Case(
                 id=row['participant_id'],
@@ -465,8 +504,11 @@ class Data(object):
         # aggregate sample data
         aggregates = {"primary_site": {}, "project__project_id": {},
                       "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} ,
-                      "week" : {}, "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {}}
-        stats = { "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {} }
+                      "week" : {}, "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {},
+                      "b12": {}, "calories": {}, "carbs": {}, "choline" : {}, "folate" : {}, "protein": {}, "weight" : {}, "met" : {},
+                       "non_ribosomal_proteins" : {}, "ribosomal_proteins": {} }
+        stats = { "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {}, "b12": {}, "calories": {}, "carbs": {},
+                  "choline" : {}, "folate" : {}, "protein": {}, "weight" : {}, "met" : {}, "non_ribosomal_proteins" : {}, "ribosomal_proteins": {} }
 
         for sample in samples:
             utilities.add_key_increment(aggregates["demographic__age"], sample.demographic.age)
@@ -481,11 +523,35 @@ class Data(object):
             utilities.add_key_increment(aggregates["fat"], sample.fat)
             utilities.add_key_increment(aggregates["iron"], sample.iron)
             utilities.add_key_increment(aggregates["alcohol"], sample.alcohol)
+
+            utilities.add_key_increment(aggregates["b12"], sample.b12)
+            utilities.add_key_increment(aggregates["calories"], sample.calories)
+            utilities.add_key_increment(aggregates["carbs"], sample.carbs)
+            utilities.add_key_increment(aggregates["choline"], sample.choline)
+            utilities.add_key_increment(aggregates["folate"], sample.folate)
+            utilities.add_key_increment(aggregates["protein"], sample.protein)
+            utilities.add_key_increment(aggregates["weight"], sample.weight)
+            utilities.add_key_increment(aggregates["met"], sample.met)
+            utilities.add_key_increment(aggregates["non_ribosomal_proteins"], sample.non_ribosomal_proteins)
+            utilities.add_key_increment(aggregates["ribosomal_proteins"], sample.ribosomal_proteins)
+
+
             utilities.update_max_min(stats["time"], sample.time)
             utilities.update_max_min(stats["fiber"], sample.fiber)
             utilities.update_max_min(stats["fat"], sample.fat)
             utilities.update_max_min(stats["iron"], sample.iron)
             utilities.update_max_min(stats["alcohol"], sample.alcohol)
+
+            utilities.update_max_min(stats["b12"], sample.b12)
+            utilities.update_max_min(stats["calories"], sample.calories)
+            utilities.update_max_min(stats["carbs"], sample.carbs)
+            utilities.update_max_min(stats["choline"], sample.choline)
+            utilities.update_max_min(stats["folate"], sample.folate)
+            utilities.update_max_min(stats["protein"], sample.protein)
+            utilities.update_max_min(stats["weight"], sample.weight)
+            utilities.update_max_min(stats["met"], sample.met)
+            utilities.update_max_min(stats["non_ribosomal_proteins"], sample.non_ribosomal_proteins)
+            utilities.update_max_min(stats["ribosomal_proteins"], sample.ribosomal_proteins)
 
         sample_aggregates=schema.SampleAggregations(
             demographic__age=schema.Aggregations(
@@ -516,7 +582,38 @@ class Data(object):
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["iron"].items()]),
             alcohol=schema.Aggregations(
                 stats=schema.Stats(max=stats["alcohol"].get("max",0), min=stats["alcohol"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["alcohol"].items()]))
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["alcohol"].items()]),
+
+            b12=schema.Aggregations(
+                stats=schema.Stats(max=stats["b12"].get("max",0), min=stats["b12"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["b12"].items()]),
+            calories=schema.Aggregations(
+                stats=schema.Stats(max=stats["calories"].get("max",0), min=stats["calories"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["calories"].items()]),
+            carbs=schema.Aggregations(
+                stats=schema.Stats(max=stats["carbs"].get("max",0), min=stats["carbs"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["carbs"].items()]),
+            choline=schema.Aggregations(
+                stats=schema.Stats(max=stats["choline"].get("max",0), min=stats["choline"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["choline"].items()]),
+            folate=schema.Aggregations(
+                stats=schema.Stats(max=stats["folate"].get("max",0), min=stats["folate"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["folate"].items()]),
+            protein=schema.Aggregations(
+                stats=schema.Stats(max=stats["protein"].get("max",0), min=stats["protein"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["protein"].items()]),
+            weight=schema.Aggregations(
+                stats=schema.Stats(max=stats["weight"].get("max",0), min=stats["weight"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["weight"].items()]),
+            met=schema.Aggregations(
+                stats=schema.Stats(max=stats["met"].get("max",0), min=stats["met"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["met"].items()]),
+            non_ribosomal_proteins=schema.Aggregations(
+                stats=schema.Stats(max=stats["non_ribosomal_proteins"].get("max",0), min=stats["non_ribosomal_proteins"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["non_ribosomal_proteins"].items()]),
+            ribosomal_proteins=schema.Aggregations(
+                stats=schema.Stats(max=stats["ribosomal_proteins"].get("max",0), min=stats["ribosomal_proteins"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["ribosomal_proteins"].items()]))
 
         return sample_aggregates
 
@@ -524,7 +621,9 @@ class Data(object):
         # aggregate case data
         aggregates = {"primary_site": {}, "project__project_id": {},
                       "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} ,
-                      "sample__time" : {}, "sample__week" : {},  "sample__fiber" : {},  "sample__fat" : {},  "sample__iron" : {},  "sample__alcohol" : {}}
+                      "sample__time" : {}, "sample__week" : {},  "sample__fiber" : {},  "sample__fat" : {},  "sample__iron" : {},  "sample__alcohol" : {},
+                      "sample__b12" : {}, "sample__calories" : {}, "sample__carbs" : {}, "sample__choline": {}, "sample__folate" : {}, "sample__protein" : {},
+                      "sample__weight" : {}, "sample__met": {}, "sample__non_ribosomal_proteins" : {}, "sample__ribosomal_proteins" : {}}
 
         stats = {"demographic__age": {}, "demographic__weight": {}, "demographic__met": {} }
 
@@ -545,6 +644,17 @@ class Data(object):
                 utilities.add_key_increment(aggregates["sample__fat"], utilities.Range.create(sample.fat))
                 utilities.add_key_increment(aggregates["sample__iron"], utilities.Range.create(sample.iron))
                 utilities.add_key_increment(aggregates["sample__alcohol"], utilities.Range.create(sample.alcohol))
+
+                utilities.add_key_increment(aggregates["sample__b12"], utilities.Range.create(sample.b12))
+                utilities.add_key_increment(aggregates["sample__calories"], utilities.Range.create(sample.calories))
+                utilities.add_key_increment(aggregates["sample__carbs"], utilities.Range.create(sample.carbs))
+                utilities.add_key_increment(aggregates["sample__choline"], utilities.Range.create(sample.choline))
+                utilities.add_key_increment(aggregates["sample__folate"], utilities.Range.create(sample.folate))
+                utilities.add_key_increment(aggregates["sample__protein"], utilities.Range.create(sample.protein))
+                utilities.add_key_increment(aggregates["sample__weight"], utilities.Range.create(sample.weight))
+                utilities.add_key_increment(aggregates["sample__met"], utilities.Range.create(sample.met))
+                utilities.add_key_increment(aggregates["sample__non_ribosomal_proteins"], utilities.Range.create(sample.non_ribosomal_proteins))
+                utilities.add_key_increment(aggregates["sample__ribosomal_proteins"], utilities.Range.create(sample.ribosomal_proteins))
 
         case_aggregates=schema.CaseAggregations(
             demographic__age=schema.Aggregations(
@@ -573,7 +683,28 @@ class Data(object):
             sample__iron=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__iron"].items()]),
             sample__alcohol=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__alcohol"].items()]))
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__alcohol"].items()]),
+
+            sample__b12=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__b12"].items()]),
+            sample__calories=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__calories"].items()]),
+            sample__carbs=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__carbs"].items()]),
+            sample__choline=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__choline"].items()]),
+            sample__folate=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__folate"].items()]),
+            sample__protein=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__protein"].items()]),
+            sample__weight=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__weight"].items()]),
+            sample__met=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__met"].items()]),
+            sample__non_ribosomal_proteins=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__non_ribosomal_proteins"].items()]),
+            sample__ribosomal_proteins=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__ribosomal_proteins"].items()]))
 
         return case_aggregates
 
