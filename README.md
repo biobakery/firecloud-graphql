@@ -28,6 +28,10 @@ Script calls functions from other 2 scripts query_firecloud.py and query_bigquer
 Before running the script first set up the environment for the external API calls and have mariadb running. This script requires the same three
 environment variables to query the local database as the server.
 
+Also make sure the service account has been added to all Terra workspaces so that the script can pull the metadata through the Firecloud API.
+
+For projects with metadata in local csv files add the options `--file-participant participant.csv --file-sample sample.csv`.
+
 ### Firecloud API
 
 #### Installation 

@@ -16,21 +16,31 @@ import utilities
 def parse_arguments(args):
     """ Parse the arguments from the user """
     parser = argparse.ArgumentParser(
-        description= "Loads google big query tables into local  mariadb\n",
+        description= "Loads google big query tables into local mariadb\n",
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
         "--project",
         default="biom-mass",
-        help="google project name \n]",
+        help="google project name",
         required=False)
     parser.add_argument(
         "--dataset",
         default="HPFS_Demo_Clean",
-        help="google big query dataset name \n]",
+        help="google big query dataset name",
         required=False)
     parser.add_argument(
         "--verbose",
         help="print each data set loaded to screen",
+        action='store_true')
+    parser.add_argument(
+        "--file-participant",
+        help="a file of participant data")
+    parser.add_argument(
+        "--file-sample",
+        help="a file of sample data")
+    parser.add_argument(
+        "--delete-existing",
+        help="delete all existing tables",
         action='store_true')
 
     return parser.parse_args()
@@ -57,7 +67,16 @@ def get_firecloud_data(verbose):
 
     return values_file_samples, keys_file_samples, values_participants
 
+def read_metadata_file(filename):
+    rows = []
+    with open(filename) as file_handle:
+        column_names = file_handle.readline().rstrip()
+        for line in file_handle:
+            rows.append(",".join(["'"+item+"'" for item in line.rstrip().split(",")]))
+    return rows, column_names
+
 def main():
+    import mysql
     import mysql.connector as mariadb
     import datetime
 
@@ -77,8 +96,13 @@ def main():
         sys.exit(e)
 
     # Get data from  big query
-    print("Calling Google BigQuery API")
-    values_participant,values_sample,columns_participant,columns_sample=query_bigquery.query_bigquery(args.project,args.dataset,key_file,args.verbose)
+    if args.file_participant and args.file_sample:
+        print("Reading data from local files")
+        values_participant,columns_participant=read_metadata_file(args.file_participant)
+        values_sample,columns_sample=read_metadata_file(args.file_sample)
+    else:
+        print("Calling Google BigQuery API")
+        values_participant,values_sample,columns_participant,columns_sample=query_bigquery.query_bigquery(args.project,args.dataset,key_file,args.verbose)
 
     # Construct query to  create db in mariadb
     query_create_db = "CREATE DATABASE IF NOT EXISTS "+local_db
@@ -145,13 +169,14 @@ def main():
     cursor.execute("SET FOREIGN_KEY_CHECKS=0")
     mariadb_connection.commit()
 
-    print("Dropping existing tables")
-    cursor.execute("DROP TABLE IF EXISTS sample")
-    cursor.execute("DROP TABLE IF EXISTS participant")
-    cursor.execute("DROP TABLE IF EXISTS file_sample")
-    cursor.execute("DROP TABLE IF EXISTS project")
-    cursor.execute("DROP TABLE IF EXISTS version")
-    mariadb_connection.commit()
+    if args.delete_existing:
+        print("Dropping existing tables")
+        cursor.execute("DROP TABLE IF EXISTS sample")
+        cursor.execute("DROP TABLE IF EXISTS participant")
+        cursor.execute("DROP TABLE IF EXISTS file_sample")
+        cursor.execute("DROP TABLE IF EXISTS project")
+        cursor.execute("DROP TABLE IF EXISTS version")
+        mariadb_connection.commit()
 
     # Run create table participant statement
     cursor.execute(query_create_participant)
@@ -166,7 +191,10 @@ def main():
         insert_participant = "INSERT into participant (" + columns_participant + ") VALUES(" + row + ")"
         if args.verbose:
             print(insert_participant)
-        cursor.execute(insert_participant)
+        try:
+            cursor.execute(insert_participant)
+        except mysql.connector.errors.IntegrityError:
+            print("Duplicate entry for id: "+ row)
     mariadb_connection.commit()
     print("** {} total rows added to participant table".format(len(values_participant)))
 
