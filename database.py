@@ -137,7 +137,7 @@ class Data(object):
         return "{0}.{1}".format(int(file_id)+GENERIC_FILE_NAME_OFFSET, extension.lower())
 
     def get_current_files(self):
-        query = "SELECT file_sample.id as file_id, file_sample.file_name, file_sample.participant, file_sample.sample, " +\
+        query = "SELECT file_sample.id as file_id, file_sample.file_name as file_name, file_sample.participant, file_sample.sample, " +\
                  "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
                  "file_sample.platform, file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
                  "participant.id as participant_id, project.program, " +\
@@ -160,7 +160,7 @@ class Data(object):
                 data_format=row['data_format'],
                 platform=row['platform'],
                 experimental_strategy=row['experimental_strategy'],
-                generic_file_name=self.get_generic_file_name(row['file_id'],row['data_format']),
+                generic_file_name=row['file_name'],
                 cases=schema.FileCases(
                     hits=[schema.FileCase(
                         id=row['participant_id'],
