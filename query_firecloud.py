@@ -40,6 +40,9 @@ def get_all_workspace_data(verbose=False):
     all_participants= list()
     all_samples= list()
     for workspace in get_workspaces(NAMESPACE):
+        if "demo" in workspace.lower():
+            print("Bypass gathering data from demo workspace: "+ workspace)
+            continue
         if verbose:
             print("Gather data from " + workspace)
         samples = get_entities(NAMESPACE,workspace,"sample")
