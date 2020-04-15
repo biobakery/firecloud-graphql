@@ -526,16 +526,16 @@ class Data(object):
             utilities.add_key_increment(aggregates["iron"], sample.iron)
             utilities.add_key_increment(aggregates["alcohol"], sample.alcohol)
 
-            utilities.add_key_increment(aggregates["b12"], sample.b12)
-            utilities.add_key_increment(aggregates["calories"], sample.calories)
-            utilities.add_key_increment(aggregates["carbs"], sample.carbs)
-            utilities.add_key_increment(aggregates["choline"], sample.choline)
-            utilities.add_key_increment(aggregates["folate"], sample.folate)
+            utilities.add_key_increment(aggregates["b12"],  utilities.Range.create_custom(sample.b12, offset=100))
+            utilities.add_key_increment(aggregates["calories"], utilities.Range.create_custom(sample.calories, offset=100))
+            utilities.add_key_increment(aggregates["carbs"],  utilities.Range.create_custom(sample.carbs, offset=100))
+            utilities.add_key_increment(aggregates["choline"],  utilities.Range.create_custom(sample.choline, offset=100))
+            utilities.add_key_increment(aggregates["folate"],  utilities.Range.create_custom(sample.folate, offset=100))
             utilities.add_key_increment(aggregates["protein"], sample.protein)
             utilities.add_key_increment(aggregates["weight"], sample.weight)
             utilities.add_key_increment(aggregates["met"], sample.met)
-            utilities.add_key_increment(aggregates["non_ribosomal_proteins"], sample.non_ribosomal_proteins)
-            utilities.add_key_increment(aggregates["ribosomal_proteins"], sample.ribosomal_proteins)
+            utilities.add_key_increment(aggregates["non_ribosomal_proteins"], utilities.Range.create_custom(sample.non_ribosomal_proteins, offset=1000000))
+            utilities.add_key_increment(aggregates["ribosomal_proteins"], utilities.Range.create_custom(sample.ribosomal_proteins, offset=1000000))
 
 
             utilities.update_max_min(stats["time"], sample.time)
@@ -621,16 +621,16 @@ class Data(object):
                 utilities.add_key_increment(aggregates["sample__iron"], utilities.Range.create(sample.iron))
                 utilities.add_key_increment(aggregates["sample__alcohol"], utilities.Range.create(sample.alcohol))
 
-                utilities.add_key_increment(aggregates["sample__b12"], utilities.Range.create(sample.b12))
-                utilities.add_key_increment(aggregates["sample__calories"], utilities.Range.create(sample.calories))
-                utilities.add_key_increment(aggregates["sample__carbs"], utilities.Range.create(sample.carbs))
-                utilities.add_key_increment(aggregates["sample__choline"], utilities.Range.create(sample.choline))
-                utilities.add_key_increment(aggregates["sample__folate"], utilities.Range.create(sample.folate))
+                utilities.add_key_increment(aggregates["sample__b12"], utilities.Range.create_custom(sample.b12, offset=100))
+                utilities.add_key_increment(aggregates["sample__calories"], utilities.Range.create_custom(sample.calories, offset=100))
+                utilities.add_key_increment(aggregates["sample__carbs"], utilities.Range.create_custom(sample.carbs, offset=100))
+                utilities.add_key_increment(aggregates["sample__choline"], utilities.Range.create_custom(sample.choline, offset=100))
+                utilities.add_key_increment(aggregates["sample__folate"], utilities.Range.create_custom(sample.folate, offset=100))
                 utilities.add_key_increment(aggregates["sample__protein"], utilities.Range.create(sample.protein))
                 utilities.add_key_increment(aggregates["sample__weight"], utilities.Range.create(sample.weight))
                 utilities.add_key_increment(aggregates["sample__met"], utilities.Range.create(sample.met))
-                utilities.add_key_increment(aggregates["sample__non_ribosomal_proteins"], utilities.Range.create(sample.non_ribosomal_proteins))
-                utilities.add_key_increment(aggregates["sample__ribosomal_proteins"], utilities.Range.create(sample.ribosomal_proteins))
+                utilities.add_key_increment(aggregates["sample__non_ribosomal_proteins"], utilities.Range.create_custom(sample.non_ribosomal_proteins, offset=1000000))
+                utilities.add_key_increment(aggregates["sample__ribosomal_proteins"], utilities.Range.create_custom(sample.ribosomal_proteins, offset=1000000))
 
         case_aggregates=schema.CaseAggregations(
             demographic__age=schema.Aggregations(
