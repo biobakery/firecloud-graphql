@@ -464,6 +464,10 @@ class Data(object):
         return project_aggregates
 
     def get_file_aggregations(self, files):
+        def get_schema_aggregations(variable_name):
+            return schema.Aggregations(
+                    buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
+
         # aggregate file data
         aggregates = {"data_category": {}, "experimental_strategy": {},
                       "data_format": {}, "platform": {}, "cases__primary_site": {},
@@ -481,26 +485,24 @@ class Data(object):
             utilities.add_key_increment(aggregates["cases__project__project_id"], project.project_id)
 
         file_aggregates = schema.FileAggregations(
-            data_category=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["data_category"].items()]),
-            experimental_strategy=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["experimental_strategy"].items()]),
-            data_format=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["data_format"].items()]),
-            platform=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["platform"].items()]),
-            cases__primary_site=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["cases__primary_site"].items()]),
-            access=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["access"].items()]),
-            cases__project__project_id=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["cases__project__project_id"].items()]),
-            file_size=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["file_size"].items()]))
+            data_category=get_schema_aggregations("data_category"),
+            experimental_strategy=get_schema_aggregations("experimental_strategy"),
+            data_format=get_schema_aggregations("data_format"),
+            platform=get_schema_aggregations("platform"),
+            cases__primary_site=get_schema_aggregations("cases__primary_site"),
+            access=get_schema_aggregations("access"),
+            cases__project__project_id=get_schema_aggregations("cases__project__project_id"),
+            file_size=get_schema_aggregations("file_size"))
 
         return file_aggregates
 
     def get_sample_aggregations(self, samples):
+
+        def get_stats_aggregations(variable_name):
+            return schema.Aggregations(
+                       stats=schema.Stats(max=stats[variable_name].get("max",0), min=stats[variable_name].get("min",0)),
+                       buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()]),
+
         # aggregate sample data
         aggregates = {"primary_site": {}, "project__project_id": {},
                       "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} ,
@@ -568,56 +570,30 @@ class Data(object):
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__program__name"].items()]),
             week=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["week"].items()]),
-            time=schema.Aggregations(
-                stats=schema.Stats(max=stats["time"].get("max",0), min=stats["time"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["time"].items()]),
-            fiber=schema.Aggregations(
-                stats=schema.Stats(max=stats["fiber"].get("max",0), min=stats["fiber"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["fiber"].items()]),
-            fat=schema.Aggregations(
-                stats=schema.Stats(max=stats["fat"].get("max",0), min=stats["fat"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["fat"].items()]),
-            iron=schema.Aggregations(
-                stats=schema.Stats(max=stats["iron"].get("max",0), min=stats["iron"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["iron"].items()]),
-            alcohol=schema.Aggregations(
-                stats=schema.Stats(max=stats["alcohol"].get("max",0), min=stats["alcohol"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["alcohol"].items()]),
+            time=get_stats_aggregations("time"),
+            fiber=get_stats_aggregations("fiber"),
+            fat=get_stats_aggregations("fat"),
+            iron=get_stats_aggregations("iron"),
+            alcohol=get_stats_aggregations("alcohol"),
 
-            b12=schema.Aggregations(
-                stats=schema.Stats(max=stats["b12"].get("max",0), min=stats["b12"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["b12"].items()]),
-            calories=schema.Aggregations(
-                stats=schema.Stats(max=stats["calories"].get("max",0), min=stats["calories"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["calories"].items()]),
-            carbs=schema.Aggregations(
-                stats=schema.Stats(max=stats["carbs"].get("max",0), min=stats["carbs"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["carbs"].items()]),
-            choline=schema.Aggregations(
-                stats=schema.Stats(max=stats["choline"].get("max",0), min=stats["choline"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["choline"].items()]),
-            folate=schema.Aggregations(
-                stats=schema.Stats(max=stats["folate"].get("max",0), min=stats["folate"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["folate"].items()]),
-            protein=schema.Aggregations(
-                stats=schema.Stats(max=stats["protein"].get("max",0), min=stats["protein"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["protein"].items()]),
-            weight=schema.Aggregations(
-                stats=schema.Stats(max=stats["weight"].get("max",0), min=stats["weight"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["weight"].items()]),
-            met=schema.Aggregations(
-                stats=schema.Stats(max=stats["met"].get("max",0), min=stats["met"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["met"].items()]),
-            non_ribosomal_proteins=schema.Aggregations(
-                stats=schema.Stats(max=stats["non_ribosomal_proteins"].get("max",0), min=stats["non_ribosomal_proteins"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["non_ribosomal_proteins"].items()]),
-            ribosomal_proteins=schema.Aggregations(
-                stats=schema.Stats(max=stats["ribosomal_proteins"].get("max",0), min=stats["ribosomal_proteins"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["ribosomal_proteins"].items()]))
+            b12=get_stats_aggregations("b12"),
+            calories=get_stats_aggregations("calories"),
+            carbs=get_stats_aggregations("carbs"),
+            choline=get_stats_aggregations("choline"),
+            folate=get_stats_aggregations("folate"),
+            protein=get_stats_aggregations("protein"),
+            weight=get_stats_aggregations("weight"),
+            met=get_stats_aggregations("met"),
+            non_ribosomal_proteins=get_stats_aggregations("non_ribosomal_proteins"),
+            ribosomal_proteins=get_stats_aggregations("ribosomal_proteins"))
 
         return sample_aggregates
 
     def get_case_aggregations(self, cases):
+        def get_schema_aggregations(variable_name):
+            return schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
+
         # aggregate case data
         aggregates = {"primary_site": {}, "project__project_id": {},
                       "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} ,
@@ -666,45 +642,26 @@ class Data(object):
             demographic__met=schema.Aggregations(
                 stats=schema.Stats(max=stats["demographic__met"].get("max",0), min=stats["demographic__met"].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__met"].items()]),
-            primary_site=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["primary_site"].items()]),
-            project__project_id=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__project_id"].items()]),
-            project__program__name=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__program__name"].items()]),
-            sample__time=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__time"].items()]),
-            sample__week=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__week"].items()]),
-            sample__fiber=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__fiber"].items()]),
-            sample__fat=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__fat"].items()]),
-            sample__iron=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__iron"].items()]),
-            sample__alcohol=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__alcohol"].items()]),
+            primary_site=get_schema_aggregations("primary_site"),
+            project__project_id=get_schema_aggregations("project__project_id"),
+            project__program__name=get_schema_aggregations("project__program__name"),
+            sample__time=get_schema_aggregations("sample__time"),
+            sample__week=get_schema_aggregations("sample__week"),
+            sample__fiber=get_schema_aggregations("sample__fiber"),
+            sample__fat=get_schema_aggregations("sample__fat"),
+            sample__iron=get_schema_aggregations("sample__iron"),
+            sample__alcohol=get_schema_aggregations("sample__alcohol"),
 
-            sample__b12=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__b12"].items()]),
-            sample__calories=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__calories"].items()]),
-            sample__carbs=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__carbs"].items()]),
-            sample__choline=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__choline"].items()]),
-            sample__folate=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__folate"].items()]),
-            sample__protein=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__protein"].items()]),
-            sample__weight=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__weight"].items()]),
-            sample__met=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__met"].items()]),
-            sample__non_ribosomal_proteins=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__non_ribosomal_proteins"].items()]),
-            sample__ribosomal_proteins=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["sample__ribosomal_proteins"].items()]))
+            sample__b12=get_schema_aggregations("sample__b12"),
+            sample__calories=get_schema_aggregations("sample__calories"),
+            sample__carbs=get_schema_aggregations("sample__carbs"),
+            sample__choline=get_schema_aggregations("sample__choline"),
+            sample__folate=get_schema_aggregations("sample__folate"),
+            sample__protein=get_schema_aggregations("sample__protein"),
+            sample__weight=get_schema_aggregations("sample__weight"),
+            sample__met=get_schema_aggregations("sample__met"),
+            sample__non_ribosomal_proteins=get_schema_aggregations("sample__non_ribosomal_proteins"),
+            sample__ribosomal_proteins=get_schema_aggregations("sample__ribosomal_proteins"))
 
         return case_aggregates
 
