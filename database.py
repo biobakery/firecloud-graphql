@@ -501,7 +501,7 @@ class Data(object):
         def get_stats_aggregations(variable_name):
             return schema.Aggregations(
                        stats=schema.Stats(max=stats[variable_name].get("max",0), min=stats[variable_name].get("min",0)),
-                       buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()]),
+                       buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
 
         # aggregate sample data
         aggregates = {"primary_site": {}, "project__project_id": {},
