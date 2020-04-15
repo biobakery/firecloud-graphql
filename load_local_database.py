@@ -72,7 +72,12 @@ def read_metadata_file(filename):
     with open(filename) as file_handle:
         column_names = file_handle.readline().rstrip()
         for line in file_handle:
-            rows.append(",".join(["'"+item+"'" for item in line.rstrip().split(",")]))
+            new_row=[]
+            for item in line.rstrip().split(","):
+                if item=="":
+                    item="NA"
+                new_row.append("'"+item+"'")
+            rows.append(",".join(new_row))
     return rows, column_names
 
 def main():
