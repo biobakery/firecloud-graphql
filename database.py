@@ -141,7 +141,7 @@ class Data(object):
                  "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
                  "file_sample.platform, file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
                  "participant.id as participant_id, project.program, " +\
-                 "participant.age_2012 as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
+                 "participant.age as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
                  "sample.week as week, sample.Time as time, sample.drFiber as fiber, sample.drFat as fat, " +\
                  "sample.drB12 as b12, sample.drCalories as calories, sample.drCarbs as carbs, sample.drCholine as choline, " +\
                  "sample.drFolate as folate, sample.drProtein as protein, sample.weight_lbs as weight, " +\
@@ -221,7 +221,7 @@ class Data(object):
         query = "SELECT sample.id as id, sample.sample as sample_name, participant.id as participant_id, " +\
                  "participant.entity_participant_id as participant_name, project.primary_site as primary_site, " +\
                  "project.id as project_id, project.project_id as project_name, project.program as program_name, " +\
-                 "participant.age_2012 as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
+                 "participant.age as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
                  "sample.week as week, sample.Time as time, sample.drFiber as fiber, sample.drFat as fat, " +\
                  "sample.drB12 as b12, sample.drCalories as calories, sample.drCarbs as carbs, sample.drCholine as choline, " +\
                  "sample.drFolate as folate, sample.drProtein as protein, sample.weight_lbs as weight, sample.totMETs1 as sample_met," +\
@@ -324,7 +324,7 @@ class Data(object):
         # gather participant data
         query = "SELECT participant.id as participant_id, participant.entity_participant_id as participant_name, project.primary_site as primary_site, " +\
                  "project.id as project_id, project.project_id as project_name, project.program as program_name, " +\
-                 "participant.age_2012 as age, participant.weight_lbs as weight, participant.totMETs1 as met " +\
+                 "participant.age as age, participant.weight_lbs as weight, participant.totMETs1 as met " +\
                  "FROM sample INNER JOIN participant ON sample.participant=participant.entity_participant_id " +\
                  "INNER JOIN project ON sample.project=project.project_id"
         connection, db_results = self.query_database(query)
