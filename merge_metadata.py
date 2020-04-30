@@ -26,7 +26,7 @@ def merge_data(files, filetype):
                 headers += line
                 header = line
             else:
-                data[filename][line[0]]=dict([(x,y) for x,y in zip(header, line[1:])])
+                data[filename][line[0]]=dict([(x,y) for x,y in zip(header, line)])
     # create a master header
     header_set=set(headers)
     header_set.remove(filetype)
@@ -34,7 +34,7 @@ def merge_data(files, filetype):
     final_data = []
     for filename, filedata in data.items():
         for sample, sampledata in filedata.items():
-            newline = [sample]
+            newline = []
             for item in final_headers:
                 newline.append(sampledata.get(item,"NA"))
             final_data.append(newline)
