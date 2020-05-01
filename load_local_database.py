@@ -159,7 +159,7 @@ def main():
     except mariadb.errors.ProgrammingError:
         rows = []
         prior_version = "NA"
-        new_version = str(0.1)
+        new_version = str(1.0)
 
     for maxversion, updated in rows:
         if maxversion:
