@@ -142,6 +142,7 @@ class Data(object):
                  "file_sample.platform, file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
                  "participant.id as participant_id, project.program, " +\
                  "participant.age as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
+                 "participant.caffiene as caffiene, participant.bmi as bmi, participant.alcohol as alcohol, participant.diagnosis as diagnosis, participant.pack_years_smoking as smoking, " +\
                  "sample.week as week, sample.Time as time, sample.drFiber as fiber, sample.drFat as fat, " +\
                  "sample.drB12 as b12, sample.drCalories as calories, sample.drCarbs as carbs, sample.drCholine as choline, " +\
                  "sample.drFolate as folate, sample.drProtein as protein, sample.weight_lbs as weight, " +\
@@ -176,6 +177,11 @@ class Data(object):
                             primary_site=[row['primary_site']]),
                         demographic=schema.Demographic(
                             age=row['age'],
+                            caffiene=row['caffiene'],
+                            bmi=row['bmi'],
+                            alcohol=row['alcohol'],
+                            diagnosis=row['diagnosis'],
+                            smoking=row['smoking'],
                             weight=row['weight'],
                             met=row['met']), 
                         primary_site=row['primary_site'],
@@ -222,6 +228,7 @@ class Data(object):
                  "participant.entity_participant_id as participant_name, project.primary_site as primary_site, " +\
                  "project.id as project_id, project.project_id as project_name, project.program as program_name, " +\
                  "participant.age as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
+                 "participant.caffiene as caffiene, participant.bmi as bmi, participant.alcohol as alcohol, participant.diagnosis as diagnosis, participant.pack_years_smoking as smoking, " +\
                  "sample.week as week, sample.Time as time, sample.drFiber as fiber, sample.drFat as fat, " +\
                  "sample.drB12 as b12, sample.drCalories as calories, sample.drCarbs as carbs, sample.drCholine as choline, " +\
                  "sample.drFolate as folate, sample.drProtein as protein, sample.weight_lbs as weight, sample.totMETs1 as sample_met," +\
@@ -256,7 +263,7 @@ class Data(object):
                     platform=file_info['platform'],
                     access=file_info['access'],
                     file_size=file_info['file_size']))
-            
+           
             samples.append(schema.Sample(
                 id=row['id'],
                 sample_id=row['sample_name'],
@@ -264,6 +271,11 @@ class Data(object):
                 demographic=schema.Demographic(
                     age=row['age'],
                     weight=row['weight'],
+                    caffiene=row['caffiene'],
+                    bmi=row['bmi'],
+                    alcohol=row['alcohol'],
+                    diagnosis=row['diagnosis'],
+                    smoking=row['smoking'],
                     met=row['met']),
                 project=schema.Project(
                     id=row['project_id'],
@@ -324,7 +336,8 @@ class Data(object):
         # gather participant data
         query = "SELECT participant.id as participant_id, participant.entity_participant_id as participant_name, project.primary_site as primary_site, " +\
                  "project.id as project_id, project.project_id as project_name, project.program as program_name, " +\
-                 "participant.age as age, participant.weight_lbs as weight, participant.totMETs1 as met " +\
+                 "participant.age as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
+                 "participant.caffiene as caffiene, participant.bmi as bmi, participant.alcohol as alcohol, participant.diagnosis as diagnosis, participant.pack_years_smoking as smoking " +\
                  "FROM sample INNER JOIN participant ON sample.participant=participant.entity_participant_id " +\
                  "INNER JOIN project ON sample.project=project.project_id"
         connection, db_results = self.query_database(query)
@@ -387,6 +400,11 @@ class Data(object):
                 demographic=schema.Demographic(
                     age=row['age'],
                     weight=row['weight'],
+                    caffiene=row['caffiene'],
+                    bmi=row['bmi'],
+                    alcohol=row['alcohol'],
+                    diagnosis=row['diagnosis'],
+                    smoking=row['smoking'],
                     met=row['met']),
                 project=schema.Project(
                     id=row['project_id'],
@@ -506,6 +524,7 @@ class Data(object):
         # aggregate sample data
         aggregates = {"primary_site": {}, "project__project_id": {},
                       "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} ,
+                      "demographic__caffiene": {}, "demographic__bmi": {}, "demographic__alcohol": {} , "demographic__diagnosis": {}, "demographic__smoking": {} ,
                       "week" : {}, "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {},
                       "b12": {}, "calories": {}, "carbs": {}, "choline" : {}, "folate" : {}, "protein": {}, "weight" : {}, "met" : {},
                        "non_ribosomal_proteins" : {}, "ribosomal_proteins": {} }
@@ -515,6 +534,11 @@ class Data(object):
         for sample in samples:
             utilities.add_key_increment(aggregates["demographic__age"], sample.demographic.age)
             utilities.add_key_increment(aggregates["demographic__weight"], sample.demographic.weight)
+            utilities.add_key_increment(aggregates["demographic__caffiene"], sample.demographic.caffiene)
+            utilities.add_key_increment(aggregates["demographic__bmi"], sample.demographic.bmi)
+            utilities.add_key_increment(aggregates["demographic__alcohol"], sample.demographic.alcohol)
+            utilities.add_key_increment(aggregates["demographic__diagnosis"], sample.demographic.diagnosis)
+            utilities.add_key_increment(aggregates["demographic__smoking"], sample.demographic.smoking)
             utilities.add_key_increment(aggregates["demographic__met"], sample.demographic.met)
             utilities.add_key_increment(aggregates["primary_site"], sample.primary_site)
             utilities.add_key_increment(aggregates["project__project_id"], sample.project.project_id)
@@ -560,6 +584,16 @@ class Data(object):
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__age"].items()]),
             demographic__weight=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__weight"].items()]),
+            demographic__caffiene=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__caffiene"].items()]),
+            demographic__bmi=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__bmi"].items()]),
+            demographic__alcohol=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__alcohol"].items()]),
+            demographic__diagnosis=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__diagnosis"].items()]),
+            demographic__smoking=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__smoking"].items()]),
             demographic__met=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__met"].items()]),
             primary_site=schema.Aggregations(
@@ -597,21 +631,32 @@ class Data(object):
         # aggregate case data
         aggregates = {"primary_site": {}, "project__project_id": {},
                       "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} ,
+                      "demographic__caffiene": {}, "demographic__bmi": {}, "demographic__alcohol": {} , "demographic__diagnosis": {}, "demographic__smoking": {} ,
                       "sample__time" : {}, "sample__week" : {},  "sample__fiber" : {},  "sample__fat" : {},  "sample__iron" : {},  "sample__alcohol" : {},
                       "sample__b12" : {}, "sample__calories" : {}, "sample__carbs" : {}, "sample__choline": {}, "sample__folate" : {}, "sample__protein" : {},
                       "sample__weight" : {}, "sample__met": {}, "sample__non_ribosomal_proteins" : {}, "sample__ribosomal_proteins" : {}}
 
-        stats = {"demographic__age": {}, "demographic__weight": {}, "demographic__met": {} }
+        stats = {"demographic__age": {}, "demographic__weight": {}, "demographic__met": {},
+                 "demographic__caffiene": {}, "demographic__bmi": {}, "demographic__alcohol": {} , "demographic__diagnosis": {}, "demographic__smoking": {}  }
 
         for case in cases:
             utilities.add_key_increment(aggregates["demographic__age"], utilities.Range.create(case.demographic.age))
             utilities.add_key_increment(aggregates["demographic__weight"], utilities.Range.create_custom(case.demographic.weight, offset=25))
+            utilities.add_key_increment(aggregates["demographic__caffiene"], utilities.Range.create_custom(case.demographic.caffiene, offset=25))
+            utilities.add_key_increment(aggregates["demographic__bmi"], utilities.Range.create_custom(case.demographic.bmi, offset=10))
+            utilities.add_key_increment(aggregates["demographic__alcohol"], utilities.Range.create_custom(case.demographic.alcohol, offset=10))
+            utilities.add_key_increment(aggregates["demographic__diagnosis"], case.demographic.diagnosis)
+            utilities.add_key_increment(aggregates["demographic__smoking"], utilities.Range.create_custom(case.demographic.smoking, offset=25))
             utilities.add_key_increment(aggregates["demographic__met"], utilities.Range.create_custom(case.demographic.met, offset=50))
             utilities.add_key_increment(aggregates["primary_site"], case.primary_site)
             utilities.add_key_increment(aggregates["project__project_id"], case.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
             utilities.update_max_min(stats["demographic__age"], case.demographic.age)
             utilities.update_max_min(stats["demographic__weight"], case.demographic.weight)
+            utilities.update_max_min(stats["demographic__caffiene"], case.demographic.caffiene)
+            utilities.update_max_min(stats["demographic__bmi"], case.demographic.bmi)
+            utilities.update_max_min(stats["demographic__alcohol"], case.demographic.alcohol)
+            utilities.update_max_min(stats["demographic__smoking"], case.demographic.smoking)
             utilities.update_max_min(stats["demographic__met"], case.demographic.met)
             for sample in case.samples.hits:
                 utilities.add_key_increment(aggregates["sample__time"], utilities.Range.create(sample.time))
@@ -639,6 +684,19 @@ class Data(object):
             demographic__weight=schema.Aggregations(
                 stats=schema.Stats(max=stats["demographic__weight"].get("max",0), min=stats["demographic__weight"].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__weight"].items()]),
+            demographic__caffiene=schema.Aggregations(
+                stats=schema.Stats(max=stats["demographic__caffiene"].get("max",0), min=stats["demographic__caffiene"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__caffiene"].items()]),
+            demographic__bmi=schema.Aggregations(
+                stats=schema.Stats(max=stats["demographic__bmi"].get("max",0), min=stats["demographic__bmi"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__bmi"].items()]),
+            demographic__alcohol=schema.Aggregations(
+                stats=schema.Stats(max=stats["demographic__alcohol"].get("max",0), min=stats["demographic__alcohol"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__alcohol"].items()]),
+            demographic__smoking=schema.Aggregations(
+                stats=schema.Stats(max=stats["demographic__smoking"].get("max",0), min=stats["demographic__smoking"].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__smoking"].items()]),
+            demographic__diagnosis=get_schema_aggregations("demographic__diagnosis"),
             demographic__met=schema.Aggregations(
                 stats=schema.Stats(max=stats["demographic__met"].get("max",0), min=stats["demographic__met"].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__met"].items()]),

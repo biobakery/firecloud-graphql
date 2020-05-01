@@ -18,7 +18,7 @@ def filter_noauth(return_data,token):
     # if a valid token is not provided, filter out those items that
     # we would never want to serve without authentication
 
-    FILTER_KEYS = ['age','weight','met','week','time','fat','fiber','iron','alcohol', 'b12','calories','carbs','choline','folate','protein','weight','non_ribosomal_proteins','ribosomal_proteins','days']
+    FILTER_KEYS = ['age','weight','met','week','time','fat','fiber','iron','alcohol', 'b12','calories','carbs','choline','folate','protein','weight','non_ribosomal_proteins','ribosomal_proteins','days', 'caffiene', 'bmi', 'alcohol', 'diagnosis', 'smoking']
     SUBSTITUTE = "1"
 
     # check if the token is for a valid user
@@ -102,6 +102,11 @@ class Project(graphene.ObjectType):
 class Demographic(graphene.ObjectType):
     age = graphene.String()
     weight = graphene.String()
+    caffiene = graphene.String()
+    bmi = graphene.String()
+    alcohol = graphene.String()
+    diagnosis = graphene.String()
+    smoking = graphene.String()
     met = graphene.String()
 
 class CaseSample(graphene.ObjectType):
@@ -262,6 +267,11 @@ class Files(graphene.ObjectType):
 class CaseAggregations(graphene.ObjectType):
     demographic__age = graphene.Field(Aggregations)
     demographic__weight = graphene.Field(Aggregations)
+    demographic__caffiene = graphene.Field(Aggregations)
+    demographic__bmi = graphene.Field(Aggregations)
+    demographic__alcohol = graphene.Field(Aggregations)
+    demographic__diagnosis = graphene.Field(Aggregations)
+    demographic__smoking = graphene.Field(Aggregations)
     demographic__met = graphene.Field(Aggregations)
     primary_site = graphene.Field(Aggregations)
     project__project_id = graphene.Field(Aggregations)
@@ -426,6 +436,11 @@ class Sample(graphene.ObjectType):
 class SampleAggregations(graphene.ObjectType):
     demographic__age = graphene.Field(Aggregations)
     demographic__weight = graphene.Field(Aggregations)
+    demographic__caffiene = graphene.Field(Aggregations)
+    demographic__bmi = graphene.Field(Aggregations)
+    demographic__alcohol = graphene.Field(Aggregations)
+    demographic__diagnosis = graphene.Field(Aggregations)
+    demographic__smoking = graphene.Field(Aggregations)
     demographic__met = graphene.Field(Aggregations)
     primary_site = graphene.Field(Aggregations)
     project__project_id = graphene.Field(Aggregations)
