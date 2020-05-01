@@ -165,9 +165,11 @@ def main():
         if maxversion:
            prior_version = maxversion
            new_version = str(float(str(maxversion)) + 0.1)
+           if float(new_version) < 1.0:
+               new_version = str(1.0)
         else:
            prior_version = "NA"
-           new_version = str(0.1)
+           new_version = str(1.0)
     print("** Prior database version was {}".format(prior_version))
 
     # Drop tables if exist
