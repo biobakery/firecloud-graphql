@@ -5,6 +5,7 @@ and file sample information from FireCould workspaces  into local mariadb.
 """
 
 import argparse
+import subprocess
 import sys
 import os
 import string
@@ -45,6 +46,19 @@ def parse_arguments(args):
 
     return parser.parse_args()
 
+def get_filesize(url):
+    cmmd=["gsutil","du",url]
+
+    try:
+        size_bytes=str(subprocess.check_output(cmmd)).split(" ")[0]
+    except (EnvironmentError, subprocess.CalledProcessError):
+        size_bytes=1
+
+    if not size_bytes:
+        size_bytes=0
+
+    return size_bytes
+
 def get_firecloud_data(verbose):
 
     all_samples,all_participants = query_firecloud.get_all_workspace_data(verbose)
@@ -75,7 +89,7 @@ def get_firecloud_data(verbose):
         data_format = "fastq" if "fastq" in values_file_samples[index][file_id_index] else file_url_info[-1].split(".")[-1]
         experimental_strategy = file_url_info[2]
         file_name = file_url_info[-1]
-        file_size = 1
+        file_size = get_filesize(values_file_samples[index][file_id_index])
         platform = file_url_info[1]
         filetype = "rawFiles" if data_format == "fastq" else "processedFiles"
         keys_file_samples[index]+=["access","data_category","data_format","experimental_strategy","file_name","file_size","platform","type"]
