@@ -58,12 +58,28 @@ def get_firecloud_data(verbose):
             del item['attributes']['participant']
             item['attributes']['participant'] = participant_id
             item['attributes']['entity_sample_id']=item['name']
-            values_file_samples.append(item['attributes'].values())
-            keys_file_samples.append(item['attributes'].keys())
+            values_file_samples.append([str(i) for i in item['attributes'].values()])
+            keys_file_samples.append([str(i) for i in item['attributes'].keys()])
 
     for participants in all_participants:
         for item in participants:
             values_participants.append(item['name'])
+
+    # add more data based on the file url
+    file_id_index=keys_file_samples[0].index('file_id')
+    for index in range(len(values_file_samples)):
+        
+        file_url_info = values_file_samples[index][file_id_index].replace("gs://","").split("/")
+        access = "open" if "open" in values_file_samples[index][file_id_index] else "controlled"
+        data_category = file_url_info[3]
+        data_format = "fastq" if "fastq" in values_file_samples[index][file_id_index] else file_url_info[-1].split(".")[-1]
+        experimental_strategy = file_url_info[2]
+        file_name = file_url_info[-1]
+        file_size = 1
+        platform = file_url_info[1]
+        filetype = "rawFiles" if data_format == "fastq" else "processedFiles"
+        keys_file_samples[index]+=["access","data_category","data_format","experimental_strategy","file_name","file_size","platform","type"]
+        values_file_samples[index]+=[access,data_category,data_format,experimental_strategy,file_name,file_size,platform,filetype]
 
     return values_file_samples, keys_file_samples, values_participants
 
@@ -256,9 +272,11 @@ def main():
     mariadb_connection.commit()
     print("** {} total rows added to file_sample table".format(len(values_file_samples)))
 
-    # Update sample tables  'project' field
+    # Update sample tables 'project' field
+    project_index=keys_file_samples[0].index('project')
+    sample_index=keys_file_samples[0].index('sample')
     for row in values_file_samples:
-        update_sample_query="UPDATE sample set project='"+row[3]+"' where sample='"+row[6]+"'"
+        update_sample_query="UPDATE sample set project='"+row[project_index]+"' where sample='"+row[sample_index]+"'"
         if args.verbose:
             print(update_sample_query)
         cursor.execute(update_sample_query)

@@ -5,7 +5,7 @@ import json
 
 from firecloud import api, errors
 
-NAMESPACE="firecloud-biom-mass"
+NAMESPACE="terra-biom-mass"
 
 def call_api(url):
     """ Use the firecloud api module to query firecloud 
