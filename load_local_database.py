@@ -46,18 +46,20 @@ def parse_arguments(args):
 
     return parser.parse_args()
 
-def get_filesize(url):
-    cmmd=["gsutil","du",url]
+def get_filesizes(folders):
 
-    try:
-        size_bytes=str(subprocess.check_output(cmmd)).split(" ")[0]
-    except (EnvironmentError, subprocess.CalledProcessError):
-        size_bytes=1
+    sizes={}
+    for folder in folders:
+        cmmd=["gsutil","du",folder]
+        try:
+            for line in str(subprocess.check_output(cmmd)).split("\n"):
+                if "   " in line:
+                    size, filename = line.split("   ")
+                    sizes[filename]=size
+        except (EnvironmentError, subprocess.CalledProcessError):
+            pass
 
-    if not size_bytes:
-        size_bytes=0
-
-    return size_bytes
+    return sizes
 
 def get_firecloud_data(verbose):
 
@@ -81,19 +83,26 @@ def get_firecloud_data(verbose):
 
     # add more data based on the file url
     file_id_index=keys_file_samples[0].index('file_id')
+    gs_folders=set()
     for index in range(len(values_file_samples)):
-        
         file_url_info = values_file_samples[index][file_id_index].replace("gs://","").split("/")
         access = "open" if "open" in values_file_samples[index][file_id_index] else "controlled"
         data_category = file_url_info[3]
         data_format = "fastq" if "fastq" in values_file_samples[index][file_id_index] else file_url_info[-1].split(".")[-1]
         experimental_strategy = file_url_info[2]
         file_name = file_url_info[-1]
-        file_size = get_filesize(values_file_samples[index][file_id_index])
         platform = file_url_info[1]
+        gs_folders.add(os.path.dirname(values_file_samples[index][file_id_index]))
         filetype = "rawFiles" if data_format == "fastq" else "processedFiles"
-        keys_file_samples[index]+=["access","data_category","data_format","experimental_strategy","file_name","file_size","platform","type"]
-        values_file_samples[index]+=[access,data_category,data_format,experimental_strategy,file_name,file_size,platform,filetype]
+        keys_file_samples[index]+=["access","data_category","data_format","experimental_strategy","file_name","platform","type"]
+        values_file_samples[index]+=[access,data_category,data_format,experimental_strategy,file_name,platform,filetype]
+
+    # add the filesizes
+    filesizes=get_filesizes(list(gs_folders))
+    for index in range(len(values_file_samples)):
+        keys_file_samples[index]+=["file_size"]
+        size=filesizes.get(values_file_samples[index][file_id_index],"1000")
+        values_file_samples[index]+=[size]
 
     return values_file_samples, keys_file_samples, values_participants
 
