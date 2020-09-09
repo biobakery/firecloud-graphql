@@ -7,12 +7,21 @@ and file sample information from FireCould workspaces  into local mariadb.
 import argparse
 import subprocess
 import sys
+import copy
 import os
 import string
 import query_firecloud
 import query_bigquery
 
 import utilities
+
+GS_BUCKETS=[
+    "gs://biom-mass-open-requestor-pays/",
+    "gs://biom-mass-controlled-requestor-pays/",
+    "gs://biom-mass-open/",
+    "gs://biom-mass-controlled/"]
+
+GS_TYPE_IGNORE="Raw_reads"
 
 def parse_arguments(args):
     """ Parse the arguments from the user """
@@ -46,18 +55,26 @@ def parse_arguments(args):
 
     return parser.parse_args()
 
-def get_filesizes(folders):
+def get_filesizes(folders, ignore_type=None):
 
     sizes={}
     for folder in folders:
         cmmd=["gsutil","du",folder]
         try:
             for line in str(subprocess.check_output(cmmd)).split("\n"):
-                if "   " in line:
-                    size, filename = line.split("   ")
-                    sizes[filename]=size
+                if " " in line:
+                    size, filename = list(filter(None,line.split(" ")))
+                    # ignore directories
+                    if not filename.endswith("/"):
+                        sizes[filename]=size
         except (EnvironmentError, subprocess.CalledProcessError):
             pass
+
+    all_keys=sizes.keys()
+    if ignore_type:
+        for key in all_keys:
+            if ignore_type in key:
+                del sizes[key]
 
     return sizes
 
@@ -81,8 +98,20 @@ def get_firecloud_data(verbose):
         for item in participants:
             values_participants.append(item['name'])
 
-    # add more data based on the file url
+    # get the other files not recorded in Terra
+    other_files=get_filesizes(GS_BUCKETS,GS_TYPE_IGNORE)
+    # default keys included in Terra ['sample', 'project', 'entity_sample_id', 'participant', 'file_id']
+    project_index=keys_file_samples[0].index('project')
     file_id_index=keys_file_samples[0].index('file_id')
+    for filename in other_files:
+        new_file=["NA","NA","NA","NA","NA"]
+        new_file[project_index]=filename.replace("gs://","").split("/")[-2]
+        new_file[file_id_index]=filename
+            
+        keys_file_samples.append(copy.copy(keys_file_samples[0]))
+        values_file_samples.append(new_file)
+
+    # add more data based on the file url
     gs_folders=set()
     for index in range(len(values_file_samples)):
         file_url_info = values_file_samples[index][file_id_index].replace("gs://","").split("/")
@@ -101,7 +130,7 @@ def get_firecloud_data(verbose):
     filesizes=get_filesizes(list(gs_folders))
     for index in range(len(values_file_samples)):
         keys_file_samples[index]+=["file_size"]
-        size=filesizes.get(values_file_samples[index][file_id_index],"1000")
+        size=filesizes.pop(values_file_samples[index][file_id_index],"1000")
         values_file_samples[index]+=[size]
 
     return values_file_samples, keys_file_samples, values_participants
