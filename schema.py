@@ -175,6 +175,7 @@ class File(graphene.ObjectType):
     experimental_strategy = graphene.String()
     file_name = graphene.String()
     generic_file_name = graphene.String()
+    file_url = graphene.String()
 
     cases = graphene.Field(FileCases)
 
