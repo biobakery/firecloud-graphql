@@ -59,7 +59,7 @@ def get_filesizes(folders, ignore_type=None):
 
     sizes={}
     for folder in folders:
-        cmmd=["gsutil","du",folder]
+        cmmd=["gsutil","-u","biom-mass","du",folder]
         try:
             for line in str(subprocess.check_output(cmmd)).split("\n"):
                 if " " in line:
@@ -125,8 +125,6 @@ def get_firecloud_data(verbose):
         filetype = "rawFiles" if data_format == "fastq" else "processedFiles"
         keys_file_samples[index]+=["access","data_category","data_format","experimental_strategy","file_name","platform","type"]
         values_file_samples[index]+=[access,data_category,data_format,experimental_strategy,file_name,platform,filetype]
-        # change the file bucket location to the download url
-        values_file_samples[index][file_id_index]=values_file_samples[index][file_id_index].replace("gs://","https://storage.cloud.google.com/")
 
     # add the filesizes
     filesizes=get_filesizes(list(gs_folders))
@@ -134,6 +132,8 @@ def get_firecloud_data(verbose):
         keys_file_samples[index]+=["file_size"]
         size=filesizes.pop(values_file_samples[index][file_id_index],"1000")
         values_file_samples[index]+=[size]
+        # change the file bucket location to the download url
+        values_file_samples[index][file_id_index]=values_file_samples[index][file_id_index].replace("gs://","https://storage.cloud.google.com/")
 
     return values_file_samples, keys_file_samples, values_participants
 
