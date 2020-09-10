@@ -116,7 +116,7 @@ def get_firecloud_data(verbose):
     for index in range(len(values_file_samples)):
         file_url_info = values_file_samples[index][file_id_index].replace("gs://","").split("/")
         access = "open" if "open" in values_file_samples[index][file_id_index] else "controlled"
-        data_category = file_url_info[3]
+        data_category = file_url_info[3].lower()
         data_format = "fastq" if "fastq" in values_file_samples[index][file_id_index] else file_url_info[-1].split(".")[-1]
         experimental_strategy = file_url_info[2]
         file_name = file_url_info[-1]
@@ -125,6 +125,8 @@ def get_firecloud_data(verbose):
         filetype = "rawFiles" if data_format == "fastq" else "processedFiles"
         keys_file_samples[index]+=["access","data_category","data_format","experimental_strategy","file_name","platform","type"]
         values_file_samples[index]+=[access,data_category,data_format,experimental_strategy,file_name,platform,filetype]
+        # change the file bucket location to the download url
+        values_file_samples[index][file_id_index]=values_file_samples[index][file_id_index].replace("gs://","https://storage.cloud.google.com/")
 
     # add the filesizes
     filesizes=get_filesizes(list(gs_folders))
@@ -146,6 +148,9 @@ def read_metadata_file(filename):
                     item="NA"
                 new_row.append("'"+item+"'")
             rows.append(",".join(new_row))
+
+        # allow for "NA" samples/participants in each project
+        rows.append(",".join(["'NA'"]*len(new_row)))
     return rows, column_names
 
 def main():
