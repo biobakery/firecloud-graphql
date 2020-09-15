@@ -128,12 +128,16 @@ def get_firecloud_data(verbose):
 
     # add the filesizes
     filesizes=get_filesizes(list(gs_folders))
+    filetype_index=keys_file_samples[0].index('type')
     for index in range(len(values_file_samples)):
         keys_file_samples[index]+=["file_size"]
         size=filesizes.pop(values_file_samples[index][file_id_index],"1000")
         values_file_samples[index]+=[size]
-        # change the file bucket location to the download url
-        values_file_samples[index][file_id_index]=values_file_samples[index][file_id_index].replace("gs://","https://storage.cloud.google.com/")
+        # change the file bucket location to the download url and use the console page for raw files (so the user can naviate to UI instead of a direct download)
+        if "raw" in values_file_samples[index][filetype_index]:
+            values_file_samples[index][file_id_index]=os.path.dirname(values_file_samples[index][file_id_index].replace("gs://","https://console.cloud.google.com/storage/browser/"))
+        else:
+            values_file_samples[index][file_id_index]=values_file_samples[index][file_id_index].replace("gs://","https://storage.cloud.google.com/")
 
     return values_file_samples, keys_file_samples, values_participants
 
