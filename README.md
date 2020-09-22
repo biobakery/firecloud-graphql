@@ -167,6 +167,7 @@ To start:
 ```
 $ sudo docker exec -it graphql bash
 $ cd /usr/local/src
+$ gsutil config -e (# then provide the path to the key at $GOOGLE_APPLICATION_CREDENTIALS and the project id)
 $ python load_local_database.py (if needed as based on prior db with mount)
 $ nohup python server.py > server.log &
 ```
