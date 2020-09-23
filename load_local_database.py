@@ -15,14 +15,6 @@ import query_bigquery
 
 import utilities
 
-GS_BUCKETS=[
-    "gs://biom-mass-open-requestor-pays/",
-    "gs://biom-mass-controlled-requestor-pays/",
-    "gs://biom-mass-open/",
-    "gs://biom-mass-controlled/"]
-
-GS_TYPE_IGNORE="Raw_reads"
-
 def parse_arguments(args):
     """ Parse the arguments from the user """
     parser = argparse.ArgumentParser(
@@ -55,29 +47,6 @@ def parse_arguments(args):
 
     return parser.parse_args()
 
-def get_filesizes(folders, ignore_type=None):
-
-    sizes={}
-    for folder in folders:
-        cmmd=["gsutil","-u","biom-mass","du",folder]
-        try:
-            for line in str(subprocess.check_output(cmmd)).split("\n"):
-                if " " in line:
-                    size, filename = list(filter(None,line.split(" ")))
-                    # ignore directories
-                    if not filename.endswith("/"):
-                        sizes[filename]=size
-        except (EnvironmentError, subprocess.CalledProcessError):
-            pass
-
-    all_keys=sizes.keys()
-    if ignore_type:
-        for key in all_keys:
-            if ignore_type in key:
-                del sizes[key]
-
-    return sizes
-
 def get_firecloud_data(verbose):
 
     all_samples,all_participants = query_firecloud.get_all_workspace_data(verbose)
@@ -98,21 +67,9 @@ def get_firecloud_data(verbose):
         for item in participants:
             values_participants.append(item['name'])
 
-    # get the other files not recorded in Terra
-    other_files=get_filesizes(GS_BUCKETS,GS_TYPE_IGNORE)
-    # default keys included in Terra ['sample', 'project', 'entity_sample_id', 'participant', 'file_id']
-    project_index=keys_file_samples[0].index('project')
-    file_id_index=keys_file_samples[0].index('file_id')
-    for filename in other_files:
-        new_file=["NA","NA","NA","NA","NA"]
-        new_file[project_index]=filename.replace("gs://","").split("/")[-2]
-        new_file[file_id_index]=filename
-            
-        keys_file_samples.append(copy.copy(keys_file_samples[0]))
-        values_file_samples.append(new_file)
-
     # add more data based on the file url
     gs_folders=set()
+    file_id_index=keys_file_samples[0].index('file_id')
     for index in range(len(values_file_samples)):
         file_url_info = values_file_samples[index][file_id_index].replace("gs://","").split("/")
         access = "open" if "open" in values_file_samples[index][file_id_index] else "controlled"
@@ -126,13 +83,8 @@ def get_firecloud_data(verbose):
         keys_file_samples[index]+=["access","data_category","data_format","experimental_strategy","file_name","platform","type"]
         values_file_samples[index]+=[access,data_category,data_format,experimental_strategy,file_name,platform,filetype]
 
-    # add the filesizes
-    filesizes=get_filesizes(list(gs_folders))
     filetype_index=keys_file_samples[0].index('type')
     for index in range(len(values_file_samples)):
-        keys_file_samples[index]+=["file_size"]
-        size=filesizes.pop(values_file_samples[index][file_id_index],"1000")
-        values_file_samples[index]+=[size]
         # change the file bucket location to the download url and use the console page for raw files (so the user can naviate to UI instead of a direct download)
         if "raw" in values_file_samples[index][filetype_index]:
             values_file_samples[index][file_id_index]=os.path.dirname(values_file_samples[index][file_id_index].replace("gs://","https://console.cloud.google.com/storage/browser/"))
