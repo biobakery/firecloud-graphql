@@ -17,7 +17,8 @@ RUN pip install google-api-core==1.17.0 google-auth==1.14.1 google-cloud-core==1
 # install gsutil for service account
 RUN pip install gsutil==4.53
 
-ENV GOOGLE_APPLICATION_CREDENTIALS=/usr/local/src/keys/biom-mass-1e04f7c00715.json
-COPY ./keys/biom-mass-1e04f7c00715.json $GOOGLE_APPLICATION_CREDENTIALS
+ENV GOOGLE_APPLICATION_CREDENTIALS=/usr/local/src/keys/biom-mass-c9cb4816f3d6.json
+COPY ./keys/biom-mass-c9cb4816f3d6.json $GOOGLE_APPLICATION_CREDENTIALS
+COPY ./keys/biom-mass-bc7b35eec97c.json /usr/local/src/keys/
 
 CMD ["mysqld", "--wait_timeout=28800"]
