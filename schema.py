@@ -133,12 +133,38 @@ class CaseSample(graphene.ObjectType):
     ribosomal_proteins = graphene.String()
     days = graphene.String()
 
+class MetadataCaseAnnotation(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    metadataKey = graphene.String()
+    metadataValue = graphene.String()
+
+class MetadataCaseConnection(graphene.relay.Connection):
+    class Meta:
+        node = MetadataCaseAnnotation
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return len(self.iterable)
+
+class MetadataCase(graphene.ObjectType):
+    hits = graphene.relay.ConnectionField(MetadataCaseConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        score=graphene.String(),
+        sort=graphene.List(Sort),
+        filters=FiltersArgument())
+
 class FileCase(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
 
     case_id = graphene.String()
     project = graphene.Field(Project)
+
+    metadataCase = graphene.Field(MetadataCase)
+
     demographic = graphene.Field(Demographic)
     primary_site = graphene.String()
 
@@ -376,6 +402,8 @@ class Case(graphene.ObjectType):
     primary_site = graphene.String()
     submitter_id = graphene.String()
 
+    metadataCase = graphene.Field(MetadataCase)
+
     demographic = graphene.Field(Demographic)
     project = graphene.Field(Project)
     summary = graphene.Field(Summary)
@@ -403,6 +431,8 @@ class Sample(graphene.ObjectType):
     sample_id = graphene.String()
     primary_site = graphene.String()
     submitter_id = graphene.String()
+
+    metadataCase = graphene.Field(MetadataCase)
 
     demographic = graphene.Field(Demographic)
     project = graphene.Field(Project)
