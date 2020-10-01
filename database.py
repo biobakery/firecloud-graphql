@@ -185,6 +185,16 @@ class Data(object):
                             smoking=row['smoking'],
                             weight=row['weight'],
                             met=row['met']), 
+                        metadataCase=schema.MetadataCase(
+                            hits=[
+                                schema.MetadataCaseAnnotation(metadataKey="Age",metadataValue=row['age']),
+                                schema.MetadataCaseAnnotation(metadataKey="Caffiene",metadataValue=row['caffiene']),
+                                schema.MetadataCaseAnnotation(metadataKey="BMI",metadataValue=row['bmi']),
+                                schema.MetadataCaseAnnotation(metadataKey="Alcohol",metadataValue=row['alcohol']),
+                                schema.MetadataCaseAnnotation(metadataKey="Diagnosis",metadataValue=row['diagnosis']),
+                                schema.MetadataCaseAnnotation(metadataKey="Smoking",metadataValue=row['smoking']),
+                                schema.MetadataCaseAnnotation(metadataKey="Weight",metadataValue=row['weight']),
+                                schema.MetadataCaseAnnotation(metadataKey="MET",metadataValue=row['met'])]),
                         primary_site=row['primary_site'],
                         samples=[schema.CaseSample(
                             id=row['sample_id'],
@@ -278,6 +288,16 @@ class Data(object):
                     diagnosis=row['diagnosis'],
                     smoking=row['smoking'],
                     met=row['met']),
+                metadataCase=schema.MetadataCase(
+                    hits=[
+                        schema.MetadataCaseAnnotation(metadataKey="Age",metadataValue=row['age']),
+                        schema.MetadataCaseAnnotation(metadataKey="Caffiene",metadataValue=row['caffiene']),
+                        schema.MetadataCaseAnnotation(metadataKey="BMI",metadataValue=row['bmi']),
+                        schema.MetadataCaseAnnotation(metadataKey="Alcohol",metadataValue=row['alcohol']),
+                        schema.MetadataCaseAnnotation(metadataKey="Diagnosis",metadataValue=row['diagnosis']),
+                        schema.MetadataCaseAnnotation(metadataKey="Smoking",metadataValue=row['smoking']),
+                        schema.MetadataCaseAnnotation(metadataKey="Weight",metadataValue=row['weight']),
+                        schema.MetadataCaseAnnotation(metadataKey="MET",metadataValue=row['met'])]),
                 project=schema.Project(
                     id=row['project_id'],
                     project_id=row['project_name'],
@@ -407,6 +427,16 @@ class Data(object):
                     diagnosis=row['diagnosis'],
                     smoking=row['smoking'],
                     met=row['met']),
+                metadataCase=schema.MetadataCase(
+                    hits=[
+                        schema.MetadataCaseAnnotation(metadataKey="Age",metadataValue=row['age']),
+                        schema.MetadataCaseAnnotation(metadataKey="Caffiene",metadataValue=row['caffiene']),
+                        schema.MetadataCaseAnnotation(metadataKey="BMI",metadataValue=row['bmi']),
+                        schema.MetadataCaseAnnotation(metadataKey="Alcohol",metadataValue=row['alcohol']),
+                        schema.MetadataCaseAnnotation(metadataKey="Diagnosis",metadataValue=row['diagnosis']),
+                        schema.MetadataCaseAnnotation(metadataKey="Smoking",metadataValue=row['smoking']),
+                        schema.MetadataCaseAnnotation(metadataKey="Weight",metadataValue=row['weight']),
+                        schema.MetadataCaseAnnotation(metadataKey="MET",metadataValue=row['met'])]),
                 project=schema.Project(
                     id=row['project_id'],
                     project_id=row['project_name'],
