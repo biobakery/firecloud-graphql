@@ -156,6 +156,8 @@ class MetadataCase(graphene.ObjectType):
         sort=graphene.List(Sort),
         filters=FiltersArgument())
 
+    metadata_count = graphene.String()
+
 class FileCase(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)

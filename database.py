@@ -194,7 +194,8 @@ class Data(object):
                                 schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"diagnosis",metadataKey="Diagnosis",metadataValue=row['diagnosis']),
                                 schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"smoking",metadataKey="Smoking",metadataValue=row['smoking']),
                                 schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
-                                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"met",metadataKey="MET",metadataValue=row['met'])]),
+                                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"met",metadataKey="MET",metadataValue=row['met'])],
+                            metadata_count=8),
                         primary_site=row['primary_site'],
                         samples=[schema.CaseSample(
                             id=row['sample_id'],
@@ -297,7 +298,8 @@ class Data(object):
                         schema.MetadataCaseAnnotation(id=str(row['id'])+"diagnosis",metadataKey="Diagnosis",metadataValue=row['diagnosis']),
                         schema.MetadataCaseAnnotation(id=str(row['id'])+"smoking",metadataKey="Smoking",metadataValue=row['smoking']),
                         schema.MetadataCaseAnnotation(id=str(row['id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
-                        schema.MetadataCaseAnnotation(id=str(row['id'])+"met",metadataKey="MET",metadataValue=row['met'])]),
+                        schema.MetadataCaseAnnotation(id=str(row['id'])+"met",metadataKey="MET",metadataValue=row['met'])],
+                    metadata_count=8),
                 project=schema.Project(
                     id=row['project_id'],
                     project_id=row['project_name'],
@@ -436,7 +438,8 @@ class Data(object):
                         schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"diagnosis",metadataKey="Diagnosis",metadataValue=row['diagnosis']),
                         schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"smoking",metadataKey="Smoking",metadataValue=row['smoking']),
                         schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
-                        schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"met",metadataKey="MET",metadataValue=row['met'])]),
+                        schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"met",metadataKey="MET",metadataValue=row['met'])],
+                    metadata_count=8),
                 project=schema.Project(
                     id=row['project_id'],
                     project_id=row['project_name'],
