@@ -154,6 +154,16 @@ class Data(object):
         connection, db_results = self.query_database(query)
         files = []
         for row in db_results:
+            metadataCase_hits=[
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"age",metadataKey="Age",metadataValue=row['age']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"caffiene",metadataKey="Caffiene",metadataValue=row['caffiene']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"bmi",metadataKey="BMI",metadataValue=row['bmi']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"alcohol",metadataKey="Alcohol",metadataValue=row['alcohol']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"diagnosis",metadataKey="Diagnosis",metadataValue=row['diagnosis']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"smoking",metadataKey="Smoking",metadataValue=row['smoking']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"met",metadataKey="MET",metadataValue=row['met'])]
+            metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
             files.append(schema.File(
                 id=row['file_id'],
                 file_url=row['file_url'],
@@ -186,16 +196,8 @@ class Data(object):
                             weight=row['weight'],
                             met=row['met']), 
                         metadataCase=schema.MetadataCase(
-                            hits=[
-                                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"age",metadataKey="Age",metadataValue=row['age']),
-                                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"caffiene",metadataKey="Caffiene",metadataValue=row['caffiene']),
-                                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"bmi",metadataKey="BMI",metadataValue=row['bmi']),
-                                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"alcohol",metadataKey="Alcohol",metadataValue=row['alcohol']),
-                                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"diagnosis",metadataKey="Diagnosis",metadataValue=row['diagnosis']),
-                                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"smoking",metadataKey="Smoking",metadataValue=row['smoking']),
-                                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
-                                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"met",metadataKey="MET",metadataValue=row['met'])],
-                            metadata_count=8),
+                            hits=metadataCase_hits,
+                            metadata_count=metadataCase_counts),
                         primary_site=row['primary_site'],
                         samples=[schema.CaseSample(
                             id=row['sample_id'],
@@ -275,7 +277,17 @@ class Data(object):
                     platform=file_info['platform'],
                     access=file_info['access'],
                     file_size=file_info['file_size']))
-           
+          
+            metadataCase_hits=[
+                schema.MetadataCaseAnnotation(id=str(row['id'])+"age",metadataKey="Age",metadataValue=row['age']),
+                schema.MetadataCaseAnnotation(id=str(row['id'])+"caffiene",metadataKey="Caffiene",metadataValue=row['caffiene']),
+                schema.MetadataCaseAnnotation(id=str(row['id'])+"bmi",metadataKey="BMI",metadataValue=row['bmi']),
+                schema.MetadataCaseAnnotation(id=str(row['id'])+"alcohol",metadataKey="Alcohol",metadataValue=row['alcohol']),
+                schema.MetadataCaseAnnotation(id=str(row['id'])+"diagnosis",metadataKey="Diagnosis",metadataValue=row['diagnosis']),
+                schema.MetadataCaseAnnotation(id=str(row['id'])+"smoking",metadataKey="Smoking",metadataValue=row['smoking']),
+                schema.MetadataCaseAnnotation(id=str(row['id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
+                schema.MetadataCaseAnnotation(id=str(row['id'])+"met",metadataKey="MET",metadataValue=row['met'])]
+            metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
             samples.append(schema.Sample(
                 id=row['id'],
                 sample_id=row['sample_name'],
@@ -290,16 +302,8 @@ class Data(object):
                     smoking=row['smoking'],
                     met=row['met']),
                 metadataCase=schema.MetadataCase(
-                    hits=[
-                        schema.MetadataCaseAnnotation(id=str(row['id'])+"age",metadataKey="Age",metadataValue=row['age']),
-                        schema.MetadataCaseAnnotation(id=str(row['id'])+"caffiene",metadataKey="Caffiene",metadataValue=row['caffiene']),
-                        schema.MetadataCaseAnnotation(id=str(row['id'])+"bmi",metadataKey="BMI",metadataValue=row['bmi']),
-                        schema.MetadataCaseAnnotation(id=str(row['id'])+"alcohol",metadataKey="Alcohol",metadataValue=row['alcohol']),
-                        schema.MetadataCaseAnnotation(id=str(row['id'])+"diagnosis",metadataKey="Diagnosis",metadataValue=row['diagnosis']),
-                        schema.MetadataCaseAnnotation(id=str(row['id'])+"smoking",metadataKey="Smoking",metadataValue=row['smoking']),
-                        schema.MetadataCaseAnnotation(id=str(row['id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
-                        schema.MetadataCaseAnnotation(id=str(row['id'])+"met",metadataKey="MET",metadataValue=row['met'])],
-                    metadata_count=8),
+                    hits=metadataCase_hits,
+                    metadata_count=metadataCase_counts),
                 project=schema.Project(
                     id=row['project_id'],
                     project_id=row['project_name'],
@@ -416,6 +420,16 @@ class Data(object):
                     non_ribosomal_proteins=sample_info['non_ribosomal_proteins'],
                     ribosomal_proteins=sample_info['ribosomal_proteins']))
 
+            metadataCase_hits=[
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"age",metadataKey="Age",metadataValue=row['age']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"caffiene",metadataKey="Caffiene",metadataValue=row['caffiene']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"bmi",metadataKey="BMI",metadataValue=row['bmi']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"alcohol",metadataKey="Alcohol",metadataValue=row['alcohol']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"diagnosis",metadataKey="Diagnosis",metadataValue=row['diagnosis']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"smoking",metadataKey="Smoking",metadataValue=row['smoking']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"met",metadataKey="MET",metadataValue=row['met'])]
+            metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
             cases.append(schema.Case(
                 id=row['participant_id'],
                 case_id=row['participant_name'],
@@ -430,16 +444,8 @@ class Data(object):
                     smoking=row['smoking'],
                     met=row['met']),
                 metadataCase=schema.MetadataCase(
-                    hits=[
-                        schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"age",metadataKey="Age",metadataValue=row['age']),
-                        schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"caffiene",metadataKey="Caffiene",metadataValue=row['caffiene']),
-                        schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"bmi",metadataKey="BMI",metadataValue=row['bmi']),
-                        schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"alcohol",metadataKey="Alcohol",metadataValue=row['alcohol']),
-                        schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"diagnosis",metadataKey="Diagnosis",metadataValue=row['diagnosis']),
-                        schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"smoking",metadataKey="Smoking",metadataValue=row['smoking']),
-                        schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
-                        schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"met",metadataKey="MET",metadataValue=row['met'])],
-                    metadata_count=8),
+                    hits=metadataCase_hits,
+                    metadata_count=metadataCase_counts),
                 project=schema.Project(
                     id=row['project_id'],
                     project_id=row['project_name'],
