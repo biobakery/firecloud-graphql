@@ -158,6 +158,31 @@ class MetadataCase(graphene.ObjectType):
 
     metadata_count = graphene.String()
 
+class MetadataSampleAnnotation(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    metadataKey = graphene.String()
+    metadataValue = graphene.String()
+
+class MetadataSampleConnection(graphene.relay.Connection):
+    class Meta:
+        node = MetadataSampleAnnotation
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return len(self.iterable)
+
+class MetadataSample(graphene.ObjectType):
+    hits = graphene.relay.ConnectionField(MetadataSampleConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        score=graphene.String(),
+        sort=graphene.List(Sort),
+        filters=FiltersArgument())
+
+    metadata_count = graphene.String()
+
 class FileCase(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
@@ -440,6 +465,8 @@ class Sample(graphene.ObjectType):
     project = graphene.Field(Project)
     summary = graphene.Field(Summary)
     annotations = graphene.Field(CaseAnnotations)
+
+    metadataSample = graphene.Field(MetadataSample)
 
     week = graphene.String()
     time = graphene.String()

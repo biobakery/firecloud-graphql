@@ -288,6 +288,13 @@ class Data(object):
                 schema.MetadataCaseAnnotation(id=str(row['id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
                 schema.MetadataCaseAnnotation(id=str(row['id'])+"met",metadataKey="MET",metadataValue=row['met'])]
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
+
+            metadataSample_hits=[]
+            for metadata_key in ['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','sample_met','non_ribosomal_proteins','ribosomal_proteins']:
+                metadataSample_hits.append(schema.MetadataSampleAnnotation(id=str(row['id'])+metadata_key,metadataKey=metadata_key.title(),metadataValue=row[metadata_key]))
+
+            metadataSample_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataSample_hits)))
+
             samples.append(schema.Sample(
                 id=row['id'],
                 sample_id=row['sample_name'],
@@ -311,6 +318,9 @@ class Data(object):
                     program=schema.Program(name=row['program_name']),
                     primary_site=[row['primary_site']]),
                 summary=summary,
+                metadataSample=schema.MetadataSample(
+                    hits=metadataSample_hits,
+                    metadata_count=metadataSample_counts),
                 week=row['week'],
                 time=row['time'],
                 fiber=row['fiber'],
