@@ -58,7 +58,7 @@ def main():
         sys.exit(e)
 
     print("Creating users table if not already exists")
-    command = "SET sql_notes=0; CREATE TABLE IF NOT EXISTS users(email CHAR(50) PRIMARY KEY, token CHAR(100) DEFAULT 'None'); set sql_notes=1;"
+    command = "SET sql_notes=0; CREATE TABLE IF NOT EXISTS users(email CHAR(50) PRIMARY KEY, token CHAR(100) DEFAULT 'None', expires CHAR(100) DEFAULT 'None'); set sql_notes=1;"
     update_database(engine,command)
 
     if args.function =="add":
