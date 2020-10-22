@@ -3,6 +3,7 @@
 
 import sqlalchemy
 import sys
+import time
 
 import utilities
 import schema
@@ -51,13 +52,27 @@ class Data(object):
             return connection, results
 
     def add_token(self, email, token):
-        # add or update the token for the user
-        db_results = self.query_database("UPDATE users SET token='{0}' WHERE email='{1}'".format(token,email), no_results=True)
+        # add or update the token for the user to 48 hours from now plus 5 min (to allow for UI time diff from server)
+        expires = time.time()+2*24*60*60+5*60
+        db_results = self.query_database("UPDATE users SET token='{0}', expires='{1}' WHERE email='{2}'".format(token,expires,email), no_results=True)
 
     def valid_token(self, token):
-        db_results = self.query_database("SELECT email FROM users WHERE token='{}'".format(token), fetchall=True)
+        db_results = self.query_database("SELECT email, expires FROM users WHERE token='{}'".format(token), fetchall=True)
         if db_results:
-            return True
+            # check if the token has expired
+            current_time = time.time()
+            try:
+                expires = float(db_results[0][1])
+            except ValueError:
+                expires = current_time
+          
+            if current_time > expires:
+                db_results = self.query_database("UPDATE users SET token='{0}', expires='{1}' WHERE email='{2}'".format("None","None",db_results[0][0]), no_results=True)
+                return False
+            elif current_time < expires:
+                return True
+            else:
+                return False
         else:
             return False
 

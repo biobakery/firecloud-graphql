@@ -19,7 +19,7 @@ def filter_noauth(return_data,token):
     # we would never want to serve without authentication
 
     FILTER_KEYS = ['age','weight','met','week','time','fat','fiber','iron','alcohol', 'b12','calories','carbs','choline','folate','protein','weight','non_ribosomal_proteins','ribosomal_proteins','days', 'caffiene', 'bmi', 'alcohol', 'diagnosis', 'smoking']
-    SUBSTITUTE = "1"
+    SUBSTITUTE = "0"
 
     # check if the token is for a valid user
     if data.valid_token(token):
@@ -35,7 +35,7 @@ def filter_noauth(return_data,token):
             elif isinstance(return_data[key], list):
                 for item in return_data[key]:
                     filter_metadata(item)
-            elif key in FILTER_KEYS:
+            elif key in FILTER_KEYS or "metadataValue" in key:
                 return_data[key]=SUBSTITUTE
 
     filter_metadata(return_data)
