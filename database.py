@@ -644,7 +644,18 @@ class Data(object):
             utilities.update_max_min(stats["non_ribosomal_proteins"], sample.non_ribosomal_proteins)
             utilities.update_max_min(stats["ribosomal_proteins"], sample.ribosomal_proteins)
 
+
+        all_aggregations=[]
+        for typename in aggregates.keys():
+            all_aggregations.append(schema.AggregationAnnotation(id=typename,metadataKey=typename,metadataType="bucket",
+                metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
+
+        for typename in stats.keys():
+            all_aggregations.append(schema.AggregationAnnotation(id=typename,metadataKey=typename,metadataType="stats",
+                metadataValue=get_stats_aggregations(typename)))
+
         sample_aggregates=schema.SampleAggregations(
+            metadataAggregations=schema.MetadataAggregations(hits=all_aggregations),
             demographic__age=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__age"].items()]),
             demographic__weight=schema.Aggregations(

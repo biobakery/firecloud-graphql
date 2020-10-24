@@ -133,6 +133,47 @@ class CaseSample(graphene.ObjectType):
     ribosomal_proteins = graphene.String()
     days = graphene.String()
 
+class Bucket(graphene.ObjectType):
+    doc_count = graphene.Int()
+    key = graphene.String()
+    key_as_string = graphene.String()
+
+    def resolve_key_as_string(self, info):
+        return str(key)
+
+class Stats(graphene.ObjectType):
+    max = graphene.Int()
+    min = graphene.Int()
+    count = graphene.Int()
+
+class Aggregations(graphene.ObjectType):
+    buckets = graphene.List(Bucket)
+    stats = graphene.Field(Stats)
+
+class AggregationAnnotation(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    metadataKey = graphene.String()
+    metadataType = graphene.String()
+    metadataValue = graphene.Field(Aggregations)
+
+class AggregationConnection(graphene.relay.Connection):
+    class Meta:
+        node = AggregationAnnotation
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return len(self.iterable)
+
+class MetadataAggregations(graphene.ObjectType):
+    hits = graphene.relay.ConnectionField(AggregationConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        score=graphene.String(),
+        sort=graphene.List(Sort),
+        filters=FiltersArgument())
+
 class MetadataCaseAnnotation(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
@@ -262,23 +303,6 @@ class FileConnection(graphene.relay.Connection):
 
     def resolve_total(self, info):
         return self.iterable.total
-
-class Bucket(graphene.ObjectType):
-    doc_count = graphene.Int()
-    key = graphene.String()
-    key_as_string = graphene.String()
-
-    def resolve_key_as_string(self, info):
-        return str(key)
-
-class Stats(graphene.ObjectType):
-    max = graphene.Int()
-    min = graphene.Int()
-    count = graphene.Int()
-
-class Aggregations(graphene.ObjectType):
-    buckets = graphene.List(Bucket)
-    stats = graphene.Field(Stats)
 
 class FileAggregations(graphene.ObjectType):
     data_category = graphene.Field(Aggregations)
@@ -494,6 +518,9 @@ class Sample(graphene.ObjectType):
         return self.sample_id
 
 class SampleAggregations(graphene.ObjectType):
+
+    metadataAggregations=graphene.Field(MetadataAggregations)
+
     demographic__age = graphene.Field(Aggregations)
     demographic__weight = graphene.Field(Aggregations)
     demographic__caffiene = graphene.Field(Aggregations)
