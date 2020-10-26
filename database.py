@@ -646,13 +646,13 @@ class Data(object):
 
 
         all_aggregations=[]
-        for typename in aggregates.keys():
-            all_aggregations.append(schema.AggregationAnnotation(id=typename,metadataKey=typename,metadataType="bucket",
+        for typename in ["week","time"]:
+            all_aggregations.append(schema.AggregationAnnotation(id="sample"+typename,metadataKey=typename,metadataType="bucket",
                 metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
 
-        for typename in stats.keys():
-            all_aggregations.append(schema.AggregationAnnotation(id=typename,metadataKey=typename,metadataType="stats",
-                metadataValue=get_stats_aggregations(typename)))
+        for typename in ["fiber","fat","iron","alcohol","b12","calories"]:
+            all_aggregations.append(schema.AggregationAnnotation(id="sample"+typename,metadataKey=typename,metadataType="stats",
+                metadataValue=schema.Aggregations(stats=schema.Stats(max=stats[typename].get("max",0), min=stats[typename].get("min",0)))))
 
         sample_aggregates=schema.SampleAggregations(
             metadataAggregations=schema.MetadataAggregations(hits=all_aggregations),
