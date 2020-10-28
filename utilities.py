@@ -146,6 +146,10 @@ def check_for_match(value_selected, hit_values, operation, field):
     # check if the values for the hit match one or more of the values selected
 
     def is_match(a, b, operation):
+        # apply unit conversion, if needed
+        if field.endswith("file_size"):
+            b = map(bytes_to_gb, b)
+
         if operation == "in":
             # check for range
             if Range.isinstance(a):

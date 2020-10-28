@@ -547,14 +547,19 @@ class Data(object):
         return project_aggregates
 
     def get_file_aggregations(self, files):
-        def get_schema_aggregations(variable_name):
-            return schema.Aggregations(
+        def get_schema_aggregations(variable_name,schema_type="buckets"):
+            if schema_type == "buckets":
+                return schema.Aggregations(
                     buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
+            else:
+                return schema.Aggregations(
+                    stats=schema.Stats(max=stats[variable_name].get("max",0), min=stats[variable_name].get("min",0)))
 
         # aggregate file data
         aggregates = {"data_category": {}, "experimental_strategy": {},
                       "data_format": {}, "platform": {}, "cases__primary_site": {},
                       "cases__project__project_id": {}, "access": {}, "file_size": {}}
+        stats = {"file_size": {}}
 
         for file in files:
             utilities.add_key_increment(aggregates["data_category"], file.data_category)
@@ -567,6 +572,9 @@ class Data(object):
             utilities.add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
             utilities.add_key_increment(aggregates["cases__project__project_id"], project.project_id)
 
+            utilities.update_max_min(stats["file_size"], utilities.bytes_to_gb(file.file_size))
+
+
         file_aggregates = schema.FileAggregations(
             data_category=get_schema_aggregations("data_category"),
             experimental_strategy=get_schema_aggregations("experimental_strategy"),
@@ -575,7 +583,7 @@ class Data(object):
             cases__primary_site=get_schema_aggregations("cases__primary_site"),
             access=get_schema_aggregations("access"),
             cases__project__project_id=get_schema_aggregations("cases__project__project_id"),
-            file_size=get_schema_aggregations("file_size"))
+            file_size=get_schema_aggregations("file_size",schema_type="stats"))
 
         return file_aggregates
 
