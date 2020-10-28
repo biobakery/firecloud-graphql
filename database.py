@@ -593,7 +593,7 @@ class Data(object):
                       "week" : {}, "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {},
                       "b12": {}, "calories": {}, "carbs": {}, "choline" : {}, "folate" : {}, "protein": {}, "weight" : {}, "met" : {},
                        "non_ribosomal_proteins" : {}, "ribosomal_proteins": {} }
-        stats = { "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {}, "b12": {}, "calories": {}, "carbs": {},
+        stats = { "week": {}, "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {}, "b12": {}, "calories": {}, "carbs": {},
                   "choline" : {}, "folate" : {}, "protein": {}, "weight" : {}, "met" : {}, "non_ribosomal_proteins" : {}, "ribosomal_proteins": {} }
 
         for sample in samples:
@@ -627,6 +627,7 @@ class Data(object):
             utilities.add_key_increment(aggregates["ribosomal_proteins"], utilities.Range.create_custom(sample.ribosomal_proteins, offset=1000000))
 
 
+            utilities.update_max_min(stats["week"], sample.time)
             utilities.update_max_min(stats["time"], sample.time)
             utilities.update_max_min(stats["fiber"], sample.fiber)
             utilities.update_max_min(stats["fat"], sample.fat)
@@ -646,11 +647,7 @@ class Data(object):
 
 
         all_aggregations=[]
-        for typename in ["week","time"]:
-            all_aggregations.append(schema.AggregationAnnotation(id="sample"+typename,metadataKey=typename,metadataType="bucket",
-                metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
-
-        for typename in ["fiber","fat","iron","alcohol","b12","calories"]:
+        for typename in ["week","time","fiber","fat","iron","alcohol","b12","calories"]:
             all_aggregations.append(schema.AggregationAnnotation(id="sample"+typename,metadataKey=typename,metadataType="stats",
                 metadataValue=schema.Aggregations(stats=schema.Stats(max=stats[typename].get("max",0), min=stats[typename].get("min",0)))))
 
