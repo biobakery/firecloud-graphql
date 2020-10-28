@@ -155,6 +155,7 @@ class AggregationAnnotation(graphene.ObjectType):
         interfaces = (graphene.relay.Node,)
 
     metadataKey = graphene.String()
+    metadataTitle = graphene.String()
     metadataType = graphene.String()
     metadataValue = graphene.Field(Aggregations)
 
@@ -343,6 +344,9 @@ class Files(graphene.ObjectType):
         return data.get_facets()
 
 class CaseAggregations(graphene.ObjectType):
+
+    metadataAggregations=graphene.Field(MetadataAggregations)
+
     demographic__age = graphene.Field(Aggregations)
     demographic__weight = graphene.Field(Aggregations)
     demographic__caffiene = graphene.Field(Aggregations)
