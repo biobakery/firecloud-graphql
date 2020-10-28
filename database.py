@@ -699,6 +699,14 @@ class Data(object):
 
         return sample_aggregates
 
+    def get_metadata_title(self,field):
+        if "demographic" in field:
+            return field.split("demographic__")[-1]
+        elif field.startswith("project"):
+            return "project"
+        else:
+            return field
+
     def get_case_aggregations(self, cases):
         def get_schema_aggregations(variable_name):
             return schema.Aggregations(
@@ -753,7 +761,17 @@ class Data(object):
                 utilities.add_key_increment(aggregates["sample__non_ribosomal_proteins"], utilities.Range.create_custom(sample.non_ribosomal_proteins, offset=1000000))
                 utilities.add_key_increment(aggregates["sample__ribosomal_proteins"], utilities.Range.create_custom(sample.ribosomal_proteins, offset=1000000))
 
+        all_aggregations=[]
+        for typename in ["project__program__name","demographic__diagnosis"]:
+            all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="bucket",metadataTitle=self.get_metadata_title(typename),
+                metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
+
+        for typename in ["demographic__age","demographic__weight","demographic__caffiene","demographic__bmi","demographic__met"]:
+            all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="stats",metadataTitle=self.get_metadata_title(typename),
+                metadataValue=schema.Aggregations(stats=schema.Stats(max=stats[typename].get("max",0), min=stats[typename].get("min",0)))))
+
         case_aggregates=schema.CaseAggregations(
+            metadataAggregations=schema.MetadataAggregations(hits=all_aggregations),
             demographic__age=schema.Aggregations(
                 stats=schema.Stats(max=stats["demographic__age"].get("max",0), min=stats["demographic__age"].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__age"].items()]),
