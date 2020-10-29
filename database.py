@@ -709,6 +709,8 @@ class Data(object):
             return field.split("demographic__")[-1]
         elif field.startswith("project"):
             return "project"
+        elif field.startswith("sample"):
+            return field.split("sample__")[-1]
         else:
             return field
 
@@ -767,13 +769,14 @@ class Data(object):
                 utilities.add_key_increment(aggregates["sample__ribosomal_proteins"], utilities.Range.create_custom(sample.ribosomal_proteins, offset=1000000))
 
         all_aggregations=[]
-        for typename in ["project__program__name","demographic__diagnosis"]:
+        for typename in ["project__program__name","demographic__diagnosis","sample__week","sample__time","sample__fiber","sample__fat","sample__iron","sample__alcohol","sample__b12","sample__calories","sample__carbs","sample__choline","sample__folate","sample__protein","sample__weight","sample__met"]:
             all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="bucket",metadataTitle=self.get_metadata_title(typename),
                 metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
 
         for typename in ["demographic__age","demographic__weight","demographic__caffiene","demographic__bmi","demographic__met"]:
             all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="stats",metadataTitle=self.get_metadata_title(typename),
-                metadataValue=schema.Aggregations(stats=schema.Stats(max=stats[typename].get("max",0), min=stats[typename].get("min",0)))))
+                metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()],
+                    stats=schema.Stats(max=stats[typename].get("max",0), min=stats[typename].get("min",0)))))
 
         case_aggregates=schema.CaseAggregations(
             metadataAggregations=schema.MetadataAggregations(hits=all_aggregations),
