@@ -43,6 +43,9 @@ def filter_noauth(return_data,token):
 
 ## Portal API ##
 
+class Custom(graphene.ObjectType):
+    pass
+
 class Sort(graphene.String):
     pass
 

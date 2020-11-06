@@ -169,16 +169,21 @@ class Data(object):
         connection, db_results = self.query_database(query)
         files = []
         for row in db_results:
-            metadataCase_hits=[
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"age",metadataKey="Age",metadataValue=row['age']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"caffiene",metadataKey="Caffiene",metadataValue=row['caffiene']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"bmi",metadataKey="BMI",metadataValue=row['bmi']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"alcohol",metadataKey="Alcohol",metadataValue=row['alcohol']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"diagnosis",metadataKey="Diagnosis",metadataValue=row['diagnosis']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"smoking",metadataKey="Smoking",metadataValue=row['smoking']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"met",metadataKey="MET",metadataValue=row['met'])]
+            metadataCase_hits=[]
+            for demo_item in ['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']:
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=row[demo_item]),
+
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
+
+            demographic_instance=schema.Custom()
+            for demo_item in ['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']:
+                setattr(demographic_instance, demo_item, row[demo_item])
+
+            casesample_instance=schema.CaseSample(id=row['sample_id'])
+            for demo_item in ['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']:
+                setattr(casesample_instance, demo_item, row[demo_item])
+
+
             files.append(schema.File(
                 id=row['file_id'],
                 file_url=row['file_url'],
@@ -201,38 +206,13 @@ class Data(object):
                             name=row['project'],
                             program=schema.Program(name=row['program']),
                             primary_site=[row['primary_site']]),
-                        demographic=schema.Demographic(
-                            age=row['age'],
-                            caffiene=row['caffiene'],
-                            bmi=row['bmi'],
-                            alcohol=row['alcohol'],
-                            diagnosis=row['diagnosis'],
-                            smoking=row['smoking'],
-                            weight=row['weight'],
-                            met=row['met']), 
+                        demographic=demographic_instance,
                         metadataCase=schema.MetadataCase(
                             hits=metadataCase_hits,
                             metadata_count=metadataCase_counts),
                         primary_site=row['primary_site'],
-                        samples=[schema.CaseSample(
-                            id=row['sample_id'],
-                            week=row['week'],
-                            time=row['time'],
-                            fiber=row['fiber'],
-                            fat=row['fat'],
-                            iron=row['iron'],
-                            alcohol=row['alcohol'],    
-                            b12=row['b12'],
-                            calories=row['calories'],
-                            carbs=row['carbs'],
-                            choline=row['choline'],
-                            folate=row['folate'],
-                            protein=row['protein'],
-                            weight=row['weight'],
-                            met=row['sample_met'],
-                            non_ribosomal_proteins=row['non_ribosomal_proteins'],
-                            ribosomal_proteins=row['ribosomal_proteins']
-                        )])]
+                        samples=[casesample_instance]
+                        )]
                 ),
                 file_id=row['file_id'],
                 type=row['data_format']
