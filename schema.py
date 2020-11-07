@@ -40,6 +40,9 @@ def filter_noauth(return_data,token):
 
     filter_metadata(return_data)
 
+def add_attributes(instance, keys, values):
+    for key in keys:
+        setattr(instance, key, values[key])
 
 ## Portal API ##
 

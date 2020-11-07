@@ -176,13 +176,12 @@ class Data(object):
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
             demographic_instance=schema.Custom()
-            for demo_item in ['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']:
-                setattr(demographic_instance, demo_item, row[demo_item])
+            demographic_keys=['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']
+            schema.add_attributes(demographic_instance, demographic_keys, row)
 
             casesample_instance=schema.CaseSample(id=row['sample_id'])
-            for demo_item in ['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']:
-                setattr(casesample_instance, demo_item, row[demo_item])
-
+            casesample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']
+            schema.add_attributes(casesample_instance, casesample_keys, row)
 
             files.append(schema.File(
                 id=row['file_id'],
