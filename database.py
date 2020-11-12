@@ -271,16 +271,11 @@ class Data(object):
                     platform=file_info['platform'],
                     access=file_info['access'],
                     file_size=file_info['file_size']))
-          
-            metadataCase_hits=[
-                schema.MetadataCaseAnnotation(id=str(row['id'])+"age",metadataKey="Age",metadataValue=row['age']),
-                schema.MetadataCaseAnnotation(id=str(row['id'])+"caffiene",metadataKey="Caffiene",metadataValue=row['caffiene']),
-                schema.MetadataCaseAnnotation(id=str(row['id'])+"bmi",metadataKey="BMI",metadataValue=row['bmi']),
-                schema.MetadataCaseAnnotation(id=str(row['id'])+"alcohol",metadataKey="Alcohol",metadataValue=row['alcohol']),
-                schema.MetadataCaseAnnotation(id=str(row['id'])+"diagnosis",metadataKey="Diagnosis",metadataValue=row['diagnosis']),
-                schema.MetadataCaseAnnotation(id=str(row['id'])+"smoking",metadataKey="Smoking",metadataValue=row['smoking']),
-                schema.MetadataCaseAnnotation(id=str(row['id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
-                schema.MetadataCaseAnnotation(id=str(row['id'])+"met",metadataKey="MET",metadataValue=row['met'])]
+
+            metadataCase_hits=[]
+            for demo_item in ['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']:
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=row[demo_item]),
+
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
             metadataSample_hits=[]
@@ -289,19 +284,15 @@ class Data(object):
 
             metadataSample_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataSample_hits)))
 
-            samples.append(schema.Sample(
+            demographic_instance=schema.Custom()
+            demographic_keys=['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']
+            schema.add_attributes(demographic_instance, demographic_keys, row)
+
+            sample_instance=schema.Sample(
                 id=row['id'],
                 sample_id=row['sample_name'],
                 primary_site=row['primary_site'],
-                demographic=schema.Demographic(
-                    age=row['age'],
-                    weight=row['weight'],
-                    caffiene=row['caffiene'],
-                    bmi=row['bmi'],
-                    alcohol=row['alcohol'],
-                    diagnosis=row['diagnosis'],
-                    smoking=row['smoking'],
-                    met=row['met']),
+                demographic=demographic_instance,
                 metadataCase=schema.MetadataCase(
                     hits=metadataCase_hits,
                     metadata_count=metadataCase_counts),
@@ -315,25 +306,15 @@ class Data(object):
                 metadataSample=schema.MetadataSample(
                     hits=metadataSample_hits,
                     metadata_count=metadataSample_counts),
-                week=row['week'],
-                time=row['time'],
-                fiber=row['fiber'],
-                fat=row['fat'],
-                iron=row['iron'],
-                alcohol=row['alcohol'],
-                b12=row['b12'],
-                calories=row['calories'],
-                carbs=row['carbs'],
-                choline=row['choline'],
-                folate=row['folate'],
-                protein=row['protein'],
-                weight=row['weight'],
-                met=row['sample_met'],
-                non_ribosomal_proteins=row['non_ribosomal_proteins'],
-                ribosomal_proteins=row['ribosomal_proteins'],
                 files=schema.CaseFiles(hits=casefiles),
                 cases=schema.FileCases(hits=[schema.FileCase(case_id=row['participant_id'], primary_site=row['primary_site'])])
-            ))
+            )
+
+            sample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','non_ribosomal_proteins','ribosomal_proteins']
+            schema.add_attributes(sample_instance, sample_keys, row)
+            setattr(sample_instance, 'met', row['sample_met'])
+
+            samples.append(sample_instance)
         connection.close()
         return samples
 
