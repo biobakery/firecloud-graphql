@@ -624,42 +624,39 @@ class Data(object):
                  "demographic__caffiene": {}, "demographic__bmi": {}, "demographic__alcohol": {} , "demographic__diagnosis": {}, "demographic__smoking": {}  }
 
         for case in cases:
-            utilities.add_key_increment(aggregates["demographic__age"], utilities.Range.create(case.demographic.age))
-            utilities.add_key_increment(aggregates["demographic__weight"], utilities.Range.create_custom(case.demographic.weight, offset=25))
-            utilities.add_key_increment(aggregates["demographic__caffiene"], utilities.Range.create_custom(case.demographic.caffiene, offset=25))
-            utilities.add_key_increment(aggregates["demographic__bmi"], utilities.Range.create_custom(case.demographic.bmi, offset=10))
-            utilities.add_key_increment(aggregates["demographic__alcohol"], utilities.Range.create_custom(case.demographic.alcohol, offset=10))
-            utilities.add_key_increment(aggregates["demographic__diagnosis"], case.demographic.diagnosis)
-            utilities.add_key_increment(aggregates["demographic__smoking"], utilities.Range.create_custom(case.demographic.smoking, offset=25))
-            utilities.add_key_increment(aggregates["demographic__met"], utilities.Range.create_custom(case.demographic.met, offset=50))
+            
+            for demo_key in ['age']:
+                utilities.add_key_increment(aggregates["demographic__"+demo_key], utilities.Range.create(getattr(case.demographic,demo_key)))
+
+            for demo_key in ['diagnosis']:
+                utilities.add_key_increment(aggregates["demographic__"+demo_key], getattr(case.demographic, demo_key))
+
+            for demo_key in ['weight','caffiene','smoking','met']:
+                utilities.add_key_increment(aggregates["demographic__"+demo_key], utilities.Range.create_custom(getattr(case.demographic,demo_key), offset=35))
+            
+            for demo_key in ['bmi','alcohol']:
+                utilities.add_key_increment(aggregates["demographic__"+demo_key], utilities.Range.create_custom(getattr(case.demographic,demo_key), offset=10))
+            
             utilities.add_key_increment(aggregates["primary_site"], case.primary_site)
             utilities.add_key_increment(aggregates["project__project_id"], case.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
-            utilities.update_max_min(stats["demographic__age"], case.demographic.age)
-            utilities.update_max_min(stats["demographic__weight"], case.demographic.weight)
-            utilities.update_max_min(stats["demographic__caffiene"], case.demographic.caffiene)
-            utilities.update_max_min(stats["demographic__bmi"], case.demographic.bmi)
-            utilities.update_max_min(stats["demographic__alcohol"], case.demographic.alcohol)
-            utilities.update_max_min(stats["demographic__smoking"], case.demographic.smoking)
-            utilities.update_max_min(stats["demographic__met"], case.demographic.met)
-            for sample in case.samples.hits:
-                utilities.add_key_increment(aggregates["sample__time"], utilities.Range.create(sample.time))
-                utilities.add_key_increment(aggregates["sample__week"], sample.week)
-                utilities.add_key_increment(aggregates["sample__fiber"], utilities.Range.create(sample.fiber))
-                utilities.add_key_increment(aggregates["sample__fat"], utilities.Range.create(sample.fat))
-                utilities.add_key_increment(aggregates["sample__iron"], utilities.Range.create(sample.iron))
-                utilities.add_key_increment(aggregates["sample__alcohol"], utilities.Range.create(sample.alcohol))
+            
+            for demo_key in ['age','weight','caffiene','bmi','alcohol','smoking','met']:
+                utilities.update_max_min(stats["demographic__"+demo_key], getattr(case.demographic,demo_key))
 
-                utilities.add_key_increment(aggregates["sample__b12"], utilities.Range.create_custom(sample.b12, offset=100))
-                utilities.add_key_increment(aggregates["sample__calories"], utilities.Range.create_custom(sample.calories, offset=100))
-                utilities.add_key_increment(aggregates["sample__carbs"], utilities.Range.create_custom(sample.carbs, offset=100))
-                utilities.add_key_increment(aggregates["sample__choline"], utilities.Range.create_custom(sample.choline, offset=100))
-                utilities.add_key_increment(aggregates["sample__folate"], utilities.Range.create_custom(sample.folate, offset=100))
-                utilities.add_key_increment(aggregates["sample__protein"], utilities.Range.create(sample.protein))
-                utilities.add_key_increment(aggregates["sample__weight"], utilities.Range.create(sample.weight))
-                utilities.add_key_increment(aggregates["sample__met"], utilities.Range.create(sample.met))
-                utilities.add_key_increment(aggregates["sample__non_ribosomal_proteins"], utilities.Range.create_custom(sample.non_ribosomal_proteins, offset=1000000))
-                utilities.add_key_increment(aggregates["sample__ribosomal_proteins"], utilities.Range.create_custom(sample.ribosomal_proteins, offset=1000000))
+            for sample in case.samples.hits:
+
+                for key in ['time','week','fiber','fat','iron','alcohol','protein','weight','met']:
+                    utilities.add_key_increment(aggregates["sample__"+key], utilities.Range.create(getattr(sample,key)))
+                
+                for key in ['week']:
+                    utilities.add_key_increment(aggregates["sample__"+key], getattr(sample,key))
+
+                for key in ['b12','calories','carbs','choline','folate']:
+                    utilities.add_key_increment(aggregates["sample__"+key], utilities.Range.create_custom(getattr(sample,key), offset=100))
+
+                for key in ['non_ribosomal_proteins','ribosomal_proteins']:
+                    utilities.add_key_increment(aggregates["sample__"+key], utilities.Range.create_custom(getattr(sample,key), offset=1000000))
 
         all_aggregations=[]
         for typename in ["project__program__name","demographic__diagnosis","sample__week","sample__time","sample__fiber","sample__fat","sample__iron","sample__alcohol","sample__b12","sample__calories","sample__carbs","sample__choline","sample__folate","sample__protein","sample__weight","sample__met"]:
@@ -673,48 +670,21 @@ class Data(object):
 
         case_aggregates=schema.CaseAggregations(
             metadataAggregations=schema.MetadataAggregations(hits=all_aggregations),
-            demographic__age=schema.Aggregations(
-                stats=schema.Stats(max=stats["demographic__age"].get("max",0), min=stats["demographic__age"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__age"].items()]),
-            demographic__weight=schema.Aggregations(
-                stats=schema.Stats(max=stats["demographic__weight"].get("max",0), min=stats["demographic__weight"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__weight"].items()]),
-            demographic__caffiene=schema.Aggregations(
-                stats=schema.Stats(max=stats["demographic__caffiene"].get("max",0), min=stats["demographic__caffiene"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__caffiene"].items()]),
-            demographic__bmi=schema.Aggregations(
-                stats=schema.Stats(max=stats["demographic__bmi"].get("max",0), min=stats["demographic__bmi"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__bmi"].items()]),
-            demographic__alcohol=schema.Aggregations(
-                stats=schema.Stats(max=stats["demographic__alcohol"].get("max",0), min=stats["demographic__alcohol"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__alcohol"].items()]),
-            demographic__smoking=schema.Aggregations(
-                stats=schema.Stats(max=stats["demographic__smoking"].get("max",0), min=stats["demographic__smoking"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__smoking"].items()]),
-            demographic__diagnosis=get_schema_aggregations("demographic__diagnosis"),
-            demographic__met=schema.Aggregations(
-                stats=schema.Stats(max=stats["demographic__met"].get("max",0), min=stats["demographic__met"].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__met"].items()]),
             primary_site=get_schema_aggregations("primary_site"),
             project__project_id=get_schema_aggregations("project__project_id"),
-            project__program__name=get_schema_aggregations("project__program__name"),
-            sample__time=get_schema_aggregations("sample__time"),
-            sample__week=get_schema_aggregations("sample__week"),
-            sample__fiber=get_schema_aggregations("sample__fiber"),
-            sample__fat=get_schema_aggregations("sample__fat"),
-            sample__iron=get_schema_aggregations("sample__iron"),
-            sample__alcohol=get_schema_aggregations("sample__alcohol"),
+            project__program__name=get_schema_aggregations("project__program__name"))
 
-            sample__b12=get_schema_aggregations("sample__b12"),
-            sample__calories=get_schema_aggregations("sample__calories"),
-            sample__carbs=get_schema_aggregations("sample__carbs"),
-            sample__choline=get_schema_aggregations("sample__choline"),
-            sample__folate=get_schema_aggregations("sample__folate"),
-            sample__protein=get_schema_aggregations("sample__protein"),
-            sample__weight=get_schema_aggregations("sample__weight"),
-            sample__met=get_schema_aggregations("sample__met"),
-            sample__non_ribosomal_proteins=get_schema_aggregations("sample__non_ribosomal_proteins"),
-            sample__ribosomal_proteins=get_schema_aggregations("sample__ribosomal_proteins"))
+        for demo_key in ['age','weight','caffiene','bmi','alcohol','smoking','met']:
+            new_aggregations=schema.Aggregations(
+                stats=schema.Stats(max=stats["demographic__"+demo_key].get("max",0), min=stats["demographic__"+demo_key].get("min",0)),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
+            setattr(case_aggregates,"demographic__"+demo_key, new_aggregations)
+
+        for demo_key in ['diagnosis']:
+            setattr(case_aggregates,"demographic__"+demo_key, get_schema_aggregations("demographic__"+demo_key))
+
+        for demo_key in ['time','week','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']:
+            setattr(case_aggregates,"sample__"+demo_key, get_schema_aggregations("sample__"+demo_key))
 
         return case_aggregates
 
