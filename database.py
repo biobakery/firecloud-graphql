@@ -546,54 +546,27 @@ class Data(object):
                   "choline" : {}, "folate" : {}, "protein": {}, "weight" : {}, "met" : {}, "non_ribosomal_proteins" : {}, "ribosomal_proteins": {} }
 
         for sample in samples:
-            utilities.add_key_increment(aggregates["demographic__age"], sample.demographic.age)
-            utilities.add_key_increment(aggregates["demographic__weight"], sample.demographic.weight)
-            utilities.add_key_increment(aggregates["demographic__caffiene"], sample.demographic.caffiene)
-            utilities.add_key_increment(aggregates["demographic__bmi"], sample.demographic.bmi)
-            utilities.add_key_increment(aggregates["demographic__alcohol"], sample.demographic.alcohol)
-            utilities.add_key_increment(aggregates["demographic__diagnosis"], sample.demographic.diagnosis)
-            utilities.add_key_increment(aggregates["demographic__smoking"], sample.demographic.smoking)
-            utilities.add_key_increment(aggregates["demographic__met"], sample.demographic.met)
+            for demo_key in ['age','weight','caffiene','bmi','alcohol','diagnosis','smoking','met']:
+                utilities.add_key_increment(aggregates["demographic__"+demo_key], getattr(sample.demographic, demo_key))
+
             utilities.add_key_increment(aggregates["primary_site"], sample.primary_site)
             utilities.add_key_increment(aggregates["project__project_id"], sample.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], sample.project.program.name)
-            utilities.add_key_increment(aggregates["week"], sample.week)
-            utilities.add_key_increment(aggregates["time"], utilities.Range.create(sample.time))
-            utilities.add_key_increment(aggregates["fiber"], sample.fiber)
-            utilities.add_key_increment(aggregates["fat"], sample.fat)
-            utilities.add_key_increment(aggregates["iron"], sample.iron)
-            utilities.add_key_increment(aggregates["alcohol"], sample.alcohol)
 
-            utilities.add_key_increment(aggregates["b12"],  utilities.Range.create_custom(sample.b12, offset=100))
-            utilities.add_key_increment(aggregates["calories"], utilities.Range.create_custom(sample.calories, offset=100))
-            utilities.add_key_increment(aggregates["carbs"],  utilities.Range.create_custom(sample.carbs, offset=100))
-            utilities.add_key_increment(aggregates["choline"],  utilities.Range.create_custom(sample.choline, offset=100))
-            utilities.add_key_increment(aggregates["folate"],  utilities.Range.create_custom(sample.folate, offset=100))
-            utilities.add_key_increment(aggregates["protein"], sample.protein)
-            utilities.add_key_increment(aggregates["weight"], sample.weight)
-            utilities.add_key_increment(aggregates["met"], sample.met)
-            utilities.add_key_increment(aggregates["non_ribosomal_proteins"], utilities.Range.create_custom(sample.non_ribosomal_proteins, offset=1000000))
-            utilities.add_key_increment(aggregates["ribosomal_proteins"], utilities.Range.create_custom(sample.ribosomal_proteins, offset=1000000))
+            for key in ['week','fiber','fat','iron','alcohol','protein','weight','met']:
+                utilities.add_key_increment(aggregates[key], getattr(sample,key))
 
+            for key in ['time']:
+                utilities.add_key_increment(aggregates[key], utilities.Range.create(getattr(sample,key)))
 
-            utilities.update_max_min(stats["week"], sample.time)
-            utilities.update_max_min(stats["time"], sample.time)
-            utilities.update_max_min(stats["fiber"], sample.fiber)
-            utilities.update_max_min(stats["fat"], sample.fat)
-            utilities.update_max_min(stats["iron"], sample.iron)
-            utilities.update_max_min(stats["alcohol"], sample.alcohol)
+            for key in ['b12','calories','carbs','choline','folate']:
+                utilities.add_key_increment(aggregates[key],  utilities.Range.create_custom(getattr(sample,key), offset=100))
 
-            utilities.update_max_min(stats["b12"], sample.b12)
-            utilities.update_max_min(stats["calories"], sample.calories)
-            utilities.update_max_min(stats["carbs"], sample.carbs)
-            utilities.update_max_min(stats["choline"], sample.choline)
-            utilities.update_max_min(stats["folate"], sample.folate)
-            utilities.update_max_min(stats["protein"], sample.protein)
-            utilities.update_max_min(stats["weight"], sample.weight)
-            utilities.update_max_min(stats["met"], sample.met)
-            utilities.update_max_min(stats["non_ribosomal_proteins"], sample.non_ribosomal_proteins)
-            utilities.update_max_min(stats["ribosomal_proteins"], sample.ribosomal_proteins)
+            for key in ['non_ribosomal_proteins','ribosomal_proteins']:
+                utilities.add_key_increment(aggregates[key], utilities.Range.create_custom(getattr(sample,key), offset=1000000))
 
+            for key in ['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']:
+                utilities.update_max_min(stats[key], getattr(sample,key))
 
         all_aggregations=[]
         for typename in ["week","time","fiber","fat","iron","alcohol","b12","calories"]:
@@ -602,46 +575,25 @@ class Data(object):
 
         sample_aggregates=schema.SampleAggregations(
             metadataAggregations=schema.MetadataAggregations(hits=all_aggregations),
-            demographic__age=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__age"].items()]),
-            demographic__weight=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__weight"].items()]),
-            demographic__caffiene=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__caffiene"].items()]),
-            demographic__bmi=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__bmi"].items()]),
-            demographic__alcohol=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__alcohol"].items()]),
-            demographic__diagnosis=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__diagnosis"].items()]),
-            demographic__smoking=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__smoking"].items()]),
-            demographic__met=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__met"].items()]),
             primary_site=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["primary_site"].items()]),
             project__project_id=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__project_id"].items()]),
             project__program__name=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__program__name"].items()]),
-            week=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["week"].items()]),
-            time=get_stats_aggregations("time"),
-            fiber=get_stats_aggregations("fiber"),
-            fat=get_stats_aggregations("fat"),
-            iron=get_stats_aggregations("iron"),
-            alcohol=get_stats_aggregations("alcohol"),
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__program__name"].items()]))
 
-            b12=get_stats_aggregations("b12"),
-            calories=get_stats_aggregations("calories"),
-            carbs=get_stats_aggregations("carbs"),
-            choline=get_stats_aggregations("choline"),
-            folate=get_stats_aggregations("folate"),
-            protein=get_stats_aggregations("protein"),
-            weight=get_stats_aggregations("weight"),
-            met=get_stats_aggregations("met"),
-            non_ribosomal_proteins=get_stats_aggregations("non_ribosomal_proteins"),
-            ribosomal_proteins=get_stats_aggregations("ribosomal_proteins"))
+        for demo_key in ['age','weight','caffiene','bmi','alcohol','diagnosis','smoking','met']:
+            new_aggregations=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
+            setattr(sample_aggregates,"demographic__"+demo_key, new_aggregations)
+
+        for key in ['week']:
+            new_aggregations=schema.Aggregations(
+                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[key].items()])
+            setattr(sample_aggregates,key, new_aggregations)
+
+        for key in ['time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']:
+            setattr(sample_aggregates, key, get_stats_aggregations(key))
 
         return sample_aggregates
 
