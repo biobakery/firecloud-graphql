@@ -120,24 +120,6 @@ class CaseSample(graphene.ObjectType):
         interfaces = (graphene.relay.Node,)
 
     sample_id = graphene.String()
-    week = graphene.String()
-    time = graphene.String()
-    fat = graphene.String()
-    fiber = graphene.String()
-    iron = graphene.String()
-    alcohol = graphene.String()
-
-    b12 = graphene.String()
-    calories = graphene.String()
-    carbs = graphene.String()
-    choline = graphene.String()
-    folate = graphene.String()
-    protein = graphene.String()
-    weight = graphene.String()
-    met = graphene.String()
-    non_ribosomal_proteins = graphene.String()
-    ribosomal_proteins = graphene.String()
-    days = graphene.String()
 
 class Bucket(graphene.ObjectType):
     doc_count = graphene.Int()
@@ -502,25 +484,6 @@ class Sample(graphene.ObjectType):
 
     metadataSample = graphene.Field(MetadataSample)
 
-    week = graphene.String()
-    time = graphene.String()
-    fiber = graphene.String()
-    fat = graphene.String()
-    iron = graphene.String()
-    alcohol = graphene.String()
-
-    b12 = graphene.String()
-    calories = graphene.String()
-    carbs = graphene.String()
-    choline = graphene.String()
-    folate = graphene.String()
-    protein = graphene.String()
-    weight = graphene.String()
-    met = graphene.String()
-    non_ribosomal_proteins = graphene.String()
-    ribosomal_proteins = graphene.String()
-    days = graphene.String()
-
     files = graphene.Field(CaseFiles)
     cases = graphene.Field(FileCases)
 
@@ -542,24 +505,6 @@ class SampleAggregations(graphene.ObjectType):
     primary_site = graphene.Field(Aggregations)
     project__project_id = graphene.Field(Aggregations)
     project__program__name = graphene.Field(Aggregations)
-    week = graphene.Field(Aggregations)
-    time = graphene.Field(Aggregations)
-    fiber = graphene.Field(Aggregations)
-    fat = graphene.Field(Aggregations)
-    iron = graphene.Field(Aggregations)
-    alcohol = graphene.Field(Aggregations)
-
-    b12 = graphene.Field(Aggregations)
-    calories = graphene.Field(Aggregations)
-    carbs = graphene.Field(Aggregations)
-    choline = graphene.Field(Aggregations)
-    folate = graphene.Field(Aggregations)
-    protein = graphene.Field(Aggregations)
-    weight = graphene.Field(Aggregations)
-    met = graphene.Field(Aggregations)
-    non_ribosomal_proteins = graphene.Field(Aggregations)
-    ribosomal_proteins = graphene.Field(Aggregations)
-    days = graphene.Field(Aggregations) 
 
 class SampleConnection(graphene.relay.Connection):
     class Meta:
