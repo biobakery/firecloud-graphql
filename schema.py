@@ -335,35 +335,9 @@ class CaseAggregations(graphene.ObjectType):
 
     metadataAggregations=graphene.Field(MetadataAggregations)
 
-    demographic__age = graphene.Field(Aggregations)
-    demographic__weight = graphene.Field(Aggregations)
-    demographic__caffiene = graphene.Field(Aggregations)
-    demographic__bmi = graphene.Field(Aggregations)
-    demographic__alcohol = graphene.Field(Aggregations)
-    demographic__diagnosis = graphene.Field(Aggregations)
-    demographic__smoking = graphene.Field(Aggregations)
-    demographic__met = graphene.Field(Aggregations)
     primary_site = graphene.Field(Aggregations)
     project__project_id = graphene.Field(Aggregations)
     project__program__name = graphene.Field(Aggregations)
-    sample__time = graphene.Field(Aggregations)
-    sample__week = graphene.Field(Aggregations)
-    sample__fiber = graphene.Field(Aggregations)
-    sample__fat = graphene.Field(Aggregations)
-    sample__iron = graphene.Field(Aggregations)
-    sample__alcohol = graphene.Field(Aggregations)
-
-    sample__b12 = graphene.Field(Aggregations)
-    sample__calories = graphene.Field(Aggregations)
-    sample__carbs = graphene.Field(Aggregations)
-    sample__choline = graphene.Field(Aggregations)
-    sample__folate = graphene.Field(Aggregations)
-    sample__protein = graphene.Field(Aggregations)
-    sample__weight = graphene.Field(Aggregations)
-    sample__met = graphene.Field(Aggregations)
-    sample__non_ribosomal_proteins = graphene.Field(Aggregations)
-    sample__ribosomal_proteins = graphene.Field(Aggregations)
-    sample__days = graphene.Field(Aggregations)
 
 class CaseAnnotation(graphene.ObjectType):
     class Meta:
@@ -494,14 +468,6 @@ class SampleAggregations(graphene.ObjectType):
 
     metadataAggregations=graphene.Field(MetadataAggregations)
 
-    demographic__age = graphene.Field(Aggregations)
-    demographic__weight = graphene.Field(Aggregations)
-    demographic__caffiene = graphene.Field(Aggregations)
-    demographic__bmi = graphene.Field(Aggregations)
-    demographic__alcohol = graphene.Field(Aggregations)
-    demographic__diagnosis = graphene.Field(Aggregations)
-    demographic__smoking = graphene.Field(Aggregations)
-    demographic__met = graphene.Field(Aggregations)
     primary_site = graphene.Field(Aggregations)
     project__project_id = graphene.Field(Aggregations)
     project__program__name = graphene.Field(Aggregations)
