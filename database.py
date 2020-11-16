@@ -386,48 +386,29 @@ class Data(object):
             # create casesamples
             casesamples=[]
             for index, sample_info in enumerate(case_samples[row['participant_name']]):
-                casesamples.append(schema.CaseSample(
-                    id=index,
-                    week=sample_info['week'],
-                    time=sample_info['time'],
-                    fiber=sample_info['fiber'],
-                    iron=sample_info['iron'],
-                    fat=sample_info['fat'],
-                    alcohol=sample_info['alcohol'],
-                    b12=sample_info['b12'],
-                    calories=sample_info['calories'],
-                    carbs=sample_info['carbs'],
-                    choline=sample_info['choline'],
-                    folate=sample_info['folate'],
-                    protein=sample_info['protein'],
-                    weight=sample_info['weight'],
-                    met=sample_info['sample_met'],
-                    non_ribosomal_proteins=sample_info['non_ribosomal_proteins'],
-                    ribosomal_proteins=sample_info['ribosomal_proteins']))
+                casesample_instance=schema.CaseSample(id=index)
 
-            metadataCase_hits=[
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"age",metadataKey="Age",metadataValue=row['age']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"caffiene",metadataKey="Caffiene",metadataValue=row['caffiene']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"bmi",metadataKey="BMI",metadataValue=row['bmi']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"alcohol",metadataKey="Alcohol",metadataValue=row['alcohol']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"diagnosis",metadataKey="Diagnosis",metadataValue=row['diagnosis']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"smoking",metadataKey="Smoking",metadataValue=row['smoking']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"weight",metadataKey="Weight",metadataValue=row['weight']),
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+"met",metadataKey="MET",metadataValue=row['met'])]
+                casesample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','non_ribosomal_proteins','ribosomal_proteins']
+                schema.add_attributes(casesample_instance, casesample_keys, sample_info)
+                setattr(casesample_instance,'met', sample_info['sample_met'])
+                
+                casesamples.append(casesample_instance)
+
+            metadataCase_hits=[]
+            for demo_item in ['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']:
+                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=row[demo_item]),
+
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
+
+            demographic_instance=schema.Custom()
+            demographic_keys=['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']
+            schema.add_attributes(demographic_instance, demographic_keys, row)
+
             cases.append(schema.Case(
                 id=row['participant_id'],
                 case_id=row['participant_name'],
                 primary_site=row['primary_site'],
-                demographic=schema.Demographic(
-                    age=row['age'],
-                    weight=row['weight'],
-                    caffiene=row['caffiene'],
-                    bmi=row['bmi'],
-                    alcohol=row['alcohol'],
-                    diagnosis=row['diagnosis'],
-                    smoking=row['smoking'],
-                    met=row['met']),
+                demographic=demographic_instance,
                 metadataCase=schema.MetadataCase(
                     hits=metadataCase_hits,
                     metadata_count=metadataCase_counts),
