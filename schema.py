@@ -106,14 +106,7 @@ class Project(graphene.ObjectType):
     primary_site = graphene.List(graphene.String)
 
 class Demographic(graphene.ObjectType):
-    age = graphene.String()
-    weight = graphene.String()
-    caffiene = graphene.String()
-    bmi = graphene.String()
-    alcohol = graphene.String()
-    diagnosis = graphene.String()
-    smoking = graphene.String()
-    met = graphene.String()
+    id = graphene.String()
 
 class CaseSample(graphene.ObjectType):
     class Meta:
