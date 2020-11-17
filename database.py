@@ -151,7 +151,7 @@ class Data(object):
     def get_generic_file_name(file_id, extension):
         return "{0}.{1}".format(int(file_id)+GENERIC_FILE_NAME_OFFSET, extension.lower())
 
-    def get_current_files(self):
+    def get_all_cases(self):
         query = "SELECT * from participant";
         connection, db_results_participant = self.query_database(query)
 
@@ -166,6 +166,9 @@ class Data(object):
 
             participant_data[row['entity_participant_id']]=row
 
+        return participant_data
+
+    def get_all_samples(self):
         query = "SELECT * from sample";
         connection, db_results_sample = self.query_database(query)
 
@@ -190,6 +193,14 @@ class Data(object):
             row['sample_id']=row['id']
 
             sample_data[row['sample']]=row
+
+        return sample_data 
+
+
+    def get_current_files(self):
+        # get all cases and samples data
+        participant_data = self.get_all_cases()
+        sample_data = self.get_all_samples()
 
         query = "SELECT file_sample.id as file_id, file_sample.file_id as file_url, file_sample.file_name as file_name, file_sample.participant, file_sample.sample, " +\
                  "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
