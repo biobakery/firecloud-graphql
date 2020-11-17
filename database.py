@@ -168,7 +168,7 @@ class Data(object):
 
         return participant_data
 
-    def get_all_samples(self):
+    def get_all_samples(self,rows=False):
         query = "SELECT * from sample";
         connection, db_results_sample = self.query_database(query)
 
@@ -194,8 +194,25 @@ class Data(object):
 
             sample_data[row['sample']]=row
 
+        if rows:
+            sample_data=sample_data.values()
+
         return sample_data 
 
+    def get_all_projects(self):
+        query = "SELECT * FROM project"
+        connection, db_results = self.query_database(query)
+
+        projects_results={}
+        for rowprox in db_results:
+            row = dict(rowprox.items())
+            row['project_name']=row['project_id']
+            row['project_id']=row['id']
+            row['program_name']=row['program']
+
+            projects_results[row['project_name']]=row
+
+        return projects_results
 
     def get_current_files(self):
         # get all cases and samples data
@@ -280,23 +297,21 @@ class Data(object):
             case_files[row['participant']].append(dict(row.items()))
         connection.close()
 
-        # gather participant data
-        query = "SELECT sample.id as id, sample.sample as sample_name, participant.id as participant_id, " +\
-                 "participant.entity_participant_id as participant_name, project.primary_site as primary_site, " +\
-                 "project.id as project_id, project.project_id as project_name, project.program as program_name, " +\
-                 "participant.age as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
-                 "participant.caffiene as caffiene, participant.bmi as bmi, participant.alcohol as alcohol, participant.diagnosis as diagnosis, participant.pack_years_smoking as smoking, " +\
-                 "sample.week as week, sample.Time as time, sample.drFiber as fiber, sample.drFat as fat, " +\
-                 "sample.drB12 as b12, sample.drCalories as calories, sample.drCarbs as carbs, sample.drCholine as choline, " +\
-                 "sample.drFolate as folate, sample.drProtein as protein, sample.weight_lbs as weight, sample.totMETs1 as sample_met," +\
-                 "sample.non_ribosomal_proteins as non_ribosomal_proteins, sample.ribosomal_proteins as ribosomal_proteins, " +\
-                 "sample.drIron as iron, sample.drAlcohol as alcohol " +\
-                 "FROM sample INNER JOIN participant ON sample.participant=participant.entity_participant_id " +\
-                 "INNER JOIN project ON sample.project=project.project_id"
-        connection, db_results = self.query_database(query)
+        # get all cases and samples data
+        participant_data = self.get_all_cases()
+        projects_data = self.get_all_projects()
+        db_results = self.get_all_samples(rows=True)
+
         samples = []
         for row in db_results:
-            current_case_files = case_files[row['participant_name']]
+            db_case = participant_data.get(row['participant'],False)
+            db_projects = projects_data.get(row['project'],False)
+            
+            if not ( db_case and db_projects):
+                continue
+
+            current_case_files = case_files[row['participant']]
+
             # create data categories
             data_categories_counts={}
             for case_row in current_case_files:
@@ -323,45 +338,44 @@ class Data(object):
 
             metadataCase_hits=[]
             for demo_item in ['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']:
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=row[demo_item]),
+                schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]),
 
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
             metadataSample_hits=[]
-            for metadata_key in ['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','sample_met','non_ribosomal_proteins','ribosomal_proteins']:
+            for metadata_key in ['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']:
                 metadataSample_hits.append(schema.MetadataSampleAnnotation(id=str(row['id'])+metadata_key,metadataKey=metadata_key.title(),metadataValue=row[metadata_key]))
 
             metadataSample_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataSample_hits)))
 
             demographic_instance=schema.Custom()
             demographic_keys=['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']
-            schema.add_attributes(demographic_instance, demographic_keys, row)
+            schema.add_attributes(demographic_instance, demographic_keys,db_case)
 
             sample_instance=schema.Sample(
                 id=row['id'],
-                sample_id=row['sample_name'],
-                primary_site=row['primary_site'],
+                sample_id=row['sample'],
+                primary_site=db_projects['primary_site'],
                 demographic=demographic_instance,
                 metadataCase=schema.MetadataCase(
                     hits=metadataCase_hits,
                     metadata_count=metadataCase_counts),
                 project=schema.Project(
-                    id=row['project_id'],
-                    project_id=row['project_name'],
-                    name=row['project_name'],
-                    program=schema.Program(name=row['program_name']),
-                    primary_site=[row['primary_site']]),
+                    id=db_projects['project_id'],
+                    project_id=db_projects['project_name'],
+                    name=db_projects['project_name'],
+                    program=schema.Program(name=db_projects['program_name']),
+                    primary_site=[db_projects['primary_site']]),
                 summary=summary,
                 metadataSample=schema.MetadataSample(
                     hits=metadataSample_hits,
                     metadata_count=metadataSample_counts),
                 files=schema.CaseFiles(hits=casefiles),
-                cases=schema.FileCases(hits=[schema.FileCase(case_id=row['participant_id'], primary_site=row['primary_site'])])
+                cases=schema.FileCases(hits=[schema.FileCase(case_id=db_case['participant_id'], primary_site=db_projects['primary_site'])])
             )
 
-            sample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','non_ribosomal_proteins','ribosomal_proteins']
+            sample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','non_ribosomal_proteins','ribosomal_proteins','met']
             schema.add_attributes(sample_instance, sample_keys, row)
-            setattr(sample_instance, 'met', row['sample_met'])
 
             samples.append(sample_instance)
         connection.close()
