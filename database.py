@@ -395,12 +395,7 @@ class Data(object):
         connection.close()
 
         # gather sample data for participants
-        query = "SELECT id, participant, sample, week, Time as time, drFiber as fiber, " +\
-                "drB12 as b12, drCalories as calories, drCarbs as carbs, drCholine as choline, " +\
-                "drFolate as folate, drProtein as protein, weight_lbs as weight, " +\
-                "non_ribosomal_proteins, ribosomal_proteins, totMETs1 as sample_met," +\
-                "drFat as fat, drFiber as fiber, drIron as iron, drAlcohol as alcohol from sample"
-        connection, db_results = self.query_database(query)
+        db_results = self.get_all_samples(rows=True)
         case_samples = {}
         for row in db_results:
             if not row['participant'] in case_samples:
@@ -451,9 +446,8 @@ class Data(object):
             for index, sample_info in enumerate(case_samples[row['participant_name']]):
                 casesample_instance=schema.CaseSample(id=index)
 
-                casesample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','non_ribosomal_proteins','ribosomal_proteins']
+                casesample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']
                 schema.add_attributes(casesample_instance, casesample_keys, sample_info)
-                setattr(casesample_instance,'met', sample_info['sample_met'])
                 
                 casesamples.append(casesample_instance)
 
