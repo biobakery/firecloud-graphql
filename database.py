@@ -12,6 +12,9 @@ RAW_FILE_TYPE = "rawFiles"
 PROCESSED_FILE_TYPE = "processedFiles"
 GENERIC_FILE_NAME_OFFSET = 1000000
 
+CASE_DEFAULT_COLUMNS = set(['entity_participant_id', 'updated', 'participant_name', 'participant_id', 'id'])
+SAMPLE_DEFAULT_COLUMNS = set(['sample', 'updated', 'participant', 'sample_id', 'id','project'])
+
 class Data(object):
 
     def __init__(self):
@@ -163,11 +166,14 @@ class Data(object):
             row['participant_name']=row['entity_participant_id']
 
             participant_data[row['entity_participant_id']]=row
-
+        
         if rows:
             participant_data = participant_data.values()
+            metadata_columns = list(set(participant_data[0].keys()).difference(CASE_DEFAULT_COLUMNS))
+        else:
+            metadata_columns = list(set(participant_data[participant_data.keys()[0]].keys()).difference(CASE_DEFAULT_COLUMNS))
 
-        return participant_data
+        return metadata_columns, participant_data
 
     def get_all_samples(self,rows=False):
         query = "SELECT * from sample";
@@ -184,8 +190,11 @@ class Data(object):
 
         if rows:
             sample_data=sample_data.values()
+            metadata_columns = list(set(sample_data[0].keys()).difference(SAMPLE_DEFAULT_COLUMNS))
+        else:
+            metadata_columns = list(set(sample_data[sample_data.keys()[0]].keys()).difference(SAMPLE_DEFAULT_COLUMNS))
 
-        return sample_data 
+        return metadata_columns, sample_data 
 
     def get_all_projects(self):
         query = "SELECT * FROM project"
@@ -204,8 +213,8 @@ class Data(object):
 
     def get_current_files(self):
         # get all cases and samples data
-        participant_data = self.get_all_cases()
-        sample_data = self.get_all_samples()
+        participant_metadata_columns, participant_data = self.get_all_cases()
+        sample_metadata_columns, sample_data = self.get_all_samples()
 
         query = "SELECT file_sample.id as file_id, file_sample.file_id as file_url, file_sample.file_name as file_name, file_sample.participant, file_sample.sample, " +\
                  "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
@@ -224,17 +233,17 @@ class Data(object):
                 continue
 
             metadataCase_hits=[]
-            for demo_item in ['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']:
+            for demo_item in participant_metadata_columns:
                 schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]),
 
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
             demographic_instance=schema.Custom()
-            demographic_keys=['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']
+            demographic_keys=participant_metadata_columns
             schema.add_attributes(demographic_instance, demographic_keys, db_case)
 
             casesample_instance=schema.CaseSample(id=db_sample['sample_id'])
-            casesample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','met','non_ribosomal_proteins','ribosomal_proteins']
+            casesample_keys=sample_metadata_columns
             schema.add_attributes(casesample_instance, casesample_keys, db_sample)
 
             files.append(schema.File(
@@ -286,9 +295,9 @@ class Data(object):
         connection.close()
 
         # get all cases and samples data
-        participant_data = self.get_all_cases()
+        participant_metadata_columns, participant_data = self.get_all_cases()
         projects_data = self.get_all_projects()
-        db_results = self.get_all_samples(rows=True)
+        sample_metadata_columns, db_results = self.get_all_samples(rows=True)
 
         samples = []
         for row in db_results:
@@ -325,19 +334,19 @@ class Data(object):
                     file_size=file_info['file_size']))
 
             metadataCase_hits=[]
-            for demo_item in ['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']:
+            for demo_item in participant_metadata_columns:
                 schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]),
 
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
             metadataSample_hits=[]
-            for metadata_key in ['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','met','non_ribosomal_proteins','ribosomal_proteins']:
+            for metadata_key in sample_metadata_columns:
                 metadataSample_hits.append(schema.MetadataSampleAnnotation(id=str(row['id'])+metadata_key,metadataKey=metadata_key.title(),metadataValue=row[metadata_key]))
 
             metadataSample_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataSample_hits)))
 
             demographic_instance=schema.Custom()
-            demographic_keys=['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']
+            demographic_keys=participant_metadata_columns
             schema.add_attributes(demographic_instance, demographic_keys,db_case)
 
             sample_instance=schema.Sample(
@@ -362,7 +371,7 @@ class Data(object):
                 cases=schema.FileCases(hits=[schema.FileCase(case_id=db_case['participant_id'], primary_site=db_projects['primary_site'])])
             )
 
-            sample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','non_ribosomal_proteins','ribosomal_proteins','met']
+            sample_keys=sample_metadata_columns
             schema.add_attributes(sample_instance, sample_keys, row)
 
             samples.append(sample_instance)
@@ -383,7 +392,7 @@ class Data(object):
         connection.close()
 
         # gather sample data for participants
-        db_results = self.get_all_samples(rows=True)
+        sample_metadata_columns, db_results = self.get_all_samples(rows=True)
         case_samples = {}
         for row in db_results:
             if not row['participant'] in case_samples:
@@ -393,7 +402,7 @@ class Data(object):
         
         # gather participant data
         projects_data=self.get_all_projects()
-        db_results=self.get_all_cases(rows=True)
+        participant_metadata_columns, db_results=self.get_all_cases(rows=True)
 
         cases = []
         completed_cases = set()
@@ -440,19 +449,19 @@ class Data(object):
             for index, sample_info in enumerate(case_samples[row['participant_name']]):
                 casesample_instance=schema.CaseSample(id=index)
 
-                casesample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','met','non_ribosomal_proteins','ribosomal_proteins']
+                casesample_keys=sample_metadata_columns
                 schema.add_attributes(casesample_instance, casesample_keys, sample_info)
                 
                 casesamples.append(casesample_instance)
 
             metadataCase_hits=[]
-            for demo_item in ['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']:
+            for demo_item in participant_metadata_columns:
                 schema.MetadataCaseAnnotation(id=str(row['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=row[demo_item]),
 
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
             demographic_instance=schema.Custom()
-            demographic_keys=['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']
+            demographic_keys=participant_metadata_columns
             schema.add_attributes(demographic_instance, demographic_keys, row)
 
             cases.append(schema.Case(
