@@ -151,7 +151,7 @@ class Data(object):
     def get_generic_file_name(file_id, extension):
         return "{0}.{1}".format(int(file_id)+GENERIC_FILE_NAME_OFFSET, extension.lower())
 
-    def get_all_cases(self):
+    def get_all_cases(self,rows=False):
         query = "SELECT * from participant";
         connection, db_results_participant = self.query_database(query)
 
@@ -163,8 +163,12 @@ class Data(object):
             row['weight']=row['weight_lbs']
             row['met']=row['totMETs1']
             row['smoking']=row['pack_years_smoking']
+            row['participant_name']=row['entity_participant_id']
 
             participant_data[row['entity_participant_id']]=row
+
+        if rows:
+            participant_data = participant_data.values()
 
         return participant_data
 
@@ -404,16 +408,22 @@ class Data(object):
         connection.close()
         
         # gather participant data
-        query = "SELECT participant.id as participant_id, participant.entity_participant_id as participant_name, project.primary_site as primary_site, " +\
-                 "project.id as project_id, project.project_id as project_name, project.program as program_name, " +\
-                 "participant.age as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
-                 "participant.caffiene as caffiene, participant.bmi as bmi, participant.alcohol as alcohol, participant.diagnosis as diagnosis, participant.pack_years_smoking as smoking " +\
-                 "FROM sample INNER JOIN participant ON sample.participant=participant.entity_participant_id " +\
-                 "INNER JOIN project ON sample.project=project.project_id"
-        connection, db_results = self.query_database(query)
+        projects_data=self.get_all_projects()
+        db_results=self.get_all_cases(rows=True)
+
         cases = []
         completed_cases = set()
         for row in db_results:
+            db_sample=case_samples.get(row['participant_name'],[""])[0]
+
+            if not db_sample:
+                continue
+
+            db_projects=projects_data.get(db_sample['project'],False)
+
+            if not db_projects:
+                continue
+
             if row['participant_id'] in completed_cases:
                 continue
             current_case_files = case_files[row['participant_name']]
@@ -464,17 +474,17 @@ class Data(object):
             cases.append(schema.Case(
                 id=row['participant_id'],
                 case_id=row['participant_name'],
-                primary_site=row['primary_site'],
+                primary_site=db_projects['primary_site'],
                 demographic=demographic_instance,
                 metadataCase=schema.MetadataCase(
                     hits=metadataCase_hits,
                     metadata_count=metadataCase_counts),
                 project=schema.Project(
-                    id=row['project_id'],
-                    project_id=row['project_name'],
-                    name=row['project_name'],
-                    program=schema.Program(name=row['program_name']),
-                    primary_site=[row['primary_site']]),
+                    id=db_projects['project_id'],
+                    project_id=db_projects['project_name'],
+                    name=db_projects['project_name'],
+                    program=schema.Program(name=db_projects['program_name']),
+                    primary_site=[db_projects['primary_site']]),
                 summary=summary,
                 files=schema.CaseFiles(hits=casefiles),
                 samples=schema.CaseSamples(hits=casesamples),
