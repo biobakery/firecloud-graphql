@@ -152,36 +152,74 @@ class Data(object):
         return "{0}.{1}".format(int(file_id)+GENERIC_FILE_NAME_OFFSET, extension.lower())
 
     def get_current_files(self):
+        query = "SELECT * from participant";
+        connection, db_results_participant = self.query_database(query)
+
+        # organize based on participant id
+        participant_data = {}
+        for rowprox in db_results_participant:
+            row = dict(rowprox.items())
+            row['participant_id']=row['id']
+            row['weight']=row['weight_lbs']
+            row['met']=row['totMETs1']
+            row['smoking']=row['pack_years_smoking']
+
+            participant_data[row['entity_participant_id']]=row
+
+        query = "SELECT * from sample";
+        connection, db_results_sample = self.query_database(query)
+
+        # organize based on sample id
+        sample_data = {}
+        for rowprox in db_results_sample:
+            row = dict(rowprox.items())
+            # add custom name changes
+            row['time']=row['Time']
+            row['fiber']=row['drFiber']
+            row['fat']=row['drFat']
+            row['b12']=row['drB12']
+            row['calories']=row['drCalories']
+            row['carbs']=row['drCarbs']
+            row['choline']=row['drCholine']
+            row['folate']=row['drFolate']
+            row['protein']=row['drProtein']
+            row['weight']=row['weight_lbs']
+            row['met']=row['totMETs1']
+            row['iron']=row['drIron']
+            row['alcohol']=row['drAlcohol']
+            row['sample_id']=row['id']
+
+            sample_data[row['sample']]=row
+
         query = "SELECT file_sample.id as file_id, file_sample.file_id as file_url, file_sample.file_name as file_name, file_sample.participant, file_sample.sample, " +\
                  "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
                  "file_sample.platform, file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
-                 "participant.id as participant_id, project.program, " +\
-                 "participant.age as age, participant.weight_lbs as weight, participant.totMETs1 as met, " +\
-                 "participant.caffiene as caffiene, participant.bmi as bmi, participant.alcohol as alcohol, participant.diagnosis as diagnosis, participant.pack_years_smoking as smoking, " +\
-                 "sample.week as week, sample.Time as time, sample.drFiber as fiber, sample.drFat as fat, " +\
-                 "sample.drB12 as b12, sample.drCalories as calories, sample.drCarbs as carbs, sample.drCholine as choline, " +\
-                 "sample.drFolate as folate, sample.drProtein as protein, sample.weight_lbs as weight, " +\
-                 "sample.non_ribosomal_proteins as non_ribosomal_proteins, sample.ribosomal_proteins as ribosomal_proteins, sample.totMETs1 as sample_met," +\
-                 "sample.drIron as iron, sample.drAlcohol as alcohol, sample.id as sample_id " +\
-                 "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id " +\
-                 "INNER JOIN participant ON file_sample.participant=participant.entity_participant_id "+\
-                 "INNER JOIN sample on file_sample.sample=sample.sample"
+                 "project.program " +\
+                 "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id"
+
         connection, db_results = self.query_database(query)
         files = []
         for row in db_results:
+            # add in the sample and participant data
+            db_case=participant_data.get(row['participant'],False)
+            db_sample=sample_data.get(row['sample'],False)
+
+            if not ( db_case and db_sample ):
+                continue
+
             metadataCase_hits=[]
             for demo_item in ['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']:
-                schema.MetadataCaseAnnotation(id=str(row['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=row[demo_item]),
+                schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]),
 
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
             demographic_instance=schema.Custom()
             demographic_keys=['age','caffiene','bmi','alcohol','diagnosis','smoking','weight','met']
-            schema.add_attributes(demographic_instance, demographic_keys, row)
+            schema.add_attributes(demographic_instance, demographic_keys, db_case)
 
-            casesample_instance=schema.CaseSample(id=row['sample_id'])
+            casesample_instance=schema.CaseSample(id=db_sample['sample_id'])
             casesample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']
-            schema.add_attributes(casesample_instance, casesample_keys, row)
+            schema.add_attributes(casesample_instance, casesample_keys, db_sample)
 
             files.append(schema.File(
                 id=row['file_id'],
@@ -197,7 +235,7 @@ class Data(object):
                 generic_file_name=row['file_name'],
                 cases=schema.FileCases(
                     hits=[schema.FileCase(
-                        id=row['participant_id'],
+                        id=db_case['participant_id'],
                         case_id=row['participant'],
                         project=schema.Project(
                             id=row['project_id'],
