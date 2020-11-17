@@ -160,9 +160,6 @@ class Data(object):
         for rowprox in db_results_participant:
             row = dict(rowprox.items())
             row['participant_id']=row['id']
-            row['weight']=row['weight_lbs']
-            row['met']=row['totMETs1']
-            row['smoking']=row['pack_years_smoking']
             row['participant_name']=row['entity_participant_id']
 
             participant_data[row['entity_participant_id']]=row
@@ -181,19 +178,6 @@ class Data(object):
         for rowprox in db_results_sample:
             row = dict(rowprox.items())
             # add custom name changes
-            row['time']=row['Time']
-            row['fiber']=row['drFiber']
-            row['fat']=row['drFat']
-            row['b12']=row['drB12']
-            row['calories']=row['drCalories']
-            row['carbs']=row['drCarbs']
-            row['choline']=row['drCholine']
-            row['folate']=row['drFolate']
-            row['protein']=row['drProtein']
-            row['weight']=row['weight_lbs']
-            row['met']=row['totMETs1']
-            row['iron']=row['drIron']
-            row['alcohol']=row['drAlcohol']
             row['sample_id']=row['id']
 
             sample_data[row['sample']]=row
@@ -250,7 +234,7 @@ class Data(object):
             schema.add_attributes(demographic_instance, demographic_keys, db_case)
 
             casesample_instance=schema.CaseSample(id=db_sample['sample_id'])
-            casesample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']
+            casesample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','met','non_ribosomal_proteins','ribosomal_proteins']
             schema.add_attributes(casesample_instance, casesample_keys, db_sample)
 
             files.append(schema.File(
@@ -347,7 +331,7 @@ class Data(object):
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
             metadataSample_hits=[]
-            for metadata_key in ['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']:
+            for metadata_key in ['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','met','non_ribosomal_proteins','ribosomal_proteins']:
                 metadataSample_hits.append(schema.MetadataSampleAnnotation(id=str(row['id'])+metadata_key,metadataKey=metadata_key.title(),metadataValue=row[metadata_key]))
 
             metadataSample_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataSample_hits)))
@@ -378,7 +362,7 @@ class Data(object):
                 cases=schema.FileCases(hits=[schema.FileCase(case_id=db_case['participant_id'], primary_site=db_projects['primary_site'])])
             )
 
-            sample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','non_ribosomal_proteins','ribosomal_proteins','met']
+            sample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','non_ribosomal_proteins','ribosomal_proteins','met']
             schema.add_attributes(sample_instance, sample_keys, row)
 
             samples.append(sample_instance)
@@ -456,7 +440,7 @@ class Data(object):
             for index, sample_info in enumerate(case_samples[row['participant_name']]):
                 casesample_instance=schema.CaseSample(id=index)
 
-                casesample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']
+                casesample_keys=['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','met','non_ribosomal_proteins','ribosomal_proteins']
                 schema.add_attributes(casesample_instance, casesample_keys, sample_info)
                 
                 casesamples.append(casesample_instance)
@@ -607,10 +591,10 @@ class Data(object):
                       "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} ,
                       "demographic__caffiene": {}, "demographic__bmi": {}, "demographic__alcohol": {} , "demographic__diagnosis": {}, "demographic__smoking": {} ,
                       "week" : {}, "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {},
-                      "b12": {}, "calories": {}, "carbs": {}, "choline" : {}, "folate" : {}, "protein": {}, "weight" : {}, "met" : {},
+                      "b12": {}, "calories": {}, "carbs": {}, "choline" : {}, "folate" : {}, "protein": {}, "met" : {},
                        "non_ribosomal_proteins" : {}, "ribosomal_proteins": {} }
         stats = { "week": {}, "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {}, "b12": {}, "calories": {}, "carbs": {},
-                  "choline" : {}, "folate" : {}, "protein": {}, "weight" : {}, "met" : {}, "non_ribosomal_proteins" : {}, "ribosomal_proteins": {} }
+                  "choline" : {}, "folate" : {}, "protein": {}, "met" : {}, "non_ribosomal_proteins" : {}, "ribosomal_proteins": {} }
 
         for sample in samples:
             for demo_key in ['age','weight','caffiene','bmi','alcohol','diagnosis','smoking','met']:
@@ -620,7 +604,7 @@ class Data(object):
             utilities.add_key_increment(aggregates["project__project_id"], sample.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], sample.project.program.name)
 
-            for key in ['week','fiber','fat','iron','alcohol','protein','weight','met']:
+            for key in ['week','fiber','fat','iron','alcohol','protein','met']:
                 utilities.add_key_increment(aggregates[key], getattr(sample,key))
 
             for key in ['time']:
@@ -632,7 +616,7 @@ class Data(object):
             for key in ['non_ribosomal_proteins','ribosomal_proteins']:
                 utilities.add_key_increment(aggregates[key], utilities.Range.create_custom(getattr(sample,key), offset=1000000))
 
-            for key in ['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']:
+            for key in ['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','met','non_ribosomal_proteins','ribosomal_proteins']:
                 utilities.update_max_min(stats[key], getattr(sample,key))
 
         all_aggregations=[]
@@ -659,7 +643,7 @@ class Data(object):
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[key].items()])
             setattr(sample_aggregates,key, new_aggregations)
 
-        for key in ['time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']:
+        for key in ['time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','met','non_ribosomal_proteins','ribosomal_proteins']:
             setattr(sample_aggregates, key, get_stats_aggregations(key))
 
         return sample_aggregates
@@ -685,7 +669,7 @@ class Data(object):
                       "demographic__caffiene": {}, "demographic__bmi": {}, "demographic__alcohol": {} , "demographic__diagnosis": {}, "demographic__smoking": {} ,
                       "sample__time" : {}, "sample__week" : {},  "sample__fiber" : {},  "sample__fat" : {},  "sample__iron" : {},  "sample__alcohol" : {},
                       "sample__b12" : {}, "sample__calories" : {}, "sample__carbs" : {}, "sample__choline": {}, "sample__folate" : {}, "sample__protein" : {},
-                      "sample__weight" : {}, "sample__met": {}, "sample__non_ribosomal_proteins" : {}, "sample__ribosomal_proteins" : {}}
+                      "sample__met": {}, "sample__non_ribosomal_proteins" : {}, "sample__ribosomal_proteins" : {}}
 
         stats = {"demographic__age": {}, "demographic__weight": {}, "demographic__met": {},
                  "demographic__caffiene": {}, "demographic__bmi": {}, "demographic__alcohol": {} , "demographic__diagnosis": {}, "demographic__smoking": {}  }
@@ -713,7 +697,7 @@ class Data(object):
 
             for sample in case.samples.hits:
 
-                for key in ['time','week','fiber','fat','iron','alcohol','protein','weight','met']:
+                for key in ['time','week','fiber','fat','iron','alcohol','protein','met']:
                     utilities.add_key_increment(aggregates["sample__"+key], utilities.Range.create(getattr(sample,key)))
                 
                 for key in ['week']:
@@ -726,7 +710,7 @@ class Data(object):
                     utilities.add_key_increment(aggregates["sample__"+key], utilities.Range.create_custom(getattr(sample,key), offset=1000000))
 
         all_aggregations=[]
-        for typename in ["project__program__name","demographic__diagnosis","sample__week","sample__time","sample__fiber","sample__fat","sample__iron","sample__alcohol","sample__b12","sample__calories","sample__carbs","sample__choline","sample__folate","sample__protein","sample__weight","sample__met"]:
+        for typename in ["project__program__name","demographic__diagnosis","sample__week","sample__time","sample__fiber","sample__fat","sample__iron","sample__alcohol","sample__b12","sample__calories","sample__carbs","sample__choline","sample__folate","sample__protein","sample__met"]:
             all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="bucket",metadataTitle=self.get_metadata_title(typename),
                 metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
 
@@ -750,7 +734,7 @@ class Data(object):
         for demo_key in ['diagnosis']:
             setattr(case_aggregates,"demographic__"+demo_key, get_schema_aggregations("demographic__"+demo_key))
 
-        for demo_key in ['time','week','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','weight','met','non_ribosomal_proteins','ribosomal_proteins']:
+        for demo_key in ['time','week','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','met','non_ribosomal_proteins','ribosomal_proteins']:
             setattr(case_aggregates,"sample__"+demo_key, get_schema_aggregations("sample__"+demo_key))
 
         return case_aggregates
