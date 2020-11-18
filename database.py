@@ -595,18 +595,22 @@ class Data(object):
                        stats=schema.Stats(max=stats[variable_name].get("max",0), min=stats[variable_name].get("min",0)),
                        buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
 
+        sample_metadata_fields=list(set(dir(samples[0])).difference(set(dir(schema.Sample()))))
+        demographic_metadata_fields=list(set(dir(samples[0].demographic)).difference(set(dir(schema.Demographic()))))
+
         # aggregate sample data
-        aggregates = {"primary_site": {}, "project__project_id": {},
-                      "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} ,
-                      "demographic__caffiene": {}, "demographic__bmi": {}, "demographic__alcohol": {} , "demographic__diagnosis": {}, "demographic__smoking": {} ,
-                      "week" : {}, "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {},
-                      "b12": {}, "calories": {}, "carbs": {}, "choline" : {}, "folate" : {}, "protein": {}, "met" : {},
-                       "non_ribosomal_proteins" : {}, "ribosomal_proteins": {} }
-        stats = { "week": {}, "time": {}, "fiber" : {}, "fat" : {}, "iron" : {}, "alcohol": {}, "b12": {}, "calories": {}, "carbs": {},
-                  "choline" : {}, "folate" : {}, "protein": {}, "met" : {}, "non_ribosomal_proteins" : {}, "ribosomal_proteins": {} }
+        aggregates = {"primary_site": {}, "project__project_id": {}, "project__program__name": {}}
+        
+        for demo_key in demographic_metadata_fields:
+            aggregates["demographic__"+demo_key]={}
+
+        stats = {}
+        for key in sample_metadata_fields:
+            aggregates[key]={}
+            stats[key]={}
 
         for sample in samples:
-            for demo_key in ['age','weight','caffiene','bmi','alcohol','diagnosis','smoking','met']:
+            for demo_key in demographic_metadata_fields:
                 utilities.add_key_increment(aggregates["demographic__"+demo_key], getattr(sample.demographic, demo_key))
 
             utilities.add_key_increment(aggregates["primary_site"], sample.primary_site)
@@ -625,7 +629,7 @@ class Data(object):
             for key in ['non_ribosomal_proteins','ribosomal_proteins']:
                 utilities.add_key_increment(aggregates[key], utilities.Range.create_custom(getattr(sample,key), offset=1000000))
 
-            for key in ['week','time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','met','non_ribosomal_proteins','ribosomal_proteins']:
+            for key in sample_metadata_fields:
                 utilities.update_max_min(stats[key], getattr(sample,key))
 
         all_aggregations=[]
@@ -642,7 +646,7 @@ class Data(object):
             project__program__name=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__program__name"].items()]))
 
-        for demo_key in ['age','weight','caffiene','bmi','alcohol','diagnosis','smoking','met']:
+        for demo_key in demographic_metadata_fields:
             new_aggregations=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
             setattr(sample_aggregates,"demographic__"+demo_key, new_aggregations)
@@ -652,7 +656,7 @@ class Data(object):
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[key].items()])
             setattr(sample_aggregates,key, new_aggregations)
 
-        for key in ['time','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','met','non_ribosomal_proteins','ribosomal_proteins']:
+        for key in sample_metadata_fields:
             setattr(sample_aggregates, key, get_stats_aggregations(key))
 
         return sample_aggregates
