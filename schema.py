@@ -18,7 +18,7 @@ def filter_noauth(return_data,token):
     # if a valid token is not provided, filter out those items that
     # we would never want to serve without authentication
 
-    FILTER_KEYS = ['age','weight','met','week','time','fat','fiber','iron','alcohol', 'b12','calories','carbs','choline','folate','protein','weight','non_ribosomal_proteins','ribosomal_proteins','days', 'caffiene', 'bmi', 'alcohol', 'diagnosis', 'smoking']
+    FILTER_KEYS = data.participant_metadata_columns+data.sample_metadata_columns
     SUBSTITUTE = "0"
 
     # check if the token is for a valid user

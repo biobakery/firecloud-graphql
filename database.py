@@ -21,6 +21,10 @@ class Data(object):
         # get the database environment variables
         username, password, database = utilities.get_database_variables()
 
+        # set defaults for metadata names
+        self.sample_metadata_columns=[]
+        self.participant_metadata_columns=[]
+
         # create a pool of connections, pre-ping to prevent stale connections
         database_url = "mysql://{username}:{password}@localhost/{database}".format(username = username,
             password = password, database = database)
@@ -173,6 +177,8 @@ class Data(object):
         else:
             metadata_columns = list(set(participant_data[participant_data.keys()[0]].keys()).difference(CASE_DEFAULT_COLUMNS))
 
+        self.participant_metadata_columns=metadata_columns
+
         return metadata_columns, participant_data
 
     def get_all_samples(self,rows=False):
@@ -193,6 +199,8 @@ class Data(object):
             metadata_columns = list(set(sample_data[0].keys()).difference(SAMPLE_DEFAULT_COLUMNS))
         else:
             metadata_columns = list(set(sample_data[sample_data.keys()[0]].keys()).difference(SAMPLE_DEFAULT_COLUMNS))
+
+        self.sample_metadata_columns=metadata_columns
 
         return metadata_columns, sample_data 
 
@@ -676,16 +684,19 @@ class Data(object):
             return schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
 
-        # aggregate case data
-        aggregates = {"primary_site": {}, "project__project_id": {},
-                      "project__program__name": {}, "demographic__age": {}, "demographic__weight": {}, "demographic__met": {} ,
-                      "demographic__caffiene": {}, "demographic__bmi": {}, "demographic__alcohol": {} , "demographic__diagnosis": {}, "demographic__smoking": {} ,
-                      "sample__time" : {}, "sample__week" : {},  "sample__fiber" : {},  "sample__fat" : {},  "sample__iron" : {},  "sample__alcohol" : {},
-                      "sample__b12" : {}, "sample__calories" : {}, "sample__carbs" : {}, "sample__choline": {}, "sample__folate" : {}, "sample__protein" : {},
-                      "sample__met": {}, "sample__non_ribosomal_proteins" : {}, "sample__ribosomal_proteins" : {}}
+        sample_metadata_fields=list(set(dir(cases[0].samples.hits[0])).difference(set(dir(schema.Sample()))))
+        demographic_metadata_fields=list(set(dir(cases[0].demographic)).difference(set(dir(schema.Demographic()))))
 
-        stats = {"demographic__age": {}, "demographic__weight": {}, "demographic__met": {},
-                 "demographic__caffiene": {}, "demographic__bmi": {}, "demographic__alcohol": {} , "demographic__diagnosis": {}, "demographic__smoking": {}  }
+        # aggregate case data
+        aggregates = {"primary_site": {}, "project__project_id": {}, "project__program__name": {}}
+        
+        stats={}
+        for demo_key in demographic_metadata_fields:
+            aggregates["demographic__"+demo_key]={}
+            stats["demographic__"+demo_key]={}
+
+        for key in sample_metadata_fields:
+            aggregates["sample__"+key]={}
 
         for case in cases:
             
@@ -738,7 +749,7 @@ class Data(object):
             project__project_id=get_schema_aggregations("project__project_id"),
             project__program__name=get_schema_aggregations("project__program__name"))
 
-        for demo_key in ['age','weight','caffiene','bmi','alcohol','smoking','met']:
+        for demo_key in demographic_metadata_fields:
             new_aggregations=schema.Aggregations(
                 stats=schema.Stats(max=stats["demographic__"+demo_key].get("max",0), min=stats["demographic__"+demo_key].get("min",0)),
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
@@ -747,7 +758,7 @@ class Data(object):
         for demo_key in ['diagnosis']:
             setattr(case_aggregates,"demographic__"+demo_key, get_schema_aggregations("demographic__"+demo_key))
 
-        for demo_key in ['time','week','fiber','fat','iron','alcohol','b12','calories','carbs','choline','folate','protein','met','non_ribosomal_proteins','ribosomal_proteins']:
+        for demo_key in sample_metadata_fields:
             setattr(case_aggregates,"sample__"+demo_key, get_schema_aggregations("sample__"+demo_key))
 
         return case_aggregates
