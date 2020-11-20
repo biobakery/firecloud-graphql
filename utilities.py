@@ -42,6 +42,12 @@ class Range(object):
         # offset of 1 = 10s, 2 = 100s, 3 = 1000s
         start="0"*offset
         end="9"*offset
+
+        # allow for numbers less then 10 that do not
+        # require a range
+        if offset == 0:
+            return value
+
         try:
             bin = str(int(float(value)))[:-1*offset]
             range = "{0}{1} - {0}{2}".format(bin, start, end)
