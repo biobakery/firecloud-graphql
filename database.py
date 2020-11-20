@@ -735,7 +735,7 @@ class Data(object):
         all_aggregations=[]
         for typename in ["project__program__name"]+list(map(lambda x: "demographic__"+x, demographic_metadata_fields))+list(map(lambda x: "sample__"+x, sample_metadata_fields)):
             # use only buckets if there are no min/max stats
-            if not typename in stats or stats[typename].get("max",0) == 0:
+            if not typename in stats or stats[typename].get("max",0) == 0 or "sample" in typename:
                 all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="bucket",metadataTitle=self.get_metadata_title(typename),
                     metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
 
