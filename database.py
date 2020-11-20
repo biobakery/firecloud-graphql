@@ -675,8 +675,8 @@ class Data(object):
     def compute_min_max_offset(self, stats, sample_metadata_fields, sample_lists, key_init=""):
         for key in sample_metadata_fields:
             try:
-                stats[key_init+key]["max"]=max(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
-                stats[key_init+key]["min"]=min(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
+                stats[key_init+key]["max"]=max(filter(None,map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else None, sample_lists[key])))
+                stats[key_init+key]["min"]=min(filter(None,map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else None, sample_lists[key])))
                 stats[key_init+key]["offset"]=len(str(int(stats[key_init+key]["max"]-stats[key_init+key]["min"])))-1
             except ValueError:
                 pass
