@@ -635,13 +635,13 @@ class Data(object):
             try:
                 stats[key]["max"]=max(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
                 stats[key]["min"]=min(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
-                stats[key]["offset"]=len(str(int(stats[key]["max"]-stats[key]["min"])))
+                stats[key]["offset"]=len(str(int(stats[key]["max"]-stats[key]["min"])))-1
             except ValueError:
                 pass
 
         for key in sample_metadata_fields:
             for value in sample_lists[key]:
-                utilities.add_key_increment(aggregates[key], utilities.Range.create(getattr(sample,key),offset=stats[key].get("offset",1)))
+                utilities.add_key_increment(aggregates[key], utilities.Range.create(value,offset=stats[key].get("offset",1)))
 
         all_aggregations=[]
         for typename in sample_metadata_fields:
@@ -690,12 +690,17 @@ class Data(object):
         aggregates = {"primary_site": {}, "project__project_id": {}, "project__program__name": {}}
         
         stats={}
+        demo_lists={}
+        sample_lists={}
         for demo_key in demographic_metadata_fields:
             aggregates["demographic__"+demo_key]={}
             stats["demographic__"+demo_key]={}
+            demo_lists[demo_key]=[]
 
         for key in sample_metadata_fields:
             aggregates["sample__"+key]={}
+            stats["sample__"+key]={}
+            sample_lists[key]=[]
 
         for case in cases:
             
@@ -703,34 +708,42 @@ class Data(object):
             utilities.add_key_increment(aggregates["project__project_id"], case.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
 
-            for demo_key in ['age']:
-                utilities.add_key_increment(aggregates["demographic__"+demo_key], utilities.Range.create(getattr(case.demographic,demo_key)))
+            for demo_key in demographic_metadata_fields:
+                demo_lists[demo_key].append(getattr(case.demographic, demo_key))
 
-            for demo_key in ['diagnosis']:
-                utilities.add_key_increment(aggregates["demographic__"+demo_key], getattr(case.demographic, demo_key))
-
-            for demo_key in ['weight','caffiene','smoking','met']:
-                utilities.add_key_increment(aggregates["demographic__"+demo_key], utilities.Range.create_custom(getattr(case.demographic,demo_key), offset=35))
-            
-            for demo_key in ['bmi','alcohol']:
-                utilities.add_key_increment(aggregates["demographic__"+demo_key], utilities.Range.create_custom(getattr(case.demographic,demo_key), offset=10))
-            
-            for demo_key in ['age','weight','caffiene','bmi','alcohol','smoking','met']:
-                utilities.update_max_min(stats["demographic__"+demo_key], getattr(case.demographic,demo_key))
 
             for sample in case.samples.hits:
+                for key in sample_metadata_fields:
+                    sample_lists[key].append(getattr(sample,key))
 
-                for key in ['time','week','fiber','fat','iron','alcohol','protein','met']:
-                    utilities.add_key_increment(aggregates["sample__"+key], utilities.Range.create(getattr(sample,key)))
-                
-                for key in ['b12','calories','carbs','choline','folate']:
-                    utilities.add_key_increment(aggregates["sample__"+key], utilities.Range.create_custom(getattr(sample,key), offset=100))
 
-                for key in ['non_ribosomal_proteins','ribosomal_proteins']:
-                    utilities.add_key_increment(aggregates["sample__"+key], utilities.Range.create_custom(getattr(sample,key), offset=1000000))
+        # compute min/max/offset
+        for key in demographic_metadata_fields:
+            try:
+                stats["demographic__"+key]["max"]=max(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, demo_lists[key]))
+                stats["demographic__"+key]["min"]=min(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, demo_lists[key]))
+                stats["demographic__"+key]["offset"]=len(str(int(stats["demographic__"+key]["max"]-stats["demographic__"+key]["min"])))-1
+            except ValueError:
+                pass
+
+        for key in sample_metadata_fields:
+            try:
+                stats["sample__"+key]["max"]=max(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
+                stats["sample__"+key]["min"]=min(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
+                stats["sample__"+key]["offset"]=len(str(int(stats["sample__"+key]["max"]-stats["sample__"+key]["min"])))-1
+            except ValueError:
+                pass
+
+        for key in sample_metadata_fields:
+            for value in sample_lists[key]:
+                utilities.add_key_increment(aggregates["sample__"+key], utilities.Range.create(value,offset=stats["sample__"+key].get("offset",1)))
+
+        for demo_key in demographic_metadata_fields:
+            for value in demo_lists[demo_key]:
+                utilities.add_key_increment(aggregates["demographic__"+demo_key], utilities.Range.create(value,offset=stats["demographic__"+demo_key].get("offset",1)))
 
         all_aggregations=[]
-        for typename in ["project__program__name","demographic__diagnosis","sample__week","sample__time","sample__fiber","sample__fat","sample__iron","sample__alcohol","sample__b12","sample__calories","sample__carbs","sample__choline","sample__folate","sample__protein","sample__met"]:
+        for typename in ["project__program__name","demographic__diagnosis"]+list(map(lambda x: "sample__"+x, sample_metadata_fields)):
             all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="bucket",metadataTitle=self.get_metadata_title(typename),
                 metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
 
