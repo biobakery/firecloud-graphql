@@ -631,13 +631,7 @@ class Data(object):
                 sample_lists[key].append(getattr(sample,key))
 
         # get the min/max/offset for each sample metadata
-        for key in sample_metadata_fields:
-            try:
-                stats[key]["max"]=max(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
-                stats[key]["min"]=min(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
-                stats[key]["offset"]=len(str(int(stats[key]["max"]-stats[key]["min"])))-1
-            except ValueError:
-                pass
+        self.compute_min_max_offset(stats, sample_metadata_fields, sample_lists)
 
         for key in sample_metadata_fields:
             for value in sample_lists[key]:
@@ -677,6 +671,15 @@ class Data(object):
             return field.split("sample__")[-1]
         else:
             return field
+
+    def compute_min_max_offset(self, stats, sample_metadata_fields, sample_lists, key_init=""):
+        for key in sample_metadata_fields:
+            try:
+                stats[key_init+key]["max"]=max(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
+                stats[key_init+key]["min"]=min(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
+                stats[key_init+key]["offset"]=len(str(int(stats[key_init+key]["max"]-stats[key_init+key]["min"])))-1
+            except ValueError:
+                pass
 
     def get_case_aggregations(self, cases):
         def get_schema_aggregations(variable_name):
@@ -718,21 +721,8 @@ class Data(object):
 
 
         # compute min/max/offset
-        for key in demographic_metadata_fields:
-            try:
-                stats["demographic__"+key]["max"]=max(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, demo_lists[key]))
-                stats["demographic__"+key]["min"]=min(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, demo_lists[key]))
-                stats["demographic__"+key]["offset"]=len(str(int(stats["demographic__"+key]["max"]-stats["demographic__"+key]["min"])))-1
-            except ValueError:
-                pass
-
-        for key in sample_metadata_fields:
-            try:
-                stats["sample__"+key]["max"]=max(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
-                stats["sample__"+key]["min"]=min(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
-                stats["sample__"+key]["offset"]=len(str(int(stats["sample__"+key]["max"]-stats["sample__"+key]["min"])))-1
-            except ValueError:
-                pass
+        self.compute_min_max_offset(stats, demographic_metadata_fields, demo_lists, "demographic__")
+        self.compute_min_max_offset(stats, sample_metadata_fields, sample_lists, "sample__")
 
         for key in sample_metadata_fields:
             for value in sample_lists[key]:
