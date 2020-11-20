@@ -733,14 +733,17 @@ class Data(object):
                 utilities.add_key_increment(aggregates["demographic__"+demo_key], utilities.Range.create(value,offset=stats["demographic__"+demo_key].get("offset",1)))
 
         all_aggregations=[]
-        for typename in ["project__program__name","demographic__diagnosis"]+list(map(lambda x: "sample__"+x, sample_metadata_fields)):
-            all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="bucket",metadataTitle=self.get_metadata_title(typename),
-                metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
+        for typename in ["project__program__name"]+list(map(lambda x: "demographic__"+x, demographic_metadata_fields))+list(map(lambda x: "sample__"+x, sample_metadata_fields)):
+            # use only buckets if there are no min/max stats
+            if not typename in stats or stats[typename].get("max",0) == 0:
+                all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="bucket",metadataTitle=self.get_metadata_title(typename),
+                    metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
 
-        for typename in ["demographic__age","demographic__weight","demographic__caffiene","demographic__bmi","demographic__met"]:
-            all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="stats",metadataTitle=self.get_metadata_title(typename),
-                metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()],
-                    stats=schema.Stats(max=stats[typename].get("max",0), min=stats[typename].get("min",0)))))
+        for typename in list(map(lambda x: "demographic__"+x, demographic_metadata_fields)):
+            if stats[typename].get("max",0) > 0:
+                all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="stats",metadataTitle=self.get_metadata_title(typename),
+                    metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()],
+                        stats=schema.Stats(max=stats[typename].get("max",0), min=stats[typename].get("min",0)))))
 
         case_aggregates=schema.CaseAggregations(
             metadataAggregations=schema.MetadataAggregations(hits=all_aggregations),
