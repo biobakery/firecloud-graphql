@@ -608,7 +608,8 @@ class Data(object):
 
         # aggregate sample data
         aggregates = {"primary_site": {}, "project__project_id": {}, "project__program__name": {}}
-        
+        sample_lists = {}
+
         for demo_key in demographic_metadata_fields:
             aggregates["demographic__"+demo_key]={}
 
@@ -616,6 +617,7 @@ class Data(object):
         for key in sample_metadata_fields:
             aggregates[key]={}
             stats[key]={}
+            sample_lists[key]=[]
 
         for sample in samples:
             for demo_key in demographic_metadata_fields:
@@ -625,25 +627,27 @@ class Data(object):
             utilities.add_key_increment(aggregates["project__project_id"], sample.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], sample.project.program.name)
 
-            for key in ['week','fiber','fat','iron','alcohol','protein','met']:
-                utilities.add_key_increment(aggregates[key], getattr(sample,key))
-
-            for key in ['time']:
-                utilities.add_key_increment(aggregates[key], utilities.Range.create(getattr(sample,key)))
-
-            for key in ['b12','calories','carbs','choline','folate']:
-                utilities.add_key_increment(aggregates[key],  utilities.Range.create_custom(getattr(sample,key), offset=100))
-
-            for key in ['non_ribosomal_proteins','ribosomal_proteins']:
-                utilities.add_key_increment(aggregates[key], utilities.Range.create_custom(getattr(sample,key), offset=1000000))
-
             for key in sample_metadata_fields:
-                utilities.update_max_min(stats[key], getattr(sample,key))
+                sample_lists[key].append(getattr(sample,key))
+
+        # get the min/max/offset for each sample metadata
+        for key in sample_metadata_fields:
+            try:
+                stats[key]["max"]=max(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
+                stats[key]["min"]=min(map(lambda x: float(x) if x.replace(".","").replace("-","").isdigit() else 0, sample_lists[key]))
+                stats[key]["offset"]=len(str(int(stats[key]["max"]-stats[key]["min"])))
+            except ValueError:
+                pass
+
+        for key in sample_metadata_fields:
+            for value in sample_lists[key]:
+                utilities.add_key_increment(aggregates[key], utilities.Range.create(getattr(sample,key),offset=stats[key].get("offset",1)))
 
         all_aggregations=[]
-        for typename in ["week","time","fiber","fat","iron","alcohol","b12","calories"]:
-            all_aggregations.append(schema.AggregationAnnotation(id="sample"+typename,metadataKey=typename,metadataType="stats",
-                metadataValue=schema.Aggregations(stats=schema.Stats(max=stats[typename].get("max",0), min=stats[typename].get("min",0)))))
+        for typename in sample_metadata_fields:
+            if stats[typename].get("max",0) > 0:
+                all_aggregations.append(schema.AggregationAnnotation(id="sample"+typename,metadataKey=typename,metadataType="stats",
+                    metadataValue=schema.Aggregations(stats=schema.Stats(max=stats[typename].get("max",0), min=stats[typename].get("min",0)))))
 
         sample_aggregates=schema.SampleAggregations(
             metadataAggregations=schema.MetadataAggregations(hits=all_aggregations),
@@ -658,11 +662,6 @@ class Data(object):
             new_aggregations=schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
             setattr(sample_aggregates,"demographic__"+demo_key, new_aggregations)
-
-        for key in ['week']:
-            new_aggregations=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[key].items()])
-            setattr(sample_aggregates,key, new_aggregations)
 
         for key in sample_metadata_fields:
             setattr(sample_aggregates, key, get_stats_aggregations(key))
@@ -700,6 +699,10 @@ class Data(object):
 
         for case in cases:
             
+            utilities.add_key_increment(aggregates["primary_site"], case.primary_site)
+            utilities.add_key_increment(aggregates["project__project_id"], case.project.project_id)
+            utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
+
             for demo_key in ['age']:
                 utilities.add_key_increment(aggregates["demographic__"+demo_key], utilities.Range.create(getattr(case.demographic,demo_key)))
 
@@ -712,10 +715,6 @@ class Data(object):
             for demo_key in ['bmi','alcohol']:
                 utilities.add_key_increment(aggregates["demographic__"+demo_key], utilities.Range.create_custom(getattr(case.demographic,demo_key), offset=10))
             
-            utilities.add_key_increment(aggregates["primary_site"], case.primary_site)
-            utilities.add_key_increment(aggregates["project__project_id"], case.project.project_id)
-            utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
-            
             for demo_key in ['age','weight','caffiene','bmi','alcohol','smoking','met']:
                 utilities.update_max_min(stats["demographic__"+demo_key], getattr(case.demographic,demo_key))
 
@@ -724,9 +723,6 @@ class Data(object):
                 for key in ['time','week','fiber','fat','iron','alcohol','protein','met']:
                     utilities.add_key_increment(aggregates["sample__"+key], utilities.Range.create(getattr(sample,key)))
                 
-                for key in ['week']:
-                    utilities.add_key_increment(aggregates["sample__"+key], getattr(sample,key))
-
                 for key in ['b12','calories','carbs','choline','folate']:
                     utilities.add_key_increment(aggregates["sample__"+key], utilities.Range.create_custom(getattr(sample,key), offset=100))
 
