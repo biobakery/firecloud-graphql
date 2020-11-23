@@ -45,6 +45,9 @@ class Range(object):
 
         # allow for numbers less then 10 that do not
         # require a range
+        if offset > 1:
+            offset =- 1
+
         if offset == 0:
             return value
 
