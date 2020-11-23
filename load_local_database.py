@@ -93,6 +93,14 @@ def get_firecloud_data(verbose):
 
     return values_file_samples, keys_file_samples, values_participants
 
+def delete_index(item_list, rm_index):
+    new_item_list=[]
+    for i, item in enumerate(item_list):
+        if not i in rm_index:
+            new_item_list.append(item)
+
+    return new_item_list
+
 def read_metadata_file(filename):
     rows = []
     with open(filename) as file_handle:
@@ -107,6 +115,24 @@ def read_metadata_file(filename):
 
         # allow for "NA" samples/participants in each project
         rows.append(",".join(["'NA'"]*len(new_row)))
+
+    # check for any columns that are just NA
+    col_remove_index=[]
+    col_remove_names=[]
+    for i, name in enumerate(column_names.split(",")):
+        col_values=map(lambda x: x.split(",")[i], rows)
+        if not list(filter(lambda x: x != "'NA'", map(lambda x: x.split(",")[i], rows))):
+            col_remove_index.append(i)
+            col_remove_names.append(name)
+
+    # remove any columns if needed
+    if col_remove_index:
+        column_names=",".join(delete_index(column_names.split(","), col_remove_index))
+        for i, current_row in enumerate(rows):
+            rows[i]=",".join(delete_index(rows[i].split(","),col_remove_index))
+
+        print("Removed metadata columns with out values (all NA): "+",".join(col_remove_names))
+
     return rows, column_names
 
 def main():
