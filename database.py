@@ -599,9 +599,15 @@ class Data(object):
     def get_sample_aggregations(self, samples):
 
         def get_stats_aggregations(variable_name):
-            return schema.Aggregations(
-                       stats=schema.Stats(max=stats[variable_name].get("max",0), min=stats[variable_name].get("min",0)),
-                       buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
+            # do not serve buckets with just NA
+            keys=list(aggregates[variable_name].keys())
+            if len(keys) == 1 and keys[0] == "NA":
+                return schema.Aggregations(
+                           stats=schema.Stats(max=stats[variable_name].get("max",0), min=stats[variable_name].get("min",0)))
+            else:
+                return schema.Aggregations(
+                           stats=schema.Stats(max=stats[variable_name].get("max",0), min=stats[variable_name].get("min",0)),
+                           buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
 
         sample_metadata_fields=list(set(dir(samples[0])).difference(set(dir(schema.Sample()))))
         demographic_metadata_fields=list(set(dir(samples[0].demographic)).difference(set(dir(schema.Demographic()))))
@@ -653,9 +659,11 @@ class Data(object):
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__program__name"].items()]))
 
         for demo_key in demographic_metadata_fields:
-            new_aggregations=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
-            setattr(sample_aggregates,"demographic__"+demo_key, new_aggregations)
+            keys=list(aggregates["demographic__"+demo_key].keys())
+            if not (len(keys) == 1 and keys[0] == "NA"):
+                new_aggregations=schema.Aggregations(
+                    buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
+                setattr(sample_aggregates,"demographic__"+demo_key, new_aggregations)
 
         for key in sample_metadata_fields:
             setattr(sample_aggregates, key, get_stats_aggregations(key))
@@ -735,9 +743,11 @@ class Data(object):
         all_aggregations=[]
         for typename in ["project__program__name"]+list(map(lambda x: "demographic__"+x, demographic_metadata_fields))+list(map(lambda x: "sample__"+x, sample_metadata_fields)):
             # use only buckets if there are no min/max stats
+            keys=list(aggregates[typename].keys())
             if (not typename in stats or stats[typename].get("max",0) == 0 or "sample" in typename):
-                all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="bucket",metadataTitle=self.get_metadata_title(typename),
-                    metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
+                if not (len(keys) == 1 and keys[0] == "NA"):
+                    all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="bucket",metadataTitle=self.get_metadata_title(typename),
+                        metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
 
         for typename in list(map(lambda x: "demographic__"+x, demographic_metadata_fields)):
             if stats[typename].get("max",0) > 0:
@@ -752,16 +762,21 @@ class Data(object):
             project__program__name=get_schema_aggregations("project__program__name"))
 
         for demo_key in demographic_metadata_fields:
-            new_aggregations=schema.Aggregations(
-                stats=schema.Stats(max=stats["demographic__"+demo_key].get("max",0), min=stats["demographic__"+demo_key].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
-            setattr(case_aggregates,"demographic__"+demo_key, new_aggregations)
-
-        for demo_key in ['diagnosis']:
-            setattr(case_aggregates,"demographic__"+demo_key, get_schema_aggregations("demographic__"+demo_key))
+            keys=list(aggregates["demographic__"+demo_key].keys())
+            if not (len(keys) == 1 and keys[0] == "NA"):
+                if stats["demographic__"+demo_key].get("max",0) > 0:
+                    new_aggregations=schema.Aggregations(
+                        stats=schema.Stats(max=stats["demographic__"+demo_key].get("max",0), min=stats["demographic__"+demo_key].get("min",0)),
+                        buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
+                else:
+                    new_aggregations=schema.Aggregations(
+                        buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
+                setattr(case_aggregates,"demographic__"+demo_key, new_aggregations)
 
         for demo_key in sample_metadata_fields:
-            setattr(case_aggregates,"sample__"+demo_key, get_schema_aggregations("sample__"+demo_key))
+            keys=list(aggregates["sample__"+demo_key].keys())
+            if not (len(keys) == 1 and keys[0] == "NA"):
+                setattr(case_aggregates,"sample__"+demo_key, get_schema_aggregations("sample__"+demo_key))
 
         return case_aggregates
 
