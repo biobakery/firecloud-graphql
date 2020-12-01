@@ -236,13 +236,13 @@ class Data(object):
             # add in the sample and participant data
             db_case=participant_data.get(row['participant'],False)
             db_sample=sample_data.get(row['sample'],False)
-
+ 
             if not ( db_case and db_sample ):
                 continue
 
             metadataCase_hits=[]
             for demo_item in participant_metadata_columns:
-                schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]),
+                metadataCase_hits.append(schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]))
 
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
