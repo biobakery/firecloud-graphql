@@ -4,6 +4,9 @@ COPY *.py /usr/local/src/
 
 RUN apt-get update && apt-get install -y python build-essential python-dev python-pip python-setuptools python-mysqldb
 
+# pin to resolve SSL errors
+RUN pip install pyopenssl==19.0.0
+
 # use older firecloud version to resolve new issue with auth
 RUN pip install firecloud==0.16.20 graphene flask flask-graphql flask-cors sqlalchemy
 
