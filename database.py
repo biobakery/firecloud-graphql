@@ -236,13 +236,13 @@ class Data(object):
             # add in the sample and participant data
             db_case=participant_data.get(row['participant'],False)
             db_sample=sample_data.get(row['sample'],False)
-
+ 
             if not ( db_case and db_sample ):
                 continue
 
             metadataCase_hits=[]
             for demo_item in participant_metadata_columns:
-                schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]),
+                metadataCase_hits.append(schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]))
 
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
@@ -293,10 +293,16 @@ class Data(object):
     def get_current_samples(self):
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
-                "data_format, platform, access from file_sample"
+                "data_format, platform, access, project from file_sample"
         connection, db_results = self.query_database(query)
         case_files = {}
+        merged_case_files = {}
         for row in db_results:
+            if row['participant'] == "NA":
+                if not row['project'] in merged_case_files:
+                    merged_case_files[row['project']] = []
+                merged_case_files[row['project']].append(dict(row.items()))
+
             if not row['participant'] in case_files:
                 case_files[row['participant']] = []
             case_files[row['participant']].append(dict(row.items()))
@@ -331,7 +337,8 @@ class Data(object):
 
             # create participant casefiles
             casefiles=[]
-            for index, file_info in enumerate(current_case_files):
+            all_case_files=merged_case_files.get(row['project'],[])+current_case_files
+            for index, file_info in enumerate(all_case_files):
                 casefiles.append(schema.CaseFile(
                     id=index,
                     data_category=file_info['data_category'],
@@ -390,13 +397,20 @@ class Data(object):
     def get_current_cases(self):
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
-                "data_format, platform, access from file_sample"
+                "data_format, platform, access, project from file_sample"
         connection, db_results = self.query_database(query)
         case_files = {}
+        merged_case_files = {}
         for row in db_results:
+            if row['participant'] == "NA":
+                if not row['project'] in merged_case_files:
+                    merged_case_files[row['project']] = []
+                merged_case_files[row['project']].append(dict(row.items()))
+
             if not row['participant'] in case_files:
                 case_files[row['participant']] = []
             case_files[row['participant']].append(dict(row.items()))
+
         connection.close()
 
         # gather sample data for participants
@@ -442,7 +456,8 @@ class Data(object):
 
             # create participant casefiles
             casefiles=[]
-            for index, file_info in enumerate(current_case_files):
+            all_case_files=merged_case_files.get(db_sample['project'],[])+current_case_files
+            for index, file_info in enumerate(all_case_files):
                 casefiles.append(schema.CaseFile(
                     id=index,
                     data_category=file_info['data_category'],
@@ -599,9 +614,15 @@ class Data(object):
     def get_sample_aggregations(self, samples):
 
         def get_stats_aggregations(variable_name):
-            return schema.Aggregations(
-                       stats=schema.Stats(max=stats[variable_name].get("max",0), min=stats[variable_name].get("min",0)),
-                       buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
+            # do not serve buckets with just NA
+            keys=list(aggregates[variable_name].keys())
+            if len(keys) == 1 and keys[0] == "NA":
+                return schema.Aggregations(
+                           stats=schema.Stats(max=stats[variable_name].get("max",0), min=stats[variable_name].get("min",0)))
+            else:
+                return schema.Aggregations(
+                           stats=schema.Stats(max=stats[variable_name].get("max",0), min=stats[variable_name].get("min",0)),
+                           buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
 
         sample_metadata_fields=list(set(dir(samples[0])).difference(set(dir(schema.Sample()))))
         demographic_metadata_fields=list(set(dir(samples[0].demographic)).difference(set(dir(schema.Demographic()))))
@@ -653,9 +674,11 @@ class Data(object):
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["project__program__name"].items()]))
 
         for demo_key in demographic_metadata_fields:
-            new_aggregations=schema.Aggregations(
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
-            setattr(sample_aggregates,"demographic__"+demo_key, new_aggregations)
+            keys=list(aggregates["demographic__"+demo_key].keys())
+            if not (len(keys) == 1 and keys[0] == "NA"):
+                new_aggregations=schema.Aggregations(
+                    buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
+                setattr(sample_aggregates,"demographic__"+demo_key, new_aggregations)
 
         for key in sample_metadata_fields:
             setattr(sample_aggregates, key, get_stats_aggregations(key))
@@ -735,9 +758,11 @@ class Data(object):
         all_aggregations=[]
         for typename in ["project__program__name"]+list(map(lambda x: "demographic__"+x, demographic_metadata_fields))+list(map(lambda x: "sample__"+x, sample_metadata_fields)):
             # use only buckets if there are no min/max stats
+            keys=list(aggregates[typename].keys())
             if (not typename in stats or stats[typename].get("max",0) == 0 or "sample" in typename):
-                all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="bucket",metadataTitle=self.get_metadata_title(typename),
-                    metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
+                if not (len(keys) == 1 and keys[0] == "NA"):
+                    all_aggregations.append(schema.AggregationAnnotation(id="case"+typename,metadataKey=typename,metadataType="bucket",metadataTitle=self.get_metadata_title(typename),
+                        metadataValue=schema.Aggregations(buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[typename].items()])))
 
         for typename in list(map(lambda x: "demographic__"+x, demographic_metadata_fields)):
             if stats[typename].get("max",0) > 0:
@@ -752,16 +777,21 @@ class Data(object):
             project__program__name=get_schema_aggregations("project__program__name"))
 
         for demo_key in demographic_metadata_fields:
-            new_aggregations=schema.Aggregations(
-                stats=schema.Stats(max=stats["demographic__"+demo_key].get("max",0), min=stats["demographic__"+demo_key].get("min",0)),
-                buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
-            setattr(case_aggregates,"demographic__"+demo_key, new_aggregations)
-
-        for demo_key in ['diagnosis']:
-            setattr(case_aggregates,"demographic__"+demo_key, get_schema_aggregations("demographic__"+demo_key))
+            keys=list(aggregates["demographic__"+demo_key].keys())
+            if not (len(keys) == 1 and keys[0] == "NA"):
+                if stats["demographic__"+demo_key].get("max",0) > 0:
+                    new_aggregations=schema.Aggregations(
+                        stats=schema.Stats(max=stats["demographic__"+demo_key].get("max",0), min=stats["demographic__"+demo_key].get("min",0)),
+                        buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
+                else:
+                    new_aggregations=schema.Aggregations(
+                        buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates["demographic__"+demo_key].items()])
+                setattr(case_aggregates,"demographic__"+demo_key, new_aggregations)
 
         for demo_key in sample_metadata_fields:
-            setattr(case_aggregates,"sample__"+demo_key, get_schema_aggregations("sample__"+demo_key))
+            keys=list(aggregates["sample__"+demo_key].keys())
+            if not (len(keys) == 1 and keys[0] == "NA"):
+                setattr(case_aggregates,"sample__"+demo_key, get_schema_aggregations("sample__"+demo_key))
 
         return case_aggregates
 
