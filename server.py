@@ -37,7 +37,7 @@ NAME = "firecloud_graphql"
 HOST = "0.0.0.0"
 PORT = "5000"
 
-GOOGLE_AUDIENCE = "250496797473-15s2p3k9s7latehllsj4o2cv5qp1jl1c.apps.googleusercontent.com"
+GOOGLE_AUDIENCE = "257500970741-c4cufvq18ts3r3sdvl3u8l5ibqis8s3b.apps.googleusercontent.com"
 #GOOGLE_AUDIENCE = "250496797473-3tkrt8bluu5l508kik1j2ufurpiamgsn.apps.googleusercontent.com"
 
 GOOGLE_COOKIE_NAME = "biom_mass_token"
