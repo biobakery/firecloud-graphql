@@ -293,10 +293,16 @@ class Data(object):
     def get_current_samples(self):
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
-                "data_format, platform, access from file_sample"
+                "data_format, platform, access, project from file_sample"
         connection, db_results = self.query_database(query)
         case_files = {}
+        merged_case_files = {}
         for row in db_results:
+            if row['participant'] == "NA":
+                if not row['project'] in merged_case_files:
+                    merged_case_files[row['project']] = []
+                merged_case_files[row['project']].append(dict(row.items()))
+
             if not row['participant'] in case_files:
                 case_files[row['participant']] = []
             case_files[row['participant']].append(dict(row.items()))
@@ -331,7 +337,8 @@ class Data(object):
 
             # create participant casefiles
             casefiles=[]
-            for index, file_info in enumerate(current_case_files):
+            all_case_files=merged_case_files.get(row['project'],[])+current_case_files
+            for index, file_info in enumerate(all_case_files):
                 casefiles.append(schema.CaseFile(
                     id=index,
                     data_category=file_info['data_category'],
@@ -390,13 +397,20 @@ class Data(object):
     def get_current_cases(self):
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
-                "data_format, platform, access from file_sample"
+                "data_format, platform, access, project from file_sample"
         connection, db_results = self.query_database(query)
         case_files = {}
+        merged_case_files = {}
         for row in db_results:
+            if row['participant'] == "NA":
+                if not row['project'] in merged_case_files:
+                    merged_case_files[row['project']] = []
+                merged_case_files[row['project']].append(dict(row.items()))
+
             if not row['participant'] in case_files:
                 case_files[row['participant']] = []
             case_files[row['participant']].append(dict(row.items()))
+
         connection.close()
 
         # gather sample data for participants
@@ -442,7 +456,8 @@ class Data(object):
 
             # create participant casefiles
             casefiles=[]
-            for index, file_info in enumerate(current_case_files):
+            all_case_files=merged_case_files.get(db_sample['project'],[])+current_case_files
+            for index, file_info in enumerate(all_case_files):
                 casefiles.append(schema.CaseFile(
                     id=index,
                     data_category=file_info['data_category'],
