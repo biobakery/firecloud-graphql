@@ -70,16 +70,21 @@ def get_firecloud_data(verbose):
     # add more data based on the file url
     gs_folders=set()
     file_id_index=keys_file_samples[0].index('file_id')
+    file_size_index=keys_file_samples[0].index('file_size')
     for index in range(len(values_file_samples)):
-        file_url_info = values_file_samples[index][file_id_index].replace("gs://","").split("/")
-        access = "open" if "public" in values_file_samples[index][file_id_index] else "controlled"
-        data_category = file_url_info[3].lower()
-        data_format = "fastq" if "fastq" in values_file_samples[index][file_id_index] else file_url_info[-1].split(".")[-1]
-        experimental_strategy = file_url_info[2]
-        file_name = file_url_info[-1]
-        platform = file_url_info[1]
-        gs_folders.add(os.path.dirname(values_file_samples[index][file_id_index]))
-        filetype = "rawFiles" if data_format == "fastq" else "processedFiles"
+        if values_file_samples[index][file_id_index] == "NA":
+            access, data_category, data_format, experimental_strategy, file_name, platform, filetype = "NA","NA","NA","NA","NA","NA","NA"
+            values_file_samples[index][file_size_index]="0"
+        else:
+            file_url_info = values_file_samples[index][file_id_index].replace("gs://","").split("/")
+            access = "open" if "public" in values_file_samples[index][file_id_index] else "controlled"
+            data_category = file_url_info[3].lower()
+            data_format = "fastq" if "fastq" in values_file_samples[index][file_id_index] else file_url_info[-1].split(".")[-1]
+            experimental_strategy = file_url_info[2]
+            file_name = file_url_info[-1]
+            platform = file_url_info[1]
+            gs_folders.add(os.path.dirname(values_file_samples[index][file_id_index]))
+            filetype = "rawFiles" if data_format == "fastq" else "processedFiles"
         keys_file_samples[index]+=["access","data_category","data_format","experimental_strategy","file_name","platform","type"]
         values_file_samples[index]+=[access,data_category,data_format,experimental_strategy,file_name,platform,filetype]
 
