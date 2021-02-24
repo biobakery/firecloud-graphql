@@ -129,13 +129,14 @@ class Data(object):
                 project_info[id]['primary_site']=row['primary_site']
             # compile file size
             project_info[id]['file_size']+=int(row['file_size'])
-            # compile file count
-            project_info[id]['file_count']+=1
             # compile cases
             project_info[id]['participants'].add(row['participant_id'])
-            # count data category and experimental strategy
-            for count_type in ["data_category", "experimental_strategy"]:
-                project_info[id][count_type][row[count_type]]=project_info[id][count_type].get(row[count_type],0)+1
+            # compile file count and count data category and experimental strategy
+            if row['file_size'] != "0":
+                project_info[id]['file_count']+=1
+            
+                for count_type in ["data_category", "experimental_strategy"]:
+                    project_info[id][count_type][row[count_type]]=project_info[id][count_type].get(row[count_type],0)+1
 
         connection.close()
         projects = []
@@ -228,7 +229,7 @@ class Data(object):
                  "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
                  "file_sample.platform, file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
                  "project.program " +\
-                 "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id"
+                 "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id WHERE file_sample.file_id !='NA'"
 
         connection, db_results = self.query_database(query)
         files = []
@@ -293,7 +294,7 @@ class Data(object):
     def get_current_samples(self):
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
-                "data_format, platform, access, project from file_sample"
+                "data_format, platform, access, project from file_sample WHERE file_id !='NA'"
         connection, db_results = self.query_database(query)
         case_files = {}
         merged_case_files = {}
@@ -321,7 +322,7 @@ class Data(object):
             if not ( db_case and db_projects):
                 continue
 
-            current_case_files = case_files[row['participant']]
+            current_case_files = case_files.get(row['participant'],[])
 
             # create data categories
             data_categories_counts={}
@@ -397,7 +398,7 @@ class Data(object):
     def get_current_cases(self):
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
-                "data_format, platform, access, project from file_sample"
+                "data_format, platform, access, project from file_sample WHERE file_id != 'NA'"
         connection, db_results = self.query_database(query)
         case_files = {}
         merged_case_files = {}
@@ -441,7 +442,8 @@ class Data(object):
 
             if row['participant_id'] in completed_cases:
                 continue
-            current_case_files = case_files[row['participant_name']]
+
+            current_case_files = case_files.get(row['participant_name'],[])
             # create data categories
             data_categories_counts={}
             for case_row in current_case_files:
@@ -519,7 +521,7 @@ class Data(object):
     def get_current_counts(self):
         query = "SELECT COUNT(distinct project), COUNT(distinct participant), COUNT(distinct sample), " +\
                 "COUNT(distinct data_format), COUNT(IF(type='"+RAW_FILE_TYPE+"',1,NULL)), " +\
-                "COUNT(IF(type='"+PROCESSED_FILE_TYPE+"',1,NULL)) FROM file_sample"
+                "COUNT(IF(type='"+PROCESSED_FILE_TYPE+"',1,NULL)) FROM file_sample WHERE data_format != 'NA'"
         db_results = self.query_database(query, fetchall=True)[0]
         counts = schema.Count(
             projects=db_results[0],
