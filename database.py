@@ -4,6 +4,7 @@
 import sqlalchemy
 import sys
 import time
+import threading
 
 import utilities
 import schema
@@ -35,6 +36,35 @@ class Data(object):
             print("Unable to connect to local database")
             print("Database url {}".format(database_url))
             sys.exit(e)
+
+        # empty cache, expires every 30 seconds
+        self.cache={'expires':{},'lock':threading.Lock(),'expires_offset':30}
+
+    def use_cache(self,cache_type):
+        # check if cache is available for use
+        return self.get_cache(cache_type)
+
+    def get_cache(self,cache_type):
+        
+        self.cache['lock'].acquire()
+
+        if ( self.cache['expires'].get(cache_type,0) + self.cache['expires_offset'] ) > time.time() and cache_type in self.cache:
+            value = self.cache[cache_type]
+        else:
+            value = ""
+
+        self.cache['lock'].release()
+
+        return value
+
+    def update_cache(self,cache_type,new_object):
+
+        self.cache['lock'].acquire()
+
+        self.cache[cache_type]=new_object
+        self.cache['expires'][cache_type]=time.time()
+
+        self.cache['lock'].release()
 
     def query_database(self, query, fetchall=False, no_results=False):
         # obtain connection from pool, run query
@@ -231,6 +261,9 @@ class Data(object):
                  "project.program " +\
                  "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id WHERE file_sample.file_id !='NA'"
 
+        if self.use_cache("files"):
+            return self.get_cache("files")
+
         connection, db_results = self.query_database(query)
         files = []
         for row in db_results:
@@ -289,9 +322,16 @@ class Data(object):
                 type=row['data_format']
             ))
         connection.close()
+
+        self.update_cache("files",files)
+
         return files
 
     def get_current_samples(self):
+
+        if self.use_cache("samples"):
+            return self.get_cache("samples")
+
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
                 "data_format, platform, access, project from file_sample WHERE file_id !='NA'"
@@ -392,10 +432,17 @@ class Data(object):
 
             samples.append(sample_instance)
         connection.close()
+
+        self.update_cache("samples",samples)
+
         return samples
 
 
     def get_current_cases(self):
+
+        if self.use_cache("cases"):
+            return self.get_cache("cases")
+
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
                 "data_format, platform, access, project from file_sample WHERE file_id != 'NA'"
@@ -509,6 +556,9 @@ class Data(object):
             ))
             completed_cases.add(row['participant_id'])
         connection.close()
+
+        self.update_cache("cases",cases)
+
         return cases
 
     def get_cart_file_size(self, filters=None):

@@ -94,6 +94,9 @@ def process_query(request, schema_query):
         print(data_variables)
         print(result.errors)
 
+        # clear the cache
+        data.cache['expires']={}
+
     # filter out items that should not be servered without auth
     schema.filter_noauth(result.data,token_cookie)
 
