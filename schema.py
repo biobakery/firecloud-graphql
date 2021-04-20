@@ -538,13 +538,13 @@ class Repository(graphene.ObjectType):
     samples = graphene.Field(RepositorySamples)
 
     def resolve_files(self, info):
-        return data.get_current_files()
+        return Files(self)
 
     def resolve_cases(self, info):
-        return data.get_current_cases()
+        return RepositoryCases(self)
 
     def resolve_samples(self, info):
-        return data.get_current_samples()
+        return RepositorySamples(self)
 
 class ProjectAggregations(graphene.ObjectType):
     primary_site = graphene.Field(Aggregations)
