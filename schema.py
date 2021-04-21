@@ -313,7 +313,10 @@ class Files(graphene.ObjectType):
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
         all_files = data.get_current_files(scrubbed=False)
         filtered_files = utilities.filter_hits(all_files, filters, "files")
-        sorted_files = utilities.sort_hits(filtered_files, sort)
+        # from the filtered files, get a subset of scrubbed data (that does not include any case or sample metadata)
+        id_subset=[fileinst.id for fileinst in filtered_files]
+        filtered_scrubbed_files = data.get_current_files(scrubbed=True,id_subset=id_subset)
+        sorted_files = utilities.sort_hits(filtered_scrubbed_files, sort)
         return utilities.offset_hits(sorted_files, offset)
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
