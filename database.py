@@ -40,6 +40,9 @@ class Data(object):
         # empty cache, expires every 30 seconds
         self.cache={'expires':{},'lock':threading.Lock(),'expires_offset':30}
 
+        # set the no access group
+        self.no_access_group = "'None'"
+
     def use_cache(self,cache_type):
         # check if cache is available for use
         return self.get_cache(cache_type)
@@ -93,8 +96,26 @@ class Data(object):
         expires = time.time()+2*24*60*60+5*60
         db_results = self.query_database("UPDATE users SET token='{0}', expires='{1}' WHERE email='{2}'".format(token,expires,email), no_results=True)
 
+    def set_project_access_filters(self, data_variables, projects):
+        current_filters=data_variables.get("filters",{}) or {}
+        current_filters["project_access"]=" WHERE project = ({}) ".format(projects)
+        data_variables["filters"]=current_filters
+
+    def get_project_access_filters(self, filters):
+        if not filters:
+            return ""
+        else:
+            return filters.get("project_access","")
+
     def valid_token(self, token):
-        db_results = self.query_database("SELECT email, expires FROM users WHERE token='{}'".format(token), fetchall=True)
+        access_groups = self.get_project_access(token)
+        if access_groups == self.no_access_group:
+            return False
+        else:
+            return True
+
+    def get_project_access(self, token):
+        db_results = self.query_database("SELECT email, expires, projects FROM users WHERE token='{}'".format(token), fetchall=True)
         if db_results:
             # check if the token has expired
             current_time = time.time()
@@ -105,13 +126,13 @@ class Data(object):
           
             if current_time > expires:
                 db_results = self.query_database("UPDATE users SET token='{0}', expires='{1}' WHERE email='{2}'".format("None","None",db_results[0][0]), no_results=True)
-                return False
+                return self.no_access_group
             elif current_time < expires:
-                return True
+                return db_results[0][2]
             else:
-                return False
+                return self.no_access_group
         else:
-            return False
+            return self.no_access_group
 
     def valid_user(self, email):
         db_results = self.query_database("SELECT token FROM users WHERE email='{}'".format(email), fetchall=True)
@@ -189,8 +210,8 @@ class Data(object):
     def get_generic_file_name(file_id, extension):
         return "{0}.{1}".format(int(file_id)+GENERIC_FILE_NAME_OFFSET, extension.lower())
 
-    def get_all_cases(self,rows=False):
-        query = "SELECT * from participant";
+    def get_all_cases(self,rows=False,filters=""):
+        query = "SELECT * from participant INNER JOIN sample ON participant.entity_participant_id = sample.participant "+filters;
         connection, db_results_participant = self.query_database(query)
 
         # organize based on participant id
@@ -202,18 +223,26 @@ class Data(object):
 
             participant_data[row['entity_participant_id']]=row
         
+        metadata_columns=[]
         if rows:
             participant_data = participant_data.values()
-            metadata_columns = list(set(participant_data[0].keys()).difference(CASE_DEFAULT_COLUMNS))
+            try:
+                metadata_columns = list(set(participant_data[0].keys()).difference(CASE_DEFAULT_COLUMNS))
+            except IndexError:
+                metadata_columns=[]
         else:
-            metadata_columns = list(set(participant_data[participant_data.keys()[0]].keys()).difference(CASE_DEFAULT_COLUMNS))
+            try:
+                metadata_columns = list(set(participant_data[participant_data.keys()[0]].keys()).difference(CASE_DEFAULT_COLUMNS))
+            except IndexError:
+                metadata_columns=[]
 
-        self.participant_metadata_columns=metadata_columns
+        if metadata_columns:
+            self.participant_metadata_columns=metadata_columns
 
         return metadata_columns, participant_data
 
-    def get_all_samples(self,rows=False):
-        query = "SELECT * from sample";
+    def get_all_samples(self,rows=False,filters=""):
+        query = "SELECT * from sample "+filters;
         connection, db_results_sample = self.query_database(query)
 
         # organize based on sample id
@@ -227,11 +256,18 @@ class Data(object):
 
         if rows:
             sample_data=sample_data.values()
-            metadata_columns = list(set(sample_data[0].keys()).difference(SAMPLE_DEFAULT_COLUMNS))
+            try:
+                metadata_columns = list(set(sample_data[0].keys()).difference(SAMPLE_DEFAULT_COLUMNS))
+            except IndexError:
+                metadata_columns=[]
         else:
-            metadata_columns = list(set(sample_data[sample_data.keys()[0]].keys()).difference(SAMPLE_DEFAULT_COLUMNS))
+            try:
+                metadata_columns = list(set(sample_data[sample_data.keys()[0]].keys()).difference(SAMPLE_DEFAULT_COLUMNS))
+            except IndexError:
+                metadata_columns=[]
 
-        self.sample_metadata_columns=metadata_columns
+        if metadata_columns:
+            self.sample_metadata_columns=metadata_columns
 
         return metadata_columns, sample_data 
 
@@ -337,9 +373,9 @@ class Data(object):
 
         return files
 
-    def get_current_samples(self):
+    def get_current_samples(self,filters=""):
 
-        if self.use_cache("samples"):
+        if not filters and self.use_cache("samples"):
             return self.get_cache("samples")
 
         # gather file data for participants
@@ -360,9 +396,9 @@ class Data(object):
         connection.close()
 
         # get all cases and samples data
-        participant_metadata_columns, participant_data = self.get_all_cases()
+        participant_metadata_columns, participant_data = self.get_all_cases(filters=filters)
         projects_data = self.get_all_projects()
-        sample_metadata_columns, db_results = self.get_all_samples(rows=True)
+        sample_metadata_columns, db_results = self.get_all_samples(rows=True,filters=filters)
 
         samples = []
         for row in db_results:
@@ -443,14 +479,15 @@ class Data(object):
             samples.append(sample_instance)
         connection.close()
 
-        self.update_cache("samples",samples)
+        if not filters:
+            self.update_cache("samples",samples)
 
         return samples
 
 
-    def get_current_cases(self):
+    def get_current_cases(self,filters=""):
 
-        if self.use_cache("cases"):
+        if not filters and self.use_cache("cases"):
             return self.get_cache("cases")
 
         # gather file data for participants
@@ -472,7 +509,7 @@ class Data(object):
         connection.close()
 
         # gather sample data for participants
-        sample_metadata_columns, db_results = self.get_all_samples(rows=True)
+        sample_metadata_columns, db_results = self.get_all_samples(rows=True,filters=filters)
         case_samples = {}
         for row in db_results:
             if not row['participant'] in case_samples:
@@ -482,7 +519,7 @@ class Data(object):
         
         # gather participant data
         projects_data=self.get_all_projects()
-        participant_metadata_columns, db_results=self.get_all_cases(rows=True)
+        participant_metadata_columns, db_results=self.get_all_cases(rows=True,filters=filters)
 
         cases = []
         completed_cases = set()
@@ -567,7 +604,8 @@ class Data(object):
             completed_cases.add(row['participant_id'])
         connection.close()
 
-        self.update_cache("cases",cases)
+        if not filters:
+            self.update_cache("cases",cases)
 
         return cases
 

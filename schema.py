@@ -492,7 +492,7 @@ class RepositorySamples(graphene.ObjectType):
         facets=graphene.List(graphene.String))
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        all_samples = data.get_current_samples()
+        all_samples = data.get_current_samples(filters=data.get_project_access_filters(filters))
         filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
         sorted_samples = utilities.sort_hits(filtered_samples, sort)
         return utilities.offset_hits(sorted_samples, offset)
@@ -521,7 +521,7 @@ class RepositoryCases(graphene.ObjectType):
         facets=graphene.List(graphene.String))
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        all_cases = data.get_current_cases()
+        all_cases = data.get_current_cases(filters=data.get_project_access_filters(filters))
         filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
         sorted_cases = utilities.sort_hits(filtered_cases, sort)
         return utilities.offset_hits(sorted_cases, offset)

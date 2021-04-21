@@ -86,6 +86,10 @@ def process_query(request, schema_query):
     # get token
     token_cookie=request.cookies.get(GOOGLE_COOKIE_NAME,"")
 
+    # set project access
+    project_access_list = data.get_project_access(token_cookie)
+    data.set_project_access_filters(data_variables,project_access_list)
+
     firecloud_schema=graphene.Schema(query=schema_query, auto_camelcase=False)
     result=firecloud_schema.execute(data_query, variables=data_variables)
     if result.errors:
