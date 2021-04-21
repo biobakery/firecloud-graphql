@@ -250,10 +250,11 @@ class Data(object):
 
         return projects_results
 
-    def get_current_files(self):
+    def get_current_files(self, scrubbed=False, id_subset=[]):
         # get all cases and samples data
-        participant_metadata_columns, participant_data = self.get_all_cases()
-        sample_metadata_columns, sample_data = self.get_all_samples()
+        if not scrubbed:
+            participant_metadata_columns, participant_data = self.get_all_cases()
+            sample_metadata_columns, sample_data = self.get_all_samples()
 
         query = "SELECT file_sample.id as file_id, file_sample.file_id as file_url, file_sample.file_name as file_name, file_sample.participant, file_sample.sample, " +\
                  "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
@@ -268,25 +269,34 @@ class Data(object):
         files = []
         for row in db_results:
             # add in the sample and participant data
-            db_case=participant_data.get(row['participant'],False)
-            db_sample=sample_data.get(row['sample'],False)
+            if not scrubbed:
+                db_case=participant_data.get(row['participant'],False)
+                db_sample=sample_data.get(row['sample'],False)
  
-            if not ( db_case and db_sample ):
-                continue
+                if not ( db_case and db_sample ):
+                    continue
 
             metadataCase_hits=[]
-            for demo_item in participant_metadata_columns:
-                metadataCase_hits.append(schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]))
-
+            if not scrubbed:
+                for demo_item in participant_metadata_columns:
+                    metadataCase_hits.append(schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]))
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
             demographic_instance=schema.Custom()
-            demographic_keys=participant_metadata_columns
-            schema.add_attributes(demographic_instance, demographic_keys, db_case)
+            casesample_instance=None
+            if not scrubbed:
+                metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
-            casesample_instance=schema.CaseSample(id=db_sample['sample_id'])
-            casesample_keys=sample_metadata_columns
-            schema.add_attributes(casesample_instance, casesample_keys, db_sample)
+                demographic_keys=participant_metadata_columns
+                schema.add_attributes(demographic_instance, demographic_keys, db_case)
+
+                casesample_instance=schema.CaseSample(id=db_sample['sample_id'])
+                casesample_keys=sample_metadata_columns
+                schema.add_attributes(casesample_instance, casesample_keys, db_sample)
+
+            # if id subset is provided and this id is not included, do not include in final file set
+            if id_subset and not row['file_id'] in id_subset:
+                continue
 
             files.append(schema.File(
                 id=row['file_id'],
@@ -302,7 +312,7 @@ class Data(object):
                 generic_file_name=row['file_name'],
                 cases=schema.FileCases(
                     hits=[schema.FileCase(
-                        id=db_case['participant_id'],
+                        id=row['participant'],
                         case_id=row['participant'],
                         project=schema.Project(
                             id=row['project_id'],
@@ -315,7 +325,7 @@ class Data(object):
                             hits=metadataCase_hits,
                             metadata_count=metadataCase_counts),
                         primary_site=row['primary_site'],
-                        samples=[casesample_instance]
+                        samples=[casesample_instance] if casesample_instance else []
                         )]
                 ),
                 file_id=row['file_id'],
