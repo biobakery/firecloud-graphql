@@ -229,6 +229,9 @@ def filter_hits(hits, filters, object_name):
     if not filters:
         return hits
 
+    if not "content" in filters:
+        return hits
+
     all_filtered_sets = []
     for content in filters["content"]:   
         field=content["content"]["field"]
