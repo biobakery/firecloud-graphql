@@ -137,7 +137,7 @@ class Data(object):
             save_db_results.append(row)
 
         # apply filtering only for summary/file filters
-        if filters:
+        if filters and "content" in filters:
             for content in filters["content"]:
                 field=content["content"]["field"]
                 if "summary" in field:
@@ -250,7 +250,7 @@ class Data(object):
 
         return projects_results
 
-    def get_current_files(self, scrubbed=False, id_subset=[]):
+    def get_current_files(self, scrubbed=True, id_subset=[]):
         # get all cases and samples data
         if not scrubbed:
             participant_metadata_columns, participant_data = self.get_all_cases()
@@ -572,7 +572,7 @@ class Data(object):
         return cases
 
     def get_cart_file_size(self, filters=None):
-        all_files = self.get_current_files()
+        all_files = self.get_current_files(scrubbed=False)
         filtered_files = utilities.filter_hits(all_files, filters, "files")
         # get the size from the filtered files
         total_size = sum([utilities.str_to_float([file.file_size], error_zero=True)[0] for file in filtered_files])
