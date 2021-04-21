@@ -5,6 +5,7 @@ import json
 import ast
 import collections
 
+
 def bytes_to_gb(bytes):
     try:
         return int( float(bytes) / (1024**3.0) )
@@ -232,6 +233,9 @@ def filter_hits(hits, filters, object_name):
     if not "content" in filters:
         return hits
 
+    if not hits:
+        return hits
+
     all_filtered_sets = []
     for content in filters["content"]:   
         field=content["content"]["field"]
@@ -243,8 +247,11 @@ def filter_hits(hits, filters, object_name):
         top_level = levels.pop(0)
         if top_level != object_name:
             if levels[0] == object_name:
-                top_level = levels.pop(0)
-                all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, field))
+                try:
+                    top_level = levels.pop(0)
+                    all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, field))
+                except IndexError:
+                    continue
             elif levels[0] in dir(hits[0]):
                 all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, field))
             elif top_level in dir(hits[0]):
@@ -259,7 +266,11 @@ def filter_hits(hits, filters, object_name):
             all_filtered_sets.append(get_filtered_set(hits, levels, value_selected, operation, field))
 
     # reduce sets
-    final_set = set(all_filtered_sets.pop(0))
+    try:
+        final_set = set(all_filtered_sets.pop(0))
+    except IndexError:
+        final_set = []
+
     for next_set in all_filtered_sets:
         final_set = final_set.intersection(next_set)
 
@@ -301,7 +312,7 @@ def offset_hits(hits, offset):
         def __init__(self, newlist, total):
             super(TotalList, self).__init__(newlist)
             self.total = total
-    return TotalList(hits[offset:], len(hits))
+    return TotalList(hits[offset:], len(hits[offset:]))
 
 # The functions below were based on code from
 # https://github.com/nderkach/python-grahql-api
