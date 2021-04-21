@@ -98,7 +98,7 @@ class Data(object):
 
     def set_project_access_filters(self, data_variables, projects):
         current_filters=data_variables.get("filters",{}) or {}
-        current_filters["project_access"]=" WHERE project = ({}) ".format(projects)
+        current_filters["project_access"]=" WHERE project in ({}) ".format(projects)
         data_variables["filters"]=current_filters
 
     def get_project_access_filters(self, filters):
@@ -211,7 +211,7 @@ class Data(object):
         return "{0}.{1}".format(int(file_id)+GENERIC_FILE_NAME_OFFSET, extension.lower())
 
     def get_all_cases(self,rows=False,filters=""):
-        query = "SELECT * from participant INNER JOIN sample ON participant.entity_participant_id = sample.participant "+filters;
+        query = "SELECT participant.* from participant INNER JOIN sample ON participant.entity_participant_id = sample.participant "+filters;
         connection, db_results_participant = self.query_database(query)
 
         # organize based on participant id
