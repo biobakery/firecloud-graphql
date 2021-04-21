@@ -21,6 +21,10 @@ def parse_arguments(args):
         help="user gmail address",
         required=True)
     parser.add_argument(
+        "--projects",
+        help="one more more projects the user will have access to (comma delimited)",
+        required=True)
+    parser.add_argument(
         "--function",
         help="function to run",
         choices=["add","remove"],
@@ -58,11 +62,11 @@ def main():
         sys.exit(e)
 
     print("Creating users table if not already exists")
-    command = "SET sql_notes=0; CREATE TABLE IF NOT EXISTS users(email CHAR(50) PRIMARY KEY, token CHAR(100) DEFAULT 'None', expires CHAR(100) DEFAULT 'None'); set sql_notes=1;"
+    command = "SET sql_notes=0; CREATE TABLE IF NOT EXISTS users(email CHAR(50) PRIMARY KEY, token CHAR(100) DEFAULT 'None', expires CHAR(100) DEFAULT 'None', projects CHAR(100) DEFAULT \"'None'\"); set sql_notes=1;"
     update_database(engine,command)
 
     if args.function =="add":
-        command = "INSERT INTO users (email) VALUES ('{}')".format(args.user)
+        command = "INSERT INTO users (email,projects) VALUES ('{0}',\"{1}\")".format(args.user,",".join(["'"+project+"'" for project in args.projects.split(",")]))
     else:
         command = "DELETE FROM users where email='{}'".format(args.user)
 
