@@ -311,13 +311,13 @@ class Files(graphene.ObjectType):
         aggregations_filter_themselves=graphene.Boolean())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        all_files = data.get_current_files()
+        all_files = data.get_current_files(scrubbed=False)
         filtered_files = utilities.filter_hits(all_files, filters, "files")
         sorted_files = utilities.sort_hits(filtered_files, sort)
         return utilities.offset_hits(sorted_files, offset)
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        all_files = data.get_current_files()
+        all_files = data.get_current_files(scrubbed=False)
         filtered_files = utilities.filter_hits(all_files, filters, "files")
         return data.get_file_aggregations(filtered_files)
 
