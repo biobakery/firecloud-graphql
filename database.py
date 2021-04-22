@@ -814,7 +814,7 @@ class Data(object):
         demographic_metadata_fields=list(set(dir(cases[0].demographic)).difference(set(dir(schema.Demographic()))))
 
         # aggregate case data
-        aggregates = {"primary_site": {}, "project__project_id": {}, "project__program__name": {}}
+        aggregates = {"primary_site": {}, "project__program__name": {}}
         
         stats={}
         demo_lists={}
@@ -832,7 +832,6 @@ class Data(object):
         for case in cases:
             
             utilities.add_key_increment(aggregates["primary_site"], case.primary_site)
-            utilities.add_key_increment(aggregates["project__project_id"], case.project.project_id)
             utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
 
             for demo_key in demographic_metadata_fields:
@@ -874,7 +873,6 @@ class Data(object):
         case_aggregates=schema.CaseAggregations(
             metadataAggregations=schema.MetadataAggregations(hits=all_aggregations),
             primary_site=get_schema_aggregations("primary_site"),
-            project__project_id=get_schema_aggregations("project__project_id"),
             project__program__name=get_schema_aggregations("project__program__name"))
 
         for demo_key in demographic_metadata_fields:
