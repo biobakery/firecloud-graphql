@@ -298,7 +298,7 @@ class Data(object):
                  "project.program " +\
                  "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id WHERE file_sample.file_id !='NA'"
 
-        if self.use_cache("files"):
+        if not scrubbed and self.use_cache("files"):
             return self.get_cache("files")
 
         connection, db_results = self.query_database(query)
@@ -369,7 +369,8 @@ class Data(object):
             ))
         connection.close()
 
-        self.update_cache("files",files)
+        if not scrubbed:
+            self.update_cache("files",files)
 
         return files
 
