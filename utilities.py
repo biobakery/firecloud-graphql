@@ -136,7 +136,11 @@ def get_database_variables():
 def get_class_member_value(obj, levels, subset=False):
     final_value = obj
     for item in levels:
-        final_value = getattr(final_value, item)
+        try:
+            final_value = getattr(final_value, item)
+        except AttributeError:
+            final_value = 0
+
         # look for hits subset for possible lists
         if "hits" in dir(final_value):
             final_value = final_value.hits
@@ -218,10 +222,13 @@ def subhits(single_hit, top_level):
     for item in dir(single_hit):
         sub_hit = getattr(single_hit, item)
         if "hits" in dir(sub_hit):
-            for subitem in dir(sub_hit.hits[0]):
-                if isinstance(getattr(sub_hit.hits[0], subitem), list):
-                    if subitem == top_level:
-                        levels = [item, subitem]
+            try:
+                for subitem in dir(sub_hit.hits[0]):
+                    if isinstance(getattr(sub_hit.hits[0], subitem), list):
+                        if subitem == top_level:
+                            levels = [item, subitem]
+            except IndexError:
+                continue
     return levels
 
 def filter_hits(hits, filters, object_name):
