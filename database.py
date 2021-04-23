@@ -689,9 +689,12 @@ class Data(object):
             utilities.add_key_increment(aggregates["platform"], file.platform)
             utilities.add_key_increment(aggregates["access"], file.access)
             utilities.add_key_increment(aggregates["file_size"], utilities.Range.create_custom(utilities.bytes_to_gb(file.file_size),2))
-            project = file.cases.hits[0].project
-            utilities.add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
-            utilities.add_key_increment(aggregates["cases__project__project_id"], project.project_id)
+            try:
+                project = file.cases.hits[0].project
+                utilities.add_key_increment(aggregates["cases__primary_site"], project.primary_site[0])
+                utilities.add_key_increment(aggregates["cases__project__project_id"], project.project_id)
+            except IndexError:
+                continue
 
             utilities.update_max_min(stats["file_size"], utilities.bytes_to_gb(file.file_size))
 
@@ -806,8 +809,14 @@ class Data(object):
             return schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
 
-        sample_metadata_fields=list(set(dir(cases[0].samples.hits[0])).difference(set(dir(schema.Sample()))))
-        demographic_metadata_fields=list(set(dir(cases[0].demographic)).difference(set(dir(schema.Demographic()))))
+        try:
+            sample_metadata_fields=list(set(dir(cases[0].samples.hits[0])).difference(set(dir(schema.Sample()))))
+        except IndexError:
+            sample_metadata_fields=[]
+        try:
+            demographic_metadata_fields=list(set(dir(cases[0].demographic)).difference(set(dir(schema.Demographic()))))
+        except IndexError:
+            demographic_metadata_fields=[]
 
         # aggregate case data
         aggregates = {"primary_site": {}, "project__program__name": {}}
