@@ -42,7 +42,10 @@ def filter_noauth(return_data,token):
 
 def add_attributes(instance, keys, values):
     for key in keys:
-        setattr(instance, key, values[key])
+        try:
+            setattr(instance, key, values[key])
+        except KeyError:
+            continue
 
 ## Portal API ##
 
@@ -311,16 +314,13 @@ class Files(graphene.ObjectType):
         aggregations_filter_themselves=graphene.Boolean())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        all_files = data.get_current_files(scrubbed=False)
+        all_files = data.get_current_files(filters=data.get_project_access_filters(filters))
         filtered_files = utilities.filter_hits(all_files, filters, "files")
-        # from the filtered files, get a subset of scrubbed data (that does not include any case or sample metadata)
-        id_subset=[fileinst.file_id for fileinst in filtered_files]
-        filtered_scrubbed_files = data.get_current_files(scrubbed=True,id_subset=id_subset)
-        sorted_files = utilities.sort_hits(filtered_scrubbed_files, sort)
+        sorted_files = utilities.sort_hits(filtered_files, sort)
         return utilities.offset_hits(sorted_files, offset)
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        all_files = data.get_current_files(scrubbed=False)
+        all_files = data.get_current_files()
         filtered_files = utilities.filter_hits(all_files, filters, "files")
         return data.get_file_aggregations(filtered_files)
 
@@ -434,8 +434,15 @@ class CaseConnection(graphene.relay.Connection):
 
     total = graphene.Int()
 
-    def resolve_total(self, info):
-        return self.iterable.total
+    def resolve_total(self, info, filters=None):
+        # if we are logged in with access to query cases, then serve iterable count, else recount
+        if self.iterable.total:
+            return self.iterable.total
+        else:
+            all_cases = data.get_current_cases()
+            filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
+            total_filtered_cases = len(filtered_cases)
+            return total_filtered_cases
 
 class Sample(graphene.ObjectType):
     class Meta:
@@ -474,8 +481,15 @@ class SampleConnection(graphene.relay.Connection):
 
     total = graphene.Int()
 
-    def resolve_total(self, info):
-        return self.iterable.total
+    def resolve_total(self, info, filters=None):
+        # if we are logged in with access to query samples, then serve iterable count, else recount
+        if self.iterable.total:
+            return self.iterable.total
+        else:
+            all_samples = data.get_current_samples()
+            filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
+            total_filtered_samples = len(filtered_samples)
+            return total_filtered_samples
 
 class RepositorySamples(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(SampleConnection,
@@ -588,7 +602,7 @@ class CartSummary(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_aggregations(self, info, filters=None):
-        return data.get_cart_file_size(filters)
+        return data.get_cart_file_size(filters=data.get_project_access_filters(filters))
 
 class Root(graphene.ObjectType):
     user = graphene.Field(User)

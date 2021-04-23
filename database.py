@@ -96,16 +96,21 @@ class Data(object):
         expires = time.time()+2*24*60*60+5*60
         db_results = self.query_database("UPDATE users SET token='{0}', expires='{1}' WHERE email='{2}'".format(token,expires,email), no_results=True)
 
+    def create_access_query_restriction(self, projects):
+        return " WHERE project in ({}) ".format(projects)
+
     def set_project_access_filters(self, data_variables, projects):
         current_filters=data_variables.get("filters",{}) or {}
-        current_filters["project_access"]=" WHERE project in ({}) ".format(projects)
+        current_filters["project_access"]=self.create_access_query_restriction(projects)
         data_variables["filters"]=current_filters
 
     def get_project_access_filters(self, filters):
         if not filters:
-            return ""
+            return self.create_access_query_restriction(self.no_access_group)
+        elif "project_access" in filters:
+            return filters["project_access"]
         else:
-            return filters.get("project_access","")
+            return self.create_access_query_restriction(self.no_access_group)
 
     def valid_token(self, token):
         access_groups = self.get_project_access(token)
@@ -236,7 +241,7 @@ class Data(object):
             except IndexError:
                 metadata_columns=[]
 
-        if metadata_columns:
+        if metadata_columns and participant_data:
             self.participant_metadata_columns=metadata_columns
 
         return metadata_columns, participant_data
@@ -266,7 +271,7 @@ class Data(object):
             except IndexError:
                 metadata_columns=[]
 
-        if metadata_columns:
+        if metadata_columns and sample_data:
             self.sample_metadata_columns=metadata_columns
 
         return metadata_columns, sample_data 
@@ -286,11 +291,10 @@ class Data(object):
 
         return projects_results
 
-    def get_current_files(self, scrubbed=True, id_subset=[]):
+    def get_current_files(self, filters=""):
         # get all cases and samples data
-        if not scrubbed:
-            participant_metadata_columns, participant_data = self.get_all_cases()
-            sample_metadata_columns, sample_data = self.get_all_samples()
+        participant_metadata_columns, participant_data = self.get_all_cases(filters=filters)
+        sample_metadata_columns, sample_data = self.get_all_samples(filters=filters)
 
         query = "SELECT file_sample.id as file_id, file_sample.file_id as file_url, file_sample.file_name as file_name, file_sample.participant, file_sample.sample, " +\
                  "file_sample.access, file_sample.file_size, file_sample.data_category, file_sample.data_format, " +\
@@ -298,41 +302,33 @@ class Data(object):
                  "project.program " +\
                  "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id WHERE file_sample.file_id !='NA'"
 
-        if not scrubbed and self.use_cache("files"):
+        if not filters and self.use_cache("files"):
             return self.get_cache("files")
 
         connection, db_results = self.query_database(query)
         files = []
         for row in db_results:
             # add in the sample and participant data
-            if not scrubbed:
-                db_case=participant_data.get(row['participant'],False)
-                db_sample=sample_data.get(row['sample'],False)
- 
-                if not ( db_case and db_sample ):
-                    continue
+            db_case=participant_data.get(row['participant'],{})
+            db_sample=sample_data.get(row['sample'],{})
 
             metadataCase_hits=[]
-            if not scrubbed:
+            if db_case:
                 for demo_item in participant_metadata_columns:
                     metadataCase_hits.append(schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]))
             metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
 
-            demographic_instance=schema.Custom()
-            casesample_instance=None
-            if not scrubbed:
-                metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
-
+            demographic_instance=None
+            if db_case:
+                demographic_instance=schema.Custom()
                 demographic_keys=participant_metadata_columns
                 schema.add_attributes(demographic_instance, demographic_keys, db_case)
 
-                casesample_instance=schema.CaseSample(id=db_sample['sample_id'])
+            casesample_instance=None
+            if db_sample:
+                casesample_instance=schema.CaseSample(id=db_sample.get('sample_id',1))
                 casesample_keys=sample_metadata_columns
                 schema.add_attributes(casesample_instance, casesample_keys, db_sample)
-
-            # if id subset is provided and this id is not included, do not include in final file set
-            if id_subset and not row['file_id'] in id_subset:
-                continue
 
             files.append(schema.File(
                 id=row['file_id'],
@@ -369,7 +365,7 @@ class Data(object):
             ))
         connection.close()
 
-        if not scrubbed:
+        if not filters:
             self.update_cache("files",files)
 
         return files
@@ -610,8 +606,8 @@ class Data(object):
 
         return cases
 
-    def get_cart_file_size(self, filters=None):
-        all_files = self.get_current_files(scrubbed=False)
+    def get_cart_file_size(self, filters):
+        all_files = self.get_current_files(filters=filters)
         filtered_files = utilities.filter_hits(all_files, filters, "files")
         # get the size from the filtered files
         total_size = sum([utilities.str_to_float([file.file_size], error_zero=True)[0] for file in filtered_files])
