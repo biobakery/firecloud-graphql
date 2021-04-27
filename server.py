@@ -23,7 +23,7 @@ import binascii
 import logging
 
 import schema
-from database import data
+from database import Data
 
 # set the name of the log file
 access_log_file=os.path.join(os.path.dirname(__file__),"logs","server.log")
@@ -48,7 +48,7 @@ def hash_access_token(token):
     
     return binascii.hexlify(hash)
 
-def verify_user(token, email):
+def verify_user(token, email, user_data):
     # verify the user token is a valid google oauth2 token
     request = requests.Request()
 
@@ -66,7 +66,7 @@ def verify_user(token, email):
     try:
         if token_info['email'] != email:
             verified = False
-        if not data.valid_user(token_info['email']):
+        if not user_data.valid_user(token_info['email']):
             verified = False
     except KeyError:
         verified = False
@@ -87,11 +87,13 @@ def process_query(request, schema_query):
     token_cookie=request.cookies.get(GOOGLE_COOKIE_NAME,"")
 
     # set project access
-    project_access_list = data.get_project_access(token_cookie)
-    data.set_project_access_filters(data_variables,project_access_list)
+    user_data=Data()
+    project_access_list = user_data.get_project_access(token_cookie)
+    user_data.set_project_access_filters(project_access_list)
 
     firecloud_schema=graphene.Schema(query=schema_query, auto_camelcase=False)
-    result=firecloud_schema.execute(data_query, variables=data_variables)
+
+    result=firecloud_schema.execute(data_query, variables=data_variables, context={"user_data":user_data})
     if result.errors:
         print("ERROR")
         print(data_query)
@@ -99,10 +101,10 @@ def process_query(request, schema_query):
         print(result.errors)
 
         # clear the cache
-        data.cache['expires']={}
+        user_data.cache['expires']={}
 
     # filter out items that should not be servered without auth
-    schema.filter_noauth(result.data,token_cookie)
+    schema.filter_noauth(result.data,token_cookie,user_data)
 
     json_result=flask.jsonify({"data": result.data})
 
@@ -127,25 +129,23 @@ def main():
     # add static endpoint for version/status
     @app.route('/status', methods=["GET"])
     def get_version():
-        return flask.jsonify(data.get_version())
+        user_data=Data()
+        return flask.jsonify(user_data.get_version())
 
     # add static endpoint for access
     @app.route('/access', methods=["POST"])
     def get_access():
         data_body=flask.request.get_json()
-        email, hash_token, access = verify_user(data_body["token"],data_body["email"])
+        user_data=Data()
+        email, hash_token, access = verify_user(data_body["token"],data_body["email"],user_data)
         if access == "granted":
             logging.info("Access GRANTED for user: " + email)
             # adding token to the database
-            data.add_token(email, hash_token)
+            user_data.add_token(email, hash_token)
             logging.info("Added token to the database for user")
         else:
             logging.info("Access DENIED for user request from email: " + data_body["email"])
         return flask.jsonify({ "hash_token": hash_token })
-
-    # add end point for graphql gui
-    app.add_url_rule('/test', view_func=flask_graphql.GraphQLView.as_view(
-        'test', schema=graphene.Schema(query=schema.Query, auto_camelcase=False), graphiql=True))
 
     # start the app
     app.run(host=HOST, port=PORT)

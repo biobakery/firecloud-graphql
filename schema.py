@@ -10,11 +10,10 @@ from graphene.types import generic
 
 import utilities
 import query_firecloud
-from database import data
 
 ## Temp utility schema functions ##
 
-def filter_noauth(return_data,token):
+def filter_noauth(return_data,token,data):
     # if a valid token is not provided, filter out those items that
     # we would never want to serve without authentication
 
@@ -314,18 +313,18 @@ class Files(graphene.ObjectType):
         aggregations_filter_themselves=graphene.Boolean())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        all_files = data.get_current_files(filters=data.get_project_access_filters(filters))
+        all_files = info.context.get("user_data").get_current_files(filters=info.context.get("user_data").get_project_access_filters())
         filtered_files = utilities.filter_hits(all_files, filters, "files")
         sorted_files = utilities.sort_hits(filtered_files, sort)
         return utilities.offset_hits(sorted_files, offset)
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        all_files = data.get_current_files()
+        all_files = info.context.get("user_data").get_current_files()
         filtered_files = utilities.filter_hits(all_files, filters, "files")
-        return data.get_file_aggregations(filtered_files)
+        return info.context.get("user_data").get_file_aggregations(filtered_files)
 
     def resolve_facets(self, info, filters=None, facets=None):
-        return data.get_facets()
+        return info.context.get("user_data").get_facets()
 
 class CaseAggregations(graphene.ObjectType):
 
@@ -361,7 +360,7 @@ class CaseAnnotations(graphene.ObjectType):
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
         # filters are not currently in use
-        return data.get_case_annotation()
+        return info.context.get("user_data").get_case_annotation()
 
 class CaseFile(graphene.ObjectType):
     class Meta:
@@ -435,14 +434,7 @@ class CaseConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info, filters=None):
-        # if we are logged in with access to query cases, then serve iterable count, else recount
-        if self.iterable.total:
-            return self.iterable.total
-        else:
-            all_cases = data.get_current_cases()
-            filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
-            total_filtered_cases = len(filtered_cases)
-            return total_filtered_cases
+        return self.iterable.total
 
 class Sample(graphene.ObjectType):
     class Meta:
@@ -482,14 +474,7 @@ class SampleConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info, filters=None):
-        # if we are logged in with access to query samples, then serve iterable count, else recount
-        if self.iterable.total:
-            return self.iterable.total
-        else:
-            all_samples = data.get_current_samples()
-            filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
-            total_filtered_samples = len(filtered_samples)
-            return total_filtered_samples
+        return self.iterable.total
 
 class RepositorySamples(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(SampleConnection,
@@ -506,19 +491,19 @@ class RepositorySamples(graphene.ObjectType):
         facets=graphene.List(graphene.String))
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        all_samples = data.get_current_samples(filters=data.get_project_access_filters(filters))
+        all_samples = info.context.get("user_data").get_current_samples(filters=info.context.get("user_data").get_project_access_filters())
         filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
         sorted_samples = utilities.sort_hits(filtered_samples, sort)
         return utilities.offset_hits(sorted_samples, offset)
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        all_samples = data.get_current_samples()
+        all_samples = info.context.get("user_data").get_current_samples()
         filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
-        sample_aggregations = data.get_sample_aggregations(filtered_samples)
+        sample_aggregations = info.context.get("user_data").get_sample_aggregations(filtered_samples)
         return sample_aggregations
 
     def resolve_facets(self, info, filters=None, facets=None):
-        return data.get_facets()
+        return info.context.get("user_data").get_facets()
 
 class RepositoryCases(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(CaseConnection,
@@ -535,19 +520,19 @@ class RepositoryCases(graphene.ObjectType):
         facets=graphene.List(graphene.String))
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
-        all_cases = data.get_current_cases(filters=data.get_project_access_filters(filters))
+        all_cases = info.context.get("user_data").get_current_cases(filters=info.context.get("user_data").get_project_access_filters())
         filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
         sorted_cases = utilities.sort_hits(filtered_cases, sort)
         return utilities.offset_hits(sorted_cases, offset)
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        all_cases = data.get_current_cases()
+        all_cases = info.context.get("user_data").get_current_cases()
         filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
-        case_aggregations = data.get_case_aggregations(filtered_cases)
+        case_aggregations = info.context.get("user_data").get_case_aggregations(filtered_cases)
         return case_aggregations
 
     def resolve_facets(self, info, filters=None, facets=None):
-        return data.get_facets()
+        return info.context.get("user_data").get_facets()
 
 class Repository(graphene.ObjectType):
     files = graphene.Field(Files)
@@ -581,14 +566,14 @@ class Projects(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
-        projects = data.get_current_projects(filters)
+        projects = info.context.get("user_data").get_current_projects(filters)
         filtered_projects = utilities.filter_hits(projects, filters, "projects")
         return filtered_projects
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
-        projects = data.get_current_projects()
+        projects = info.context.get("user_data").get_current_projects()
         filtered_projects = utilities.filter_hits(projects, filters, "projects")
-        project_aggregations = data.get_project_aggregations(filtered_projects) 
+        project_aggregations = info.context.get("user_data").get_project_aggregations(filtered_projects) 
         return project_aggregations
 
 class FileSize(graphene.ObjectType):
@@ -602,7 +587,7 @@ class CartSummary(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_aggregations(self, info, filters=None):
-        return data.get_cart_file_size(filters=data.get_project_access_filters(filters))
+        return info.context.get("user_data").get_cart_file_size(filters=info.context.get("user_data").get_project_access_filters())
 
 class Root(graphene.ObjectType):
     user = graphene.Field(User)
@@ -612,10 +597,10 @@ class Root(graphene.ObjectType):
     cart_summary = graphene.Field(CartSummary)
 
     def resolve_user(self, info):
-        return data.get_user()
+        return info.context.get("user_data").get_user()
 
     def resolve_count(self, info):
-        return data.get_current_counts()
+        return info.context.get("user_data").get_current_counts()
 
     def resolve_repository(self, info):
         return Repository(self)

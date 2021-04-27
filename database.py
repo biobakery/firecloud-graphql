@@ -99,18 +99,11 @@ class Data(object):
     def create_access_query_restriction(self, projects):
         return " WHERE project in ({}) ".format(projects)
 
-    def set_project_access_filters(self, data_variables, projects):
-        current_filters=data_variables.get("filters",{}) or {}
-        current_filters["project_access"]=self.create_access_query_restriction(projects)
-        data_variables["filters"]=current_filters
+    def set_project_access_filters(self, projects):
+        self.project_access_filters=self.create_access_query_restriction(projects)
 
-    def get_project_access_filters(self, filters):
-        if not filters:
-            return self.create_access_query_restriction(self.no_access_group)
-        elif "project_access" in filters:
-            return filters["project_access"]
-        else:
-            return self.create_access_query_restriction(self.no_access_group)
+    def get_project_access_filters(self):
+        return self.project_access_filters
 
     def valid_token(self, token):
         access_groups = self.get_project_access(token)
@@ -914,4 +907,3 @@ class Data(object):
     def get_facets(self):
         return "null" # this is not currently being used
 
-data = Data()
