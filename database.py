@@ -285,6 +285,10 @@ class Data(object):
         return projects_results
 
     def get_current_files(self, filters=""):
+        
+        if not filters and self.use_cache("files"):
+            return self.get_cache("files")
+
         # get all cases and samples data
         participant_metadata_columns, participant_data = self.get_all_cases(filters=filters)
         sample_metadata_columns, sample_data = self.get_all_samples(filters=filters)
@@ -294,9 +298,6 @@ class Data(object):
                  "file_sample.platform, file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
                  "project.program " +\
                  "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id WHERE file_sample.file_id !='NA'"
-
-        if not filters and self.use_cache("files"):
-            return self.get_cache("files")
 
         connection, db_results = self.query_database(query)
         files = []
@@ -599,7 +600,7 @@ class Data(object):
 
         return cases
 
-    def get_cart_file_size(self, filters):
+    def get_cart_file_size(self, filters=""):
         all_files = self.get_current_files(filters=filters)
         filtered_files = utilities.filter_hits(all_files, filters, "files")
         # get the size from the filtered files
