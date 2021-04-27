@@ -286,7 +286,7 @@ class FileConnection(graphene.relay.Connection):
     total = graphene.Int()
 
     def resolve_total(self, info):
-        return self.iterable.total
+        return info.context.get("files_hits_total")
 
 class FileAggregations(graphene.ObjectType):
     data_category = graphene.Field(Aggregations)
@@ -313,6 +313,12 @@ class Files(graphene.ObjectType):
         aggregations_filter_themselves=graphene.Boolean())
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
+        all_files = info.context.get("user_data").get_current_files()
+        filtered_files = utilities.filter_hits(all_files, filters, "files")
+
+        # set total for hits
+        info.context["files_hits_total"] = len(filtered_files)
+
         all_files = info.context.get("user_data").get_current_files(filters=info.context.get("user_data").get_project_access_filters())
         filtered_files = utilities.filter_hits(all_files, filters, "files")
         sorted_files = utilities.sort_hits(filtered_files, sort)
@@ -433,8 +439,8 @@ class CaseConnection(graphene.relay.Connection):
 
     total = graphene.Int()
 
-    def resolve_total(self, info, filters=None):
-        return self.iterable.total
+    def resolve_total(self, info):
+        return info.context.get("cases_hits_total")
 
 class Sample(graphene.ObjectType):
     class Meta:
@@ -473,8 +479,8 @@ class SampleConnection(graphene.relay.Connection):
 
     total = graphene.Int()
 
-    def resolve_total(self, info, filters=None):
-        return self.iterable.total
+    def resolve_total(self, info):
+        return info.context.get("samples_hits_total")
 
 class RepositorySamples(graphene.ObjectType):
     hits = graphene.relay.ConnectionField(SampleConnection,
@@ -491,6 +497,12 @@ class RepositorySamples(graphene.ObjectType):
         facets=graphene.List(graphene.String))
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
+        all_samples = info.context.get("user_data").get_current_samples()
+        filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
+
+        # set total for sample hits
+        info.context["samples_hits_total"]=len(filtered_samples)
+
         all_samples = info.context.get("user_data").get_current_samples(filters=info.context.get("user_data").get_project_access_filters())
         filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
         sorted_samples = utilities.sort_hits(filtered_samples, sort)
@@ -520,6 +532,13 @@ class RepositoryCases(graphene.ObjectType):
         facets=graphene.List(graphene.String))
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
+        all_cases = info.context.get("user_data").get_current_cases()
+        filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
+
+        # set total for hits
+        info.context["cases_hits_total"] = len(filtered_cases)
+
+        # compute limited hits
         all_cases = info.context.get("user_data").get_current_cases(filters=info.context.get("user_data").get_project_access_filters())
         filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
         sorted_cases = utilities.sort_hits(filtered_cases, sort)
@@ -587,7 +606,7 @@ class CartSummary(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_aggregations(self, info, filters=None):
-        return info.context.get("user_data").get_cart_file_size(filters=info.context.get("user_data").get_project_access_filters())
+        return info.context.get("user_data").get_cart_file_size()
 
 class Root(graphene.ObjectType):
     user = graphene.Field(User)
