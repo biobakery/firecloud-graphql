@@ -92,7 +92,6 @@ def process_query(request, schema_query):
     user_data.set_project_access_filters(project_access_list)
 
     firecloud_schema=graphene.Schema(query=schema_query, auto_camelcase=False)
-
     result=firecloud_schema.execute(data_query, variables=data_variables, context={"user_data":user_data})
     if result.errors:
         print("ERROR")
@@ -101,11 +100,10 @@ def process_query(request, schema_query):
         print(result.errors)
 
         # clear the cache
-        user_data.cache['expires']={}
+        user_data.cache.expires={}
 
     # filter out items that should not be servered without auth
     schema.filter_noauth(result.data,token_cookie,user_data)
-
     json_result=flask.jsonify({"data": result.data})
 
     return json_result

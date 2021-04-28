@@ -16,6 +16,48 @@ GENERIC_FILE_NAME_OFFSET = 1000000
 CASE_DEFAULT_COLUMNS = set(['entity_participant_id', 'updated', 'participant_name', 'participant_id', 'id'])
 SAMPLE_DEFAULT_COLUMNS = set(['sample', 'updated', 'participant', 'sample_id', 'id','project'])
 
+class Cache(object):
+
+    def __init__(self):
+        self.expires={}
+        # expires every 30 minutes
+        self.expires_offset=30*60
+
+        self.lock=threading.Lock()
+
+        self.cache={}
+
+    def use_cache(self,cache_type,filters):
+        # check if cache is available for use
+        return self.get_cache(cache_type,filters)
+
+    def get_cache(self,cache_type,filters):
+        self.lock.acquire()
+
+        cache_name=cache_type+filters
+
+        if ( self.expires.get(cache_name,0) + self.expires_offset ) > time.time() and cache_name in self.cache:
+            value = self.cache[cache_name]
+        else:
+            value = ""
+
+        self.lock.release()
+
+        return value
+
+    def update_cache(self,cache_type,new_object,filters):
+        self.lock.acquire()
+
+        cache_name=cache_type+filters
+
+        self.cache[cache_name]=new_object
+        self.expires[cache_name]=time.time()
+
+        self.lock.release()
+
+# all data objects share the same cache
+cache = Cache()
+
 class Data(object):
 
     def __init__(self):
@@ -37,37 +79,10 @@ class Data(object):
             print("Database url {}".format(database_url))
             sys.exit(e)
 
-        # empty cache, expires every 30 seconds
-        self.cache={'expires':{},'lock':threading.Lock(),'expires_offset':30}
+        self.cache=cache
 
         # set the no access group
         self.no_access_group = "'None'"
-
-    def use_cache(self,cache_type):
-        # check if cache is available for use
-        return self.get_cache(cache_type)
-
-    def get_cache(self,cache_type):
-        
-        self.cache['lock'].acquire()
-
-        if ( self.cache['expires'].get(cache_type,0) + self.cache['expires_offset'] ) > time.time() and cache_type in self.cache:
-            value = self.cache[cache_type]
-        else:
-            value = ""
-
-        self.cache['lock'].release()
-
-        return value
-
-    def update_cache(self,cache_type,new_object):
-
-        self.cache['lock'].acquire()
-
-        self.cache[cache_type]=new_object
-        self.cache['expires'][cache_type]=time.time()
-
-        self.cache['lock'].release()
 
     def query_database(self, query, fetchall=False, no_results=False):
         # obtain connection from pool, run query
@@ -286,8 +301,8 @@ class Data(object):
 
     def get_current_files(self, filters=""):
         
-        if not filters and self.use_cache("files"):
-            return self.get_cache("files")
+        if self.cache.use_cache("files", filters):
+            return self.cache.get_cache("files",filters)
 
         # get all cases and samples data
         participant_metadata_columns, participant_data = self.get_all_cases(filters=filters)
@@ -359,15 +374,14 @@ class Data(object):
             ))
         connection.close()
 
-        if not filters:
-            self.update_cache("files",files)
+        self.cache.update_cache("files",files,filters)
 
         return files
 
     def get_current_samples(self,filters=""):
 
-        if not filters and self.use_cache("samples"):
-            return self.get_cache("samples")
+        if self.cache.use_cache("samples", filters):
+            return self.cache.get_cache("samples", filters)
 
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
@@ -470,16 +484,15 @@ class Data(object):
             samples.append(sample_instance)
         connection.close()
 
-        if not filters:
-            self.update_cache("samples",samples)
+        self.cache.update_cache("samples",samples,filters)
 
         return samples
 
 
     def get_current_cases(self,filters=""):
 
-        if not filters and self.use_cache("cases"):
-            return self.get_cache("cases")
+        if self.cache.use_cache("cases", filters):
+            return self.cache.get_cache("cases", filters)
 
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
@@ -595,8 +608,7 @@ class Data(object):
             completed_cases.add(row['participant_id'])
         connection.close()
 
-        if not filters:
-            self.update_cache("cases",cases)
+        self.cache.update_cache("cases",cases,filters)
 
         return cases
 
