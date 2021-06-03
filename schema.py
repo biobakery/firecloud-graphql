@@ -606,7 +606,7 @@ class CartSummary(graphene.ObjectType):
         filters=FiltersArgument())
 
     def resolve_aggregations(self, info, filters=None):
-        return info.context.get("user_data").get_cart_file_size()
+        return info.context.get("user_data").get_cart_file_size(filters=filters)
 
 class Root(graphene.ObjectType):
     user = graphene.Field(User)

@@ -613,7 +613,7 @@ class Data(object):
         return cases
 
     def get_cart_file_size(self, filters=""):
-        all_files = self.get_current_files(filters=filters)
+        all_files = self.get_current_files()
         filtered_files = utilities.filter_hits(all_files, filters, "files")
         # get the size from the filtered files
         total_size = sum([utilities.str_to_float([file.file_size], error_zero=True)[0] for file in filtered_files])
