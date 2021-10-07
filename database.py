@@ -116,6 +116,10 @@ class Data(object):
 
     def set_project_access_filters(self, projects):
         self.project_access_filters=self.create_access_query_restriction(projects)
+        if projects == self.no_access_group:
+            self.project_access = False
+        else:
+            self.project_access = True
 
     def get_project_access_filters(self):
         return self.project_access_filters
@@ -176,7 +180,7 @@ class Data(object):
                 field=content["content"]["field"]
                 if "summary" in field:
                     content["content"]["field"]="files."+field.split(".")[-1]
-            filtered_files = utilities.filter_hits(all_files, filters, "files")
+            filtered_files = utilities.filter_hits(all_files, filters, "files", True)
             selected_file_ids = [file.id for file in filtered_files]
         else:
             selected_file_ids = [file.id for file in all_files]
@@ -614,7 +618,7 @@ class Data(object):
 
     def get_cart_file_size(self, filters=""):
         all_files = self.get_current_files()
-        filtered_files = utilities.filter_hits(all_files, filters, "files")
+        filtered_files = utilities.filter_hits(all_files, filters, "files", True)
         # get the size from the filtered files
         total_size = sum([utilities.str_to_float([file.file_size], error_zero=True)[0] for file in filtered_files])
         return schema.CartSummaryAggs(fs=schema.FileSize(value=total_size))

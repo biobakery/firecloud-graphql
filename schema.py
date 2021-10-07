@@ -314,19 +314,19 @@ class Files(graphene.ObjectType):
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
         all_files = info.context.get("user_data").get_current_files()
-        filtered_files = utilities.filter_hits(all_files, filters, "files")
+        filtered_files = utilities.filter_hits(all_files, filters, "files", info.context.get("user_data").project_access)
 
         # set total for hits
         info.context["files_hits_total"] = len(filtered_files)
 
         all_files = info.context.get("user_data").get_current_files(filters=info.context.get("user_data").get_project_access_filters())
-        filtered_files = utilities.filter_hits(all_files, filters, "files")
+        filtered_files = utilities.filter_hits(all_files, filters, "files", info.context.get("user_data").project_access)
         sorted_files = utilities.sort_hits(filtered_files, sort)
         return utilities.offset_hits(sorted_files, offset)
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         all_files = info.context.get("user_data").get_current_files()
-        filtered_files = utilities.filter_hits(all_files, filters, "files")
+        filtered_files = utilities.filter_hits(all_files, filters, "files", info.context.get("user_data").project_access)
         return info.context.get("user_data").get_file_aggregations(filtered_files)
 
     def resolve_facets(self, info, filters=None, facets=None):
@@ -498,19 +498,19 @@ class RepositorySamples(graphene.ObjectType):
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
         all_samples = info.context.get("user_data").get_current_samples()
-        filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
+        filtered_samples = utilities.filter_hits(all_samples, filters, "samples", info.context.get("user_data").project_access)
 
         # set total for sample hits
         info.context["samples_hits_total"]=len(filtered_samples)
 
         all_samples = info.context.get("user_data").get_current_samples(filters=info.context.get("user_data").get_project_access_filters())
-        filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
+        filtered_samples = utilities.filter_hits(all_samples, filters, "samples", info.context.get("user_data").project_access)
         sorted_samples = utilities.sort_hits(filtered_samples, sort)
         return utilities.offset_hits(sorted_samples, offset)
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         all_samples = info.context.get("user_data").get_current_samples()
-        filtered_samples = utilities.filter_hits(all_samples, filters, "samples")
+        filtered_samples = utilities.filter_hits(all_samples, filters, "samples", info.context.get("user_data").project_access)
         sample_aggregations = info.context.get("user_data").get_sample_aggregations(filtered_samples)
         return sample_aggregations
 
@@ -533,20 +533,20 @@ class RepositoryCases(graphene.ObjectType):
 
     def resolve_hits(self, info, first=None, score=None, offset=None, sort=None, filters=None):
         all_cases = info.context.get("user_data").get_current_cases()
-        filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
+        filtered_cases = utilities.filter_hits(all_cases, filters, "cases", info.context.get("user_data").project_access)
 
         # set total for hits
         info.context["cases_hits_total"] = len(filtered_cases)
 
         # compute limited hits
         all_cases = info.context.get("user_data").get_current_cases(filters=info.context.get("user_data").get_project_access_filters())
-        filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
+        filtered_cases = utilities.filter_hits(all_cases, filters, "cases", info.context.get("user_data").project_access)
         sorted_cases = utilities.sort_hits(filtered_cases, sort)
         return utilities.offset_hits(sorted_cases, offset)
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         all_cases = info.context.get("user_data").get_current_cases()
-        filtered_cases = utilities.filter_hits(all_cases, filters, "cases")
+        filtered_cases = utilities.filter_hits(all_cases, filters, "cases", info.context.get("user_data").project_access)
         case_aggregations = info.context.get("user_data").get_case_aggregations(filtered_cases)
         return case_aggregations
 
@@ -586,12 +586,12 @@ class Projects(graphene.ObjectType):
 
     def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
         projects = info.context.get("user_data").get_current_projects(filters)
-        filtered_projects = utilities.filter_hits(projects, filters, "projects")
+        filtered_projects = utilities.filter_hits(projects, filters, "projects", True)
         return filtered_projects
 
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         projects = info.context.get("user_data").get_current_projects()
-        filtered_projects = utilities.filter_hits(projects, filters, "projects")
+        filtered_projects = utilities.filter_hits(projects, filters, "projects", True)
         project_aggregations = info.context.get("user_data").get_project_aggregations(filtered_projects) 
         return project_aggregations
 

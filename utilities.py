@@ -231,8 +231,10 @@ def subhits(single_hit, top_level):
                 continue
     return levels
 
-def filter_hits(hits, filters, object_name):
+def filter_hits(hits, filters, object_name, project_access):
     # Filter the hits based on the json string provided
+
+    MIN_RESTRICTED_HITS=20
 
     if not filters:
         return hits
@@ -281,7 +283,13 @@ def filter_hits(hits, filters, object_name):
     for next_set in all_filtered_sets:
         final_set = final_set.intersection(next_set)
 
-    return list(final_set)
+    final_set=list(final_set)
+
+    # if this is not an authenticated user then check to make sure there are enough hits
+    if not project_access and len(final_set) < MIN_RESTRICTED_HITS:
+        return hits
+    else:
+        return final_set
 
 def sort_hits(hits, sort):
     # Sort the hits based on the string provided
