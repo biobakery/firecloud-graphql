@@ -286,7 +286,10 @@ def filter_hits(hits, filters, object_name, project_access):
     final_set=list(final_set)
 
     # if this is not an authenticated user then check to make sure there are enough hits
-    if not project_access and len(final_set) < MIN_RESTRICTED_HITS:
+    # allow for filtering of files using just file based filters
+    if len(filters["content"]) == 1 and filters["content"][0].get("content",{}).get("field","").startswith("files."):
+        return final_set
+    elif not project_access and len(final_set) < MIN_RESTRICTED_HITS:
         return hits
     else:
         return final_set
