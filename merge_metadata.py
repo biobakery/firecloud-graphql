@@ -36,7 +36,7 @@ def merge_data(files, filetype):
         for sample, sampledata in filedata.items():
             newline = []
             for item in final_headers:
-                newline.append(sampledata.get(item,"NA"))
+                newline.append(sampledata.get(item,"Not_available"))
             final_data.append(newline)
 
     return final_headers, final_data
