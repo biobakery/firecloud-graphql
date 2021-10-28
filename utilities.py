@@ -5,6 +5,15 @@ import json
 import ast
 import collections
 
+def order_metadata_keys(keys, order):
+    new_keys=[]
+    for name in order:
+        if name in keys:
+            new_keys.append(name)
+            keys.remove(name)
+    new_keys+=keys
+
+    return new_keys
 
 def bytes_to_gb(bytes):
     try:
