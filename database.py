@@ -16,12 +16,16 @@ GENERIC_FILE_NAME_OFFSET = 1000000
 CASE_DEFAULT_COLUMNS = set(['entity_participant_id', 'updated', 'participant_name', 'participant_id', 'id'])
 SAMPLE_DEFAULT_COLUMNS = set(['sample', 'updated', 'participant', 'sample_id', 'id','project'])
 
+# metadata keys to move to the front of the list to show on the site (in aggregations and as first in the tables)
+METADATA_DEMOGRAPHICS_PROMOTE=["project","state","age","weight","race","ethnicity","diagnosis","alcohol","caffiene","smoking"]
+METADATA_SAMPLES_PROMOTE=["time","week","fiber","fat","b12","carbs","protein","folate","calories","iron"]
+
 class Cache(object):
 
     def __init__(self):
         self.expires={}
-        # expires every 30 minutes
-        self.expires_offset=30*60
+        # expires every 15 days
+        self.expires_offset=60*60*24*15
 
         self.lock=threading.Lock()
 
@@ -625,8 +629,8 @@ class Data(object):
 
     def get_current_counts(self):
         query = "SELECT COUNT(distinct project), COUNT(distinct participant), COUNT(distinct sample), " +\
-                "COUNT(distinct data_format), COUNT(IF(type='"+RAW_FILE_TYPE+"',1,NULL)), " +\
-                "COUNT(IF(type='"+PROCESSED_FILE_TYPE+"',1,NULL)) FROM file_sample WHERE data_format != 'NA'"
+                "COUNT(distinct IF(data_format!='NA',1,data_format)), COUNT(IF(type='"+RAW_FILE_TYPE+"',1,NULL)), " +\
+                "COUNT(IF(type='"+PROCESSED_FILE_TYPE+"',1,NULL)) FROM file_sample"
         db_results = self.query_database(query, fetchall=True)[0]
         counts = schema.Count(
             projects=db_results[0],
@@ -734,8 +738,8 @@ class Data(object):
                            stats=schema.Stats(max=stats[variable_name].get("max",0), min=stats[variable_name].get("min",0)),
                            buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
 
-        sample_metadata_fields=list(set(dir(samples[0])).difference(set(dir(schema.Sample()))))
-        demographic_metadata_fields=list(set(dir(samples[0].demographic)).difference(set(dir(schema.Demographic()))))
+        sample_metadata_fields=utilities.order_metadata_keys(list(set(dir(samples[0])).difference(set(dir(schema.Sample())))), METADATA_SAMPLES_PROMOTE)
+        demographic_metadata_fields=utilities.order_metadata_keys(list(set(dir(samples[0].demographic)).difference(set(dir(schema.Demographic())))), METADATA_DEMOGRAPHICS_PROMOTE)
 
         # aggregate sample data
         aggregates = {"primary_site": {}, "project__project_id": {}, "project__program__name": {}}
@@ -820,11 +824,11 @@ class Data(object):
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
 
         try:
-            sample_metadata_fields=list(set(dir(cases[0].samples.hits[0])).difference(set(dir(schema.Sample()))))
+            sample_metadata_fields=utilities.order_metadata_keys(list(set(dir(cases[0].samples.hits[0])).difference(set(dir(schema.Sample())))), METADATA_SAMPLES_PROMOTE)
         except IndexError:
             sample_metadata_fields=[]
         try:
-            demographic_metadata_fields=list(set(dir(cases[0].demographic)).difference(set(dir(schema.Demographic()))))
+            demographic_metadata_fields=utilities.order_metadata_keys(list(set(dir(cases[0].demographic)).difference(set(dir(schema.Demographic())))), METADATA_DEMOGRAPHICS_PROMOTE)
         except IndexError:
             demographic_metadata_fields=[]
 
