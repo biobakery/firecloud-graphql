@@ -9,9 +9,12 @@
 
 import os
 import sys
+import re
 
 INPUT_FOLDER = sys.argv[1]
 OUTPUT_FOLDER = sys.argv[2]
+
+MAX_CHARS=19
 
 def merge_data(files, filetype):
     data = {}
@@ -26,7 +29,7 @@ def merge_data(files, filetype):
                 headers += line
                 header = line
             else:
-                data[filename][line[0]]=dict([(x,y) for x,y in zip(header, line)])
+                data[filename][line[0]]=dict([(x,re.sub("[^0-9a-zA-Z.\-]+", "_", y[:MAX_CHARS])) for x,y in zip(header, line)])
     # create a master header
     header_set=set(headers)
     header_set.remove(filetype)
