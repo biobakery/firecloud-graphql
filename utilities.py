@@ -211,8 +211,6 @@ def get_filtered_set(hits, levels, value_selected, operation, field, top_level=N
                 if check_for_match(value_selected, subset_hit_values, operation, field):
                     new_search_subset.append(search_item)
                 hit_values+=subset_hit_values
-            # remove filtered objects
-            getattr(item, top_level).hits = new_search_subset
         elif two_top_levels:
             hit_values = []
             for search_item in getattr(item, two_top_levels[0]).hits:
