@@ -31,10 +31,6 @@ class Cache(object):
 
         self.cache={}
 
-    def use_cache(self,cache_type,filters):
-        # check if cache is available for use
-        return self.get_cache(cache_type,filters)
-
     def get_cache(self,cache_type,filters):
         self.lock.acquire()
 
@@ -42,15 +38,17 @@ class Cache(object):
 
         if ( self.expires.get(cache_name,0) + self.expires_offset ) > time.time() and cache_name in self.cache:
             value = self.cache[cache_name]
+            self.lock.release()
+            have_lock=False
         else:
+            have_lock=True
             value = ""
 
-        self.lock.release()
+        return value, have_lock
 
-        return value
-
-    def update_cache(self,cache_type,new_object,filters):
-        self.lock.acquire()
+    def update_cache(self,cache_type,new_object,filters,have_lock):
+        if not have_lock:
+            self.lock.acquire()
 
         cache_name=cache_type+filters
 
@@ -308,9 +306,10 @@ class Data(object):
         return projects_results
 
     def get_current_files(self, filters=""):
-        
-        if self.cache.use_cache("files", filters):
-            return self.cache.get_cache("files",filters)
+       
+        cache_files, have_lock=self.cache.get_cache("files",filters)
+        if cache_files:
+            return cache_files
 
         # get all cases and samples data
         participant_metadata_columns, participant_data = self.get_all_cases(filters=filters)
@@ -382,14 +381,15 @@ class Data(object):
             ))
         connection.close()
 
-        self.cache.update_cache("files",files,filters)
+        self.cache.update_cache("files",files,filters,have_lock)
 
         return files
 
     def get_current_samples(self,filters=""):
 
-        if self.cache.use_cache("samples", filters):
-            return self.cache.get_cache("samples", filters)
+        cache_samples, have_lock = self.cache.get_cache("samples", filters)
+        if cache_samples:
+            return cache_samples
 
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
@@ -492,15 +492,16 @@ class Data(object):
             samples.append(sample_instance)
         connection.close()
 
-        self.cache.update_cache("samples",samples,filters)
+        self.cache.update_cache("samples",samples,filters,have_lock)
 
         return samples
 
 
     def get_current_cases(self,filters=""):
 
-        if self.cache.use_cache("cases", filters):
-            return self.cache.get_cache("cases", filters)
+        cache_cases, have_lock = self.cache.get_cache("cases", filters)
+        if cache_cases:
+            return cache_cases
 
         # gather file data for participants
         query = "SELECT id, participant, file_size, data_category, experimental_strategy, " +\
@@ -616,7 +617,7 @@ class Data(object):
             completed_cases.add(row['participant_id'])
         connection.close()
 
-        self.cache.update_cache("cases",cases,filters)
+        self.cache.update_cache("cases",cases,filters,have_lock)
 
         return cases
 
