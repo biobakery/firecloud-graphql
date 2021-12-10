@@ -209,6 +209,25 @@ class Data(object):
                     project_info[id][count_type][row[count_type]]=project_info[id][count_type].get(row[count_type],0)+1
 
         connection.close()
+
+        query = "SELECT sample.id as sample_id, sample.participant as participant_id, sample.project, " +\
+                 "project.id as project_id, project.primary_site, " +\
+                 "project.program " +\
+                 "FROM sample INNER JOIN project ON sample.project=project.project_id"
+        connection, db_results = self.query_database(query)
+
+        for row in db_results:
+            id = row['project_id']
+            if not id in project_info:
+                project_info[id]={"file_size":0, "file_count":0, "participants":set(), "data_category": {}, "experimental_strategy": {}}
+                project_info[id]['name']=row['project']
+                project_info[id]['program']=row['program']
+                project_info[id]['primary_site']=row['primary_site']
+            # compile cases
+            project_info[id]['participants'].add(row['participant_id'])
+
+        connection.close()
+
         projects = []
         for id, info in project_info.items():
             projects.append(schema.Project(
