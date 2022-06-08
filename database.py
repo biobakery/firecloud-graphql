@@ -25,7 +25,7 @@ class Cache(object):
     def __init__(self):
         self.expires={}
         # expires every 3 months
-        self.expires_offset=60*60*24*30*3
+        # self.expires_offset=60*60*24*30*3
 
         self.lock=threading.Lock()
 
@@ -36,7 +36,8 @@ class Cache(object):
 
         cache_name=cache_type+filters
 
-        if ( self.expires.get(cache_name,0) + self.expires_offset ) > time.time() and cache_name in self.cache:
+        #if ( self.expires.get(cache_name,0) + self.expires_offset ) > time.time() and cache_name in self.cache:
+        if cache_name in self.cache:
             value = self.cache[cache_name]
             self.lock.release()
             have_lock=False
