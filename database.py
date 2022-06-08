@@ -24,8 +24,8 @@ class Cache(object):
 
     def __init__(self):
         self.expires={}
-        # expires every 15 days
-        self.expires_offset=60*60*24*15
+        # expires every 3 months
+        self.expires_offset=60*60*24*30*3
 
         self.lock=threading.Lock()
 
