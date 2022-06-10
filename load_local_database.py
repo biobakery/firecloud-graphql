@@ -126,7 +126,7 @@ def read_metadata_file(filename):
     col_remove_names=[]
     for i, name in enumerate(column_names.split(",")):
         col_values=map(lambda x: x.split(",")[i], rows)
-        if not list(filter(lambda x: x != "'NA'", map(lambda x: x.split(",")[i], rows))):
+        if not list(filter(lambda x: x != "'NA'" and x != "'Not_available'", map(lambda x: x.split(",")[i], rows))):
             col_remove_index.append(i)
             col_remove_names.append(name)
 
