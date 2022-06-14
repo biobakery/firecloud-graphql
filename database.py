@@ -20,12 +20,16 @@ SAMPLE_DEFAULT_COLUMNS = set(['sample', 'updated', 'participant', 'sample_id', '
 METADATA_DEMOGRAPHICS_PROMOTE=["project","state","age","weight","race","ethnicity","diagnosis","alcohol","caffiene","smoking"]
 METADATA_SAMPLES_PROMOTE=["time","week","fiber","fat","b12","carbs","protein","folate","calories","iron"]
 
+# optional white list of metadata keys to use
+METADATA_DEMOGRAPHICS_WHITELIST="demographic_metadata_whitelist.txt"
+METADATA_SAMPLES_WHITELIST="sample_metadata_whitelist.txt"
+
 class Cache(object):
 
     def __init__(self):
         self.expires={}
         # expires every 3 months
-        # self.expires_offset=60*60*24*30*3
+        self.expires_offset=60*60*24*30*3
 
         self.lock=threading.Lock()
 
@@ -86,6 +90,11 @@ class Data(object):
 
         # set the no access group
         self.no_access_group = "'None'"
+
+        # check for optional whitelist files
+        self.metadata_demographics_whitelist=utilities.read_whitelist(METADATA_DEMOGRAPHICS_WHITELIST)
+        self.metadata_samples_whitelist=utilities.read_whitelist(METADATA_SAMPLES_WHITELIST)
+
 
     def query_database(self, query, fetchall=False, no_results=False):
         # obtain connection from pool, run query
@@ -746,6 +755,10 @@ class Data(object):
 
         return file_aggregates
 
+    def apply_whitelist(self, keep_list, store_fields):
+        if keep_list:
+            return list(keep_list.intersection(set(store_fields)))
+
     def get_sample_aggregations(self, samples):
 
         def get_stats_aggregations(variable_name):
@@ -761,6 +774,10 @@ class Data(object):
 
         sample_metadata_fields=utilities.order_metadata_keys(list(set(dir(samples[0])).difference(set(dir(schema.Sample())))), METADATA_SAMPLES_PROMOTE)
         demographic_metadata_fields=utilities.order_metadata_keys(list(set(dir(samples[0].demographic)).difference(set(dir(schema.Demographic())))), METADATA_DEMOGRAPHICS_PROMOTE)
+
+        # if whitelist provided, then apply
+        sample_metadata_fields=self.apply_whitelist(self.metadata_samples_whitelist,sample_metadata_fields)
+        demographic_metadata_fields=self.apply_whitelist(self.metadata_demographics_whitelist,demographic_metadata_fields)
 
         # aggregate sample data
         aggregates = {"primary_site": {}, "project__project_id": {}, "project__program__name": {}}
@@ -846,10 +863,12 @@ class Data(object):
 
         try:
             sample_metadata_fields=utilities.order_metadata_keys(list(set(dir(cases[0].samples.hits[0])).difference(set(dir(schema.Sample())))), METADATA_SAMPLES_PROMOTE)
+            sample_metadata_fields=self.apply_whitelist(self.metadata_samples_whitelist,sample_metadata_fields)
         except IndexError:
             sample_metadata_fields=[]
         try:
             demographic_metadata_fields=utilities.order_metadata_keys(list(set(dir(cases[0].demographic)).difference(set(dir(schema.Demographic())))), METADATA_DEMOGRAPHICS_PROMOTE)
+            demographic_metadata_fields=self.apply_whitelist(self.metadata_demographics_whitelist,demographic_metadata_fields)
         except IndexError:
             demographic_metadata_fields=[]
 

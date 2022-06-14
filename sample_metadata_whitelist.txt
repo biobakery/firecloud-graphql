@@ -1,0 +1,13 @@
+time
+week
+fiber
+fat
+b12
+carbs
+protein
+folate
+calories
+iron
+alcohol
+met
+choline

@@ -1,0 +1,11 @@
+project
+state
+diagnosis
+yogurt
+water
+smoke
+sweet
+height
+bmi
+income
+egg
