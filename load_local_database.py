@@ -84,7 +84,7 @@ def get_firecloud_data(verbose):
             file_name = file_url_info[-1]
             platform = file_url_info[1]
             gs_folders.add(os.path.dirname(values_file_samples[index][file_id_index]))
-            filetype = "rawFiles" if data_format == "fastq" else "processedFiles"
+            filetype = "rawFiles" if data_format == "fastq" or "raw" in values_file_samples[index][file_id_index].lower() else "processedFiles"
         keys_file_samples[index]+=["access","data_category","data_format","experimental_strategy","file_name","platform","type"]
         values_file_samples[index]+=[access,data_category,data_format,experimental_strategy,file_name,platform,filetype]
 
