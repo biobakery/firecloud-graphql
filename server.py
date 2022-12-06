@@ -146,7 +146,7 @@ def main():
         return flask.jsonify({ "hash_token": hash_token })
 
     # start the app
-    app.run(host=HOST, port=PORT)
+    app.run(host=HOST, port=PORT, threaded=True)
 
 if __name__ == '__main__':
     main()
