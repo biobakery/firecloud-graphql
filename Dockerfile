@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y python build-essential python-dev pytho
 RUN pip install pyopenssl==19.0.0
 
 # use older firecloud version to resolve new issue with auth
-RUN pip install firecloud==0.16.20 graphene flask flask-graphql flask-cors sqlalchemy
+RUN pip install firecloud==0.16.20 graphene flask flask-graphql flask-cors sqlalchemy gunicorn gevent
 
 RUN pip install mysql-connector-python
 

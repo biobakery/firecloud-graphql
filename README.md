@@ -4,12 +4,12 @@
 ## GraphQL Server
 
 To install: 
-`` $ pip install firecloud flask graphene>=2.0.0 flask-graphql flask-cors sqlalchemy``
+`` $ pip install firecloud flask graphene>=2.0.0 flask-graphql flask-cors sqlalchemy gunicorn gevent``
 
 * Also [firecloud-tools](https://github.com/broadinstitute/firecloud-tools) are required for the Firecloud API queries.
 
 To run:
-`` $ python server.py ``
+`` $ nohup gunicorn -b 0.0.0.0:5000 -w 2 "server:main()" --timeout 1200 --log-level=debug -k gevent & ``
 
 The file named `schema.graphql` contains the current schema (implemented in the module of the same name). Use the data utility script in the Portal UI repository to update this schema when needed.
 

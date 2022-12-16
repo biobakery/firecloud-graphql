@@ -88,6 +88,7 @@ def process_query(request, schema_query):
 
     # set project access
     user_data=Data()
+
     project_access_list = user_data.get_project_access(token_cookie)
     user_data.set_project_access_filters(project_access_list)
 
@@ -145,8 +146,9 @@ def main():
             logging.info("Access DENIED for user request from email: " + data_body["email"])
         return flask.jsonify({ "hash_token": hash_token })
 
-    # start the app
-    app.run(host=HOST, port=PORT, threaded=True)
+    return app
 
 if __name__ == '__main__':
-    main()
+    
+    app=main()
+    app.run(host=HOST, port=PORT, threaded=True)
