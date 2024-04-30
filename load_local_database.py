@@ -56,10 +56,17 @@ def get_firecloud_data(verbose):
     keys_file_samples = list()
     for samples in all_samples:
         for item in samples:
-            participant_id=item['attributes']['participant']['entityName']
+            try:
+                participant_id=item['attributes']['participant']['entityName']
+            except TypeError:
+                participant_id="NA"
             del item['attributes']['participant']
             item['attributes']['participant'] = participant_id
-            item['attributes']['entity_sample_id']=item['name']
+            try:
+                item['attributes']['entity_sample_id']=item['name']
+            except ValueError:
+                pass
+
             values_file_samples.append([str(i) for i in item['attributes'].values()])
             keys_file_samples.append([str(i) for i in item['attributes'].keys()])
 
@@ -91,6 +98,7 @@ def get_firecloud_data(verbose):
     filetype_index=keys_file_samples[0].index('type')
     for index in range(len(values_file_samples)):
         # change the file bucket location to the download url and use the console page for raw files (so the user can naviate to UI instead of a direct download)
+        print(values_file_samples[index])
         if "raw" in values_file_samples[index][filetype_index]:
             values_file_samples[index][file_id_index]=os.path.dirname(values_file_samples[index][file_id_index].replace("gs://","https://console.cloud.google.com/storage/browser/"))
         else:
@@ -173,19 +181,19 @@ def main():
     query_create_db = "CREATE DATABASE IF NOT EXISTS "+local_db
 
     # Construct query to  create table  participant in  mariadb
-    columns_participant_desc = columns_participant.replace(","," varchar(100),")
+    columns_participant_desc = columns_participant.replace(","," varchar(20),")
     query_create_participant = '''CREATE TABLE IF NOT EXISTS
         participant(id int not null auto_increment primary key,'''
     query_create_participant =  query_create_participant + columns_participant_desc
-    query_create_participant = query_create_participant + " varchar(100), updated timestamp)"
+    query_create_participant = query_create_participant + " varchar(20), updated timestamp)"
 
     # Construct query to create  table sample in mariadb
-    columns_sample_desc = columns_sample.replace(","," varchar(100),")
+    columns_sample_desc = columns_sample.replace(","," varchar(20),")
     query_create_sample = '''CREATE TABLE IF NOT EXISTS
         sample(id int not null auto_increment primary key,
         project varchar(100),'''
     query_create_sample =  query_create_sample + columns_sample_desc
-    query_create_sample = query_create_sample + ''' varchar(100),
+    query_create_sample = query_create_sample + ''' varchar(20),
         updated timestamp, 
         CONSTRAINT fk_participant FOREIGN KEY (participant)
         REFERENCES participant(entity_participant_id)
@@ -193,10 +201,10 @@ def main():
         ON UPDATE CASCADE)'''
 
     # Correct types for key fields  in create statements
-    query_create_sample = query_create_sample.replace("sample varchar(100)","sample varchar(100) not null UNIQUE KEY")
-    query_create_sample = query_create_sample.replace("participant varchar(100)","participant varchar(100) not null")
+    query_create_sample = query_create_sample.replace("sample varchar(20)","sample varchar(20) not null UNIQUE KEY")
+    query_create_sample = query_create_sample.replace("participant varchar(20)","participant varchar(20) not null")
     query_create_participant = query_create_participant.replace(
-        "entity_participant_id varchar(100)","entity_participant_id varchar(100) not null  UNIQUE KEY")
+        "entity_participant_id varchar(20)","entity_participant_id varchar(20) not null  UNIQUE KEY")
     if args.verbose:
         print(query_create_participant,query_create_sample)
 
