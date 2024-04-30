@@ -85,11 +85,11 @@ def get_firecloud_data(verbose):
         else:
             file_url_info = values_file_samples[index][file_id_index].replace("gs://","").split("/")
             access = "open" if "public" in values_file_samples[index][file_id_index] else "controlled"
-            data_category = file_url_info[3].lower()
+            data_category = file_url_info[-3].lower()
             data_format = "fastq" if "fastq" in values_file_samples[index][file_id_index] else file_url_info[-1].split(".")[-1]
-            experimental_strategy = file_url_info[2]
+            experimental_strategy = file_url_info[-4]
             file_name = file_url_info[-1]
-            platform = file_url_info[1]
+            platform = file_url_info[-5]
             gs_folders.add(os.path.dirname(values_file_samples[index][file_id_index]))
             filetype = "rawFiles" if data_format == "fastq" or "raw" in values_file_samples[index][file_id_index].lower() else "processedFiles"
         keys_file_samples[index]+=["access","data_category","data_format","experimental_strategy","file_name","platform","type"]
