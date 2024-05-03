@@ -56,10 +56,21 @@ def get_firecloud_data(verbose):
     keys_file_samples = list()
     for samples in all_samples:
         for item in samples:
+            participant_id_type_error=False
             try:
                 participant_id=item['attributes']['participant']['entityName']
             except TypeError:
                 participant_id="NA"
+                participant_id_type_error=True
+
+            # try a different location for rows that were edited in the Terra browser UI
+            if participant_id_type_error:
+                try:
+                    participant_id=item['attributes']['participant']
+                except TypeError:
+                    participant_id="NA"
+
+
             del item['attributes']['participant']
             item['attributes']['participant'] = participant_id
             try:
