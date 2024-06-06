@@ -41,6 +41,9 @@ def parse_arguments(args):
         "--file-sample",
         help="a file of sample data")
     parser.add_argument(
+        "--file-project",
+        help="a file of project data")
+    parser.add_argument(
         "--delete-existing",
         help="delete all existing tables",
         action='store_true')
@@ -180,10 +183,11 @@ def main():
         sys.exit(e)
 
     # Get data from  big query
-    if args.file_participant and args.file_sample:
+    if args.file_participant and args.file_sample and args.file_project:
         print("Reading data from local files")
         values_participant,columns_participant=read_metadata_file(args.file_participant)
         values_sample,columns_sample=read_metadata_file(args.file_sample)
+        values_project,columns_project=read_metadata_file(args.file_project)
     else:
         print("Calling Google BigQuery API")
         values_participant,values_sample,columns_participant,columns_sample=query_bigquery.query_bigquery(args.project,args.dataset,key_file,args.verbose)
@@ -353,6 +357,7 @@ def main():
         name varchar(100),
         program  varchar(100),
         primary_site  varchar(100),
+        participant_total int,
         updated timestamp)'''
     cursor.execute(query_create_project)
     mariadb_connection.commit()
@@ -375,6 +380,18 @@ def main():
             print(query_insert_project)
         cursor.execute(query_insert_project)
     print("** {} total rows added to project table".format(len(rows)))
+
+    for row, columns in zip(values_project, columns_project):
+
+        row0=row.pop(0)
+        column0=columns.pop(0)
+        for value, col in zip(row, columns):
+            update_project="UPDATE project set "+col+" = "+value+" WHERE "+column0+" = "+row0
+            if args.verbose:
+                print(update_project)
+            #cursor.execute(update_project)
+            #mariadb_connection.commit()
+
 
     mariadb_connection.commit()
 
