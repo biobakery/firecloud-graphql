@@ -227,10 +227,9 @@ class Data(object):
             # compile cases
             if "participant_id" in row:
                 project_info[id]['participants'].add(row['participant_id'])
-            elif "total_participants" in row:
+            # add NA participants for counts only for projects without participant metadata
+            elif "total_participants" in row and row['total_participants']:
                 project_info[id]['participants'].update(map(lambda x: "NA"+str(x), list(xrange(int(row['total_participants'])))))
-            else:
-                project_info[id]['participants'].add('NA')
             # compile file count and count data category and experimental strategy
             if row['file_size'] != "0":
                 project_info[id]['file_count']+=1
@@ -682,9 +681,13 @@ class Data(object):
                 "COUNT(distinct IF(data_format!='NA',1,data_format)), COUNT(IF(type='"+RAW_FILE_TYPE+"',1,NULL)), " +\
                 "COUNT(IF(type='"+PROCESSED_FILE_TYPE+"',1,NULL)) FROM file_sample"
         db_results = self.query_database(query, fetchall=True)[0]
+
+        query = "SELECT SUM(total_participants) FROM project"
+        db_results_2 = self.query_database(query, fetchall=True)[0]
+
         counts = schema.Count(
             projects=db_results[0],
-            participants=db_results[1],
+            participants=int(db_results_2[0])+db_results[1],
             samples=db_results[2],
             dataFormats=db_results[3],
             rawFiles=db_results[4], 
