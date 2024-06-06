@@ -99,6 +99,7 @@ class Data(object):
     def query_database(self, query, fetchall=False, no_results=False):
         # obtain connection from pool, run query
         # then release connection back to pool
+        
         connection = self.engine.connect()
         if no_results:
             connection.execute(query)
@@ -106,7 +107,7 @@ class Data(object):
             return None
         else:
             results = connection.execute(query)
-  
+        
         # if fetchall then get all results (to close cursor)
         # and then close connection
         # if not, then return connction so function can
@@ -186,6 +187,20 @@ class Data(object):
             all_files.append(schema.File(id=row['file_id'], data_category=row['data_category'], experimental_strategy=row['experimental_strategy']))
             save_db_results.append(row)
 
+        # add those projects with files without participant or sample metadata
+        query = "SELECT file_sample.id as file_id, file_sample.participant, " +\
+                 "file_sample.file_size, file_sample.data_category, " +\
+                 "file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
+                 "project.program, project.total_participants " +\
+                 "FROM file_sample INNER JOIN project ON file_sample.project=project.project_id "
+        connection, db_results = self.query_database(query)
+
+        # create a set of files for filtering
+        for row in db_results:
+            all_files.append(schema.File(id=row['file_id'], data_category=row['data_category'], experimental_strategy=row['experimental_strategy']))
+            save_db_results.append(row)
+     
+
         # apply filtering only for summary/file filters
         if filters and "content" in filters:
             for content in filters["content"]:
@@ -210,7 +225,12 @@ class Data(object):
             # compile file size
             project_info[id]['file_size']+=int(row['file_size'])
             # compile cases
-            project_info[id]['participants'].add(row['participant_id'])
+            if "participant_id" in row:
+                project_info[id]['participants'].add(row['participant_id'])
+            elif "total_participants" in row:
+                project_info[id]['participants'].update(map(lambda x: "NA"+str(x), list(xrange(int(row['total_participants'])))))
+            else:
+                project_info[id]['participants'].add('NA')
             # compile file count and count data category and experimental strategy
             if row['file_size'] != "0":
                 project_info[id]['file_count']+=1
