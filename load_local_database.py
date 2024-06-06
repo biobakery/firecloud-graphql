@@ -357,7 +357,7 @@ def main():
         name varchar(100),
         program  varchar(100),
         primary_site  varchar(100),
-        participant_total int,
+        total_participants varchar(10),
         updated timestamp)'''
     cursor.execute(query_create_project)
     mariadb_connection.commit()
@@ -381,16 +381,16 @@ def main():
         cursor.execute(query_insert_project)
     print("** {} total rows added to project table".format(len(rows)))
 
-    for row, columns in zip(values_project, columns_project):
-
-        row0=row.pop(0)
-        column0=columns.pop(0)
-        for value, col in zip(row, columns):
-            update_project="UPDATE project set "+col+" = "+value+" WHERE "+column0+" = "+row0
+    column_project_values=columns_project.split(",")
+    for row in values_project:
+        row_values=row.split(",")
+        row0=row_values.pop(0)
+        for value, col in zip(row_values, column_project_values[1:]):
+            update_project="UPDATE project set "+col+" = "+value+" WHERE "+column_project_values[0]+" = "+row0
             if args.verbose:
                 print(update_project)
-            #cursor.execute(update_project)
-            #mariadb_connection.commit()
+            cursor.execute(update_project)
+            mariadb_connection.commit()
 
 
     mariadb_connection.commit()
