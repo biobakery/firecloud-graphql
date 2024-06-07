@@ -183,11 +183,12 @@ class Data(object):
         # create a set of files for filtering
         save_db_results=[]
         all_files=[]
+        saved_files=set()
         for row in db_results:
             all_files.append(schema.File(id=row['file_id'], data_category=row['data_category'], experimental_strategy=row['experimental_strategy']))
             save_db_results.append(row)
+            saved_files.add(row['file_id'])
 
-        # add those projects with files without participant or sample metadata
         query = "SELECT file_sample.id as file_id, file_sample.participant, " +\
                  "file_sample.file_size, file_sample.data_category, " +\
                  "file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
@@ -197,9 +198,10 @@ class Data(object):
 
         # create a set of files for filtering
         for row in db_results:
-            all_files.append(schema.File(id=row['file_id'], data_category=row['data_category'], experimental_strategy=row['experimental_strategy']))
-            save_db_results.append(row)
-     
+            if not row['file_id'] in saved_files:
+                all_files.append(schema.File(id=row['file_id'], data_category=row['data_category'], experimental_strategy=row['experimental_strategy']))
+                save_db_results.append(row)
+                saved_files.add(row['file_id'])
 
         # apply filtering only for summary/file filters
         if filters and "content" in filters:
@@ -257,6 +259,15 @@ class Data(object):
 
         connection.close()
 
+        query = "SELECT project_id, total_participants FROM project"
+        connection, db_results = self.query_database(query)
+        total_participants={}
+        for row in db_results:
+            total_participants[row['project_id']]=int(row['total_participants'])
+
+        connection.close()
+
+
         projects = []
         for id, info in project_info.items():
             projects.append(schema.Project(
@@ -264,7 +275,7 @@ class Data(object):
                 project_id=info['name'],
                 name=info['name'],
                 program=schema.Program(name=info['program']),
-                summary=schema.Summary(case_count=len(list(info['participants'])),
+                summary=schema.Summary(case_count=total_participants.get(info['name'],0),
                     file_count=info['file_count'],
                     data_categories=[schema.DataCategories(case_count=value, data_category=key) for key,value in info['data_category'].items()],
                     experimental_strategies=[schema.ExperimentalStrategies(file_count=value, experimental_strategy=key) for key,value in info['experimental_strategy'].items()],
@@ -687,7 +698,7 @@ class Data(object):
 
         counts = schema.Count(
             projects=db_results[0],
-            participants=int(db_results_2[0])+db_results[1],
+            participants=int(db_results_2[0]),
             samples=db_results[2],
             dataFormats=db_results[3],
             rawFiles=db_results[4], 
