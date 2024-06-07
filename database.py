@@ -696,11 +696,15 @@ class Data(object):
         query = "SELECT SUM(total_participants) FROM project"
         db_results_2 = self.query_database(query, fetchall=True)[0]
 
+        # the count for data_format above does not sync up so using this alternative
+        query = "SELECT COUNT(distinct data_format) FROM file_sample where data_format!='NA'"
+        db_results_3 = self.query_database(query, fetchall=True)[0]
+
         counts = schema.Count(
             projects=db_results[0],
             participants=int(db_results_2[0]),
             samples=db_results[2],
-            dataFormats=db_results[3],
+            dataFormats=int(db_results_3[0]),
             rawFiles=db_results[4], 
             processedFiles=db_results[5]
         )
