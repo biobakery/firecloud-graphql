@@ -547,7 +547,7 @@ class RepositoryCases(graphene.ObjectType):
     def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
         all_cases = info.context.get("user_data").get_current_cases()
         filtered_cases = utilities.filter_hits(all_cases, filters, "cases", info.context.get("user_data").project_access)
-        case_aggregations = info.context.get("user_data").get_case_aggregations(filtered_cases)
+        case_aggregations = info.context.get("user_data").get_case_aggregations(filtered_cases,filters)
         return case_aggregations
 
     def resolve_facets(self, info, filters=None, facets=None):

@@ -894,7 +894,7 @@ class Data(object):
             except ValueError:
                 pass
 
-    def get_case_aggregations(self, cases):
+    def get_case_aggregations(self, cases, filters):
         def get_schema_aggregations(variable_name):
             return schema.Aggregations(
                 buckets=[schema.Bucket(doc_count=count, key=key) for key,count in aggregates[variable_name].items()])
@@ -938,6 +938,17 @@ class Data(object):
             for sample in case.samples.hits:
                 for key in sample_metadata_fields:
                     sample_lists[key].append(getattr(sample,key))
+
+        # if not filters, then add programs without metadata
+        if not filters:
+            query = "select sum(total_participants) as total, program from project group by program"
+            connection, db_results = self.query_database(query)
+            total_participants={}
+            for row in db_results:
+                if not row['program'] in aggregates["project__program__name"]:
+                    aggregates["project__program__name"][row['program']]=int(row['total'])
+
+        connection.close()
 
 
         # compute min/max/offset
