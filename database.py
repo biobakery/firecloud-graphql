@@ -231,7 +231,7 @@ class Data(object):
                 project_info[id]['participants'].add(row['participant_id'])
             # add NA participants for counts only for projects without participant metadata
             elif "total_participants" in row and row['total_participants']:
-                project_info[id]['participants'].update(map(lambda x: "NA"+str(x), list(xrange(int(row['total_participants'])))))
+                project_info[id]['participants'].update(map(lambda x: "NA_"+row['project']+"_"+str(x), list(xrange(int(row['total_participants'])))))
             # compile file count and count data category and experimental strategy
             if row['file_size'] != "0":
                 project_info[id]['file_count']+=1
@@ -391,7 +391,7 @@ class Data(object):
             if db_case:
                 for demo_item in participant_metadata_columns:
                     metadataCase_hits.append(schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]))
-            metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
+            metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA' and x.metadataValue != "Not_available", metadataCase_hits)))
 
             demographic_instance=None
             if db_case:
@@ -511,13 +511,13 @@ class Data(object):
             for demo_item in participant_metadata_columns:
                 schema.MetadataCaseAnnotation(id=str(db_case['participant_id'])+demo_item,metadataKey=demo_item[0].upper()+demo_item[1:],metadataValue=db_case[demo_item]),
 
-            metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataCase_hits)))
+            metadataCase_counts=len(list(filter(lambda x: x.metadataValue != 'NA' and x.metadataValue != "Not_available", metadataCase_hits)))
 
             metadataSample_hits=[]
             for metadata_key in sample_metadata_columns:
                 metadataSample_hits.append(schema.MetadataSampleAnnotation(id=str(row['id'])+metadata_key,metadataKey=metadata_key.title(),metadataValue=row[metadata_key]))
 
-            metadataSample_counts=len(list(filter(lambda x: x.metadataValue != 'NA', metadataSample_hits)))
+            metadataSample_counts=len(list(filter(lambda x: x.metadataValue != 'NA' and x.metadataValue != "Not_available", metadataSample_hits)))
 
             demographic_instance=schema.Custom()
             demographic_keys=participant_metadata_columns
@@ -941,7 +941,7 @@ class Data(object):
                 for key in sample_metadata_fields:
                     sample_lists[key].append(getattr(sample,key))
 
-        # if not filters, then add programs without metadata
+        ## if not filters, then add programs without metadata
         if not filters:
             query = "select sum(total_participants) as total, program from project group by program"
             connection, db_results = self.query_database(query)
