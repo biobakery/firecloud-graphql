@@ -878,6 +878,8 @@ class Data(object):
     def get_metadata_title(self,field):
         if "demographic" in field:
             return field.split("demographic__")[-1]
+        elif "program" in field:
+            return "program"
         elif field.startswith("project"):
             return "project"
         elif field.startswith("sample"):
