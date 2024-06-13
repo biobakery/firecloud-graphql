@@ -948,7 +948,7 @@ class Data(object):
                 if not row['program'] in aggregates["project__program__name"]:
                     aggregates["project__program__name"][row['program']]=int(row['total'])
 
-        connection.close()
+            connection.close()
 
 
         # compute min/max/offset
