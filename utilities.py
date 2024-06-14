@@ -302,6 +302,9 @@ def filter_hits(hits, filters, object_name, project_access):
     # allow for filtering of files using just file based filters
     if len(filters["content"]) == 1 and filters["content"][0].get("content",{}).get("field","").startswith("files."):
         return final_set
+    # allow for filtering of program through participant tab
+    elif len(filters["content"]) == 1 and filters["content"][0].get("content",{}).get("field","") == "cases.project.program.name":
+        return final_set
     elif not project_access and len(final_set) < MIN_RESTRICTED_HITS:
         return hits
     else:
