@@ -319,8 +319,9 @@ class Files(graphene.ObjectType):
         # set total for hits
         info.context["files_hits_total"] = len(filtered_files)
 
-        all_files = info.context.get("user_data").get_current_files(filters=info.context.get("user_data").get_project_access_filters())
-        filtered_files = utilities.filter_hits(all_files, filters, "files", info.context.get("user_data").project_access)
+        # allow all users to filter all files (this requires all visible categorical metadata to be public access)
+        #all_files = info.context.get("user_data").get_current_files(filters=info.context.get("user_data").get_project_access_filters())
+        #filtered_files = utilities.filter_hits(all_files, filters, "files", info.context.get("user_data").project_access)
         sorted_files = utilities.sort_hits(filtered_files, sort)
         return utilities.offset_hits(sorted_files, offset)
 
