@@ -306,7 +306,8 @@ def filter_hits(hits, filters, object_name, project_access):
     elif len(filters["content"]) == 1 and filters["content"][0].get("content",{}).get("field","") == "cases.project.program.name":
         return final_set
     elif not project_access and len(final_set) < MIN_RESTRICTED_HITS:
-        return hits
+        # return empty set for security filter
+        return []
     else:
         return final_set
 
