@@ -300,13 +300,8 @@ def filter_hits(hits, filters, object_name, project_access):
 
     # if this is not an authenticated user then check to make sure there are enough hits
     # allow for filtering of files using just file based filters
-    if len(filters["content"]) == 1 and filters["content"][0].get("content",{}).get("field","").startswith("files."):
-        return final_set
-    # allow for filtering of program through participant tab
-    elif len(filters["content"]) == 1 and filters["content"][0].get("content",{}).get("field","") == "cases.project.program.name":
-        return final_set
     # allow for combinations of project and files filters (all no auth)
-    elif len(filters["content"]) == get_total_noauth_content_filters(filters):
+    if len(filters["content"]) == get_total_noauth_content_filters(filters):
         return final_set
     elif not project_access and len(final_set) < MIN_RESTRICTED_HITS:
         # return empty set for security filter
@@ -316,9 +311,10 @@ def filter_hits(hits, filters, object_name, project_access):
 
 def get_total_noauth_content_filters(filters):
     # return the total number of no auth required filters
-    # currently just program name from cases plus all files filters are no auth
+    # allow for filtering of files using just file based filters
+    # allow for filtering of project or program name plus file based filters
 
-    return len(filter(lambda x: x.get("content",{}).get("field","") == "cases.project.program.name" or x.get("content",{}).get("field","").startswith("files."),filters["content"]))
+    return len(filter(lambda x: x.get("content",{}).get("field","") in ["cases.project.program.name","cases.project.project_id"] or x.get("content",{}).get("field","").startswith("files."),filters["content"]))
 
 def sort_hits(hits, sort):
     # Sort the hits based on the string provided
