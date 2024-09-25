@@ -913,7 +913,7 @@ class Data(object):
             demographic_metadata_fields=[]
 
         # aggregate case data
-        aggregates = {"primary_site": {}, "project__program__name": {}}
+        aggregates = {"primary_site": {}, "project__program__name": {}, "project__project_id": {}}
         
         stats={}
         demo_lists={}
@@ -932,6 +932,7 @@ class Data(object):
             
             utilities.add_key_increment(aggregates["primary_site"], case.primary_site)
             utilities.add_key_increment(aggregates["project__program__name"], case.project.program.name)
+            utilities.add_key_increment(aggregates["project__project_id"], case.project.project_id)
 
             for demo_key in demographic_metadata_fields:
                 demo_lists[demo_key].append(getattr(case.demographic, demo_key))
@@ -952,6 +953,15 @@ class Data(object):
 
             connection.close()
 
+            query = "select sum(total_participants) as total, project_id from project group by id"
+            connection, db_results = self.query_database(query)
+            total_participants={}
+            for row in db_results:
+                if not row['project_id'] in aggregates["project__project_id"]:
+                    aggregates["project__project_id"][row['project_id']]=int(row['total'])
+
+            connection.close()
+
 
         # compute min/max/offset
         self.compute_min_max_offset(stats, demographic_metadata_fields, demo_lists, "demographic__")
@@ -966,7 +976,7 @@ class Data(object):
                 utilities.add_key_increment(aggregates["demographic__"+demo_key], utilities.Range.create(value,offset=stats["demographic__"+demo_key].get("offset",1)))
 
         all_aggregations=[]
-        for typename in ["project__program__name"]+list(map(lambda x: "demographic__"+x, demographic_metadata_fields))+list(map(lambda x: "sample__"+x, sample_metadata_fields)):
+        for typename in ["project__program__name","project__project_id"]+list(map(lambda x: "demographic__"+x, demographic_metadata_fields))+list(map(lambda x: "sample__"+x, sample_metadata_fields)):
             # use only buckets if there are no min/max stats
             keys=list(aggregates[typename].keys())
             if (not typename in stats or stats[typename].get("max",0) == 0 or "sample" in typename):
@@ -983,6 +993,7 @@ class Data(object):
         case_aggregates=schema.CaseAggregations(
             metadataAggregations=schema.MetadataAggregations(hits=all_aggregations),
             primary_site=get_schema_aggregations("primary_site"),
+            project__project_id=get_schema_aggregations("project__project_id"),
             project__program__name=get_schema_aggregations("project__program__name"))
 
         for demo_key in demographic_metadata_fields:
