@@ -943,8 +943,16 @@ class Data(object):
                     sample_lists[key].append(getattr(sample,key))
 
         ## if not filters, then add programs without metadata
-        if not filters:
-            query = "select sum(total_participants) as total, program from project group by program"
+        if not filters or utilities.get_first_filter_field(filters) in ["cases.project.program.name","cases.project.project_id"]:
+            # if this is a project based filter, get the value for the mysql query
+            query_filter=""
+            if utilities.get_first_filter_field(filters) == "cases.project.program.name":
+                query_filter=" where program = '"+utilities.get_first_filter_value(filters)[0]+"' "
+            elif utilities.get_first_filter_field(filters) == "cases.project.project_id":
+                query_filter=" where project_id = '"+utilities.get_first_filter_value(filters)[0]+"' "
+                
+            # get the total participants for all the programs that do not have metadata
+            query = "select sum(total_participants) as total, program from project "+query_filter+" group by program"
             connection, db_results = self.query_database(query)
             total_participants={}
             for row in db_results:
@@ -953,7 +961,8 @@ class Data(object):
 
             connection.close()
 
-            query = "select sum(total_participants) as total, project_id from project group by id"
+            # get the total participants for all the projects that do not have metadata
+            query = "select sum(total_participants) as total, project_id from project "+query_filter+" group by project_id"
             connection, db_results = self.query_database(query)
             total_participants={}
             for row in db_results:
