@@ -244,6 +244,32 @@ def subhits(single_hit, top_level):
                 continue
     return levels
 
+def get_first_filter_value(filters):
+    # get the value of the filter
+
+    if not filters:
+        return ""
+
+    try:
+        value=filters["content"][0]["content"]["value"]
+    except KeyError, IndexError:
+        value=""
+    
+    return value
+
+def get_first_filter_field(filters):
+    # get the value of the field for the filter
+
+    if not filters:
+        return ""
+
+    try:
+        field=filters["content"][0]["content"]["field"]
+    except KeyError, IndexError:
+        field=""
+
+    return field
+
 def filter_hits(hits, filters, object_name, project_access):
     # Filter the hits based on the json string provided
 
