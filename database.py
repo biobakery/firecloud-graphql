@@ -700,7 +700,11 @@ class Data(object):
         query = "SELECT COUNT(distinct data_format) FROM file_sample where data_format!='NA'"
         db_results_3 = self.query_database(query, fetchall=True)[0]
 
+        query = "SELECT COUNT(distinct program) FROM project"
+        db_results_4 = self.query_database(query, fetchall=True)[0]
+
         counts = schema.Count(
+            programs=int(db_results_4[0]),
             projects=db_results[0],
             participants=int(db_results_2[0]),
             samples=db_results[2],

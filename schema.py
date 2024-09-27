@@ -58,6 +58,7 @@ class FiltersArgument(generic.GenericScalar):
     pass
 
 class Count(graphene.ObjectType):
+    programs = graphene.String()
     projects = graphene.String()
     participants = graphene.String()
     samples = graphene.String()
