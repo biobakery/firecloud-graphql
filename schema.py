@@ -291,6 +291,7 @@ class FileConnection(graphene.relay.Connection):
 
 class FileAggregations(graphene.ObjectType):
     data_category = graphene.Field(Aggregations)
+    data_version = graphene.Field(Aggregations)
     file_size = graphene.Field(Aggregations)
     experimental_strategy = graphene.Field(Aggregations)
     data_format = graphene.Field(Aggregations)

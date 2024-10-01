@@ -763,13 +763,15 @@ class Data(object):
                     stats=schema.Stats(max=stats[variable_name].get("max",0), min=stats[variable_name].get("min",0)))
 
         # aggregate file data
-        aggregates = {"data_category": {}, "experimental_strategy": {},
+        aggregates = {"data_version": {}, "data_category": {}, "experimental_strategy": {},
                       "data_format": {}, "platform": {}, "cases__primary_site": {},
                       "cases__project__project_id": {}, "access": {}, "file_size": {}}
         stats = {"file_size": {}}
 
         for file in files:
-            utilities.add_key_increment(aggregates["data_category"], file.data_category)
+            data_category, data_version = utilities.get_data_category_software_version(file.data_category)
+            utilities.add_key_increment(aggregates["data_version"], data_version)
+            utilities.add_key_increment(aggregates["data_category"], data_category)
             utilities.add_key_increment(aggregates["experimental_strategy"], file.experimental_strategy)
             utilities.add_key_increment(aggregates["data_format"], file.data_format)
             utilities.add_key_increment(aggregates["platform"], file.platform)
@@ -786,6 +788,7 @@ class Data(object):
 
 
         file_aggregates = schema.FileAggregations(
+            data_version=get_schema_aggregations("data_version"),
             data_category=get_schema_aggregations("data_category"),
             experimental_strategy=get_schema_aggregations("experimental_strategy"),
             data_format=get_schema_aggregations("data_format"),
