@@ -5,6 +5,34 @@ import json
 import ast
 import collections
 
+def get_data_category_software_version(data_info):
+    # From the current data category value get the software version
+    # Format string into UI version
+
+    data=data_info.split("_")
+    if ("genes" in data[0] or "pathway" in data[0] or "ec" in data[0]):
+        if "_v" in data_info:
+            category=" ".join(data[0:-1])
+            software="HUMAnN "+data[-1].replace("p",".")
+        else:
+            category=" ".join(data[0:-1])
+            software="HUMAnN v3.0"
+    elif "_v" in data_info and "taxonomy" in data[0]:
+        if "_v" in data_info:
+            category=" ".join(data[0:-1])
+            if "v4" == data[-1]:
+                software="MetaPhlAn v4.0.6"
+            else:
+                software="MetaPhlAn "+data[-1].replace("p",".")
+        else:
+            category=" ".join(data[0:-1])
+            software="MetaPhlAn v3.0"
+    else:
+        category=data_info.replace("_"," ")
+        software="NA"
+
+    return category, software
+
 def order_metadata_keys(keys, order):
     new_keys=[]
     for name in order:
