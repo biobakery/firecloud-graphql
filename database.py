@@ -185,7 +185,8 @@ class Data(object):
         all_files=[]
         saved_files=set()
         for row in db_results:
-            all_files.append(schema.File(id=row['file_id'], data_category=row['data_category'], experimental_strategy=row['experimental_strategy']))
+            data_category, data_version, data_merged = utilities.get_data_category_software_version(row['data_category'])
+            all_files.append(schema.File(id=row['file_id'], data_category=data_category, experimental_strategy=row['experimental_strategy']))
             save_db_results.append(row)
             saved_files.add(row['file_id'])
 
@@ -199,7 +200,8 @@ class Data(object):
         # create a set of files for filtering
         for row in db_results:
             if not row['file_id'] in saved_files:
-                all_files.append(schema.File(id=row['file_id'], data_category=row['data_category'], experimental_strategy=row['experimental_strategy']))
+                data_category, data_version, data_merged = utilities.get_data_category_software_version(row['data_category'])
+                all_files.append(schema.File(id=row['file_id'], data_category=data_category, experimental_strategy=row['experimental_strategy']))
                 save_db_results.append(row)
                 saved_files.add(row['file_id'])
 
@@ -405,6 +407,9 @@ class Data(object):
                 casesample_keys=sample_metadata_columns
                 schema.add_attributes(casesample_instance, casesample_keys, db_sample)
 
+            # get additional file information from the file data category
+            data_category, data_version, data_merged = utilities.get_data_category_software_version(row['data_category'])
+
             files.append(schema.File(
                 id=row['file_id'],
                 file_url=row['file_url'],
@@ -412,7 +417,9 @@ class Data(object):
                 sample=row['sample'],
                 access=row['access'],
                 file_size=row['file_size'],
-                data_category=row['data_category'],
+                data_category=data_category,
+                data_version=data_version,
+                data_merged=data_merged,
                 data_format=row['data_format'],
                 platform=row['platform'],
                 experimental_strategy=row['experimental_strategy'],
@@ -769,10 +776,9 @@ class Data(object):
         stats = {"file_size": {}}
 
         for file in files:
-            data_category, data_version, data_merged = utilities.get_data_category_software_version(file.data_category)
-            utilities.add_key_increment(aggregates["data_version"], data_version)
-            utilities.add_key_increment(aggregates["data_merged"], data_merged)
-            utilities.add_key_increment(aggregates["data_category"], data_category)
+            utilities.add_key_increment(aggregates["data_version"], file.data_version)
+            utilities.add_key_increment(aggregates["data_merged"], file.data_merged)
+            utilities.add_key_increment(aggregates["data_category"], file.data_category)
             utilities.add_key_increment(aggregates["experimental_strategy"], file.experimental_strategy)
             utilities.add_key_increment(aggregates["data_format"], file.data_format)
             utilities.add_key_increment(aggregates["platform"], file.platform)

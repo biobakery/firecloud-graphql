@@ -249,6 +249,8 @@ class File(graphene.ObjectType):
     access = graphene.String()
     file_size = graphene.Float()
     data_category = graphene.String()
+    data_version = graphene.String()
+    data_merged = graphene.String()
     data_format = graphene.String()
     platform = graphene.String()
     experimental_strategy = graphene.String()

@@ -15,9 +15,9 @@ def get_data_category_software_version(data_info):
             category=" ".join(data[0:-1])
             software="HUMAnN "+data[-1].replace("p",".")
         else:
-            category=" ".join(data[0:-1])
+            category=" ".join(data)
             software="HUMAnN v3.0"
-    elif "_v" in data_info and "taxonomy" in data[0]:
+    elif data_info and "taxonomy" in data[0]:
         if "_v" in data_info:
             category=" ".join(data[0:-1])
             if "v4" == data[-1]:
@@ -25,7 +25,7 @@ def get_data_category_software_version(data_info):
             else:
                 software="MetaPhlAn "+data[-1].replace("p",".")
         else:
-            category=" ".join(data[0:-1])
+            category=" ".join(data)
             software="MetaPhlAn v3.0"
     else:
         category=data_info.replace("_"," ")
@@ -37,6 +37,15 @@ def get_data_category_software_version(data_info):
         category=category.replace(" merged","")
     else:
         merged="no"
+
+    # fix issues with category, to be later fixed in file folder schema structure
+    # during major refactor
+    if category == "pathway":
+        category = "pathways"
+
+    # fix issues with mbx not stating merged in current file folder schema (fix in refactor)
+    if category == "mbx":
+        merged="yes"
 
     return category, software, merged
 
