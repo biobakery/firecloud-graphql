@@ -239,7 +239,12 @@ class Data(object):
                 project_info[id]['file_count']+=1
             
                 for count_type in ["data_category", "experimental_strategy"]:
-                    project_info[id][count_type][row[count_type]]=project_info[id][count_type].get(row[count_type],0)+1
+                    if count_type == "data_category":
+                        data_category, data_version, data_merged = utilities.get_data_category_software_version(row[count_type])
+                        project_info[id][count_type][data_category]=project_info[id][count_type].get(data_category,0)+1
+                    elif count_type == "experimental_strategy":
+                        project_info[id][count_type][row[count_type]]=project_info[id][count_type].get(row[count_type],0)+1
+
 
         connection.close()
 
