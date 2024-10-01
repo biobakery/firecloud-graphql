@@ -31,7 +31,14 @@ def get_data_category_software_version(data_info):
         category=data_info.replace("_"," ")
         software="NA"
 
-    return category, software
+    # determine if the data is merged or not
+    if " merged" in category:
+        merged="yes"
+        category=category.replace(" merged","")
+    else:
+        merged="no"
+
+    return category, software, merged
 
 def order_metadata_keys(keys, order):
     new_keys=[]
