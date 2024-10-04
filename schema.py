@@ -381,6 +381,8 @@ class CaseFile(graphene.ObjectType):
     case_id = graphene.String()
     experimental_strategy = graphene.String()
     data_category = graphene.String()
+    data_version = graphene.String()
+    data_merged = graphene.String()
     data_format = graphene.String()
     platform = graphene.String()
     access = graphene.String()

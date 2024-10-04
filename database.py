@@ -277,6 +277,12 @@ class Data(object):
 
         projects = []
         for id, info in project_info.items():
+            # create a set of data categories as counts, after reformatting the category key
+            data_categories=[]
+            for key,value in info['data_category'].items():
+                category, data_version, data_merged = utilities.get_data_category_software_version(key)
+                data_categories+=[schema.DataCategories(case_count=value, data_category=category)]
+
             projects.append(schema.Project(
                 id=id,
                 project_id=info['name'],
@@ -284,7 +290,7 @@ class Data(object):
                 program=schema.Program(name=info['program']),
                 summary=schema.Summary(case_count=total_participants.get(info['name'],0),
                     file_count=info['file_count'],
-                    data_categories=[schema.DataCategories(case_count=value, data_category=key) for key,value in info['data_category'].items()],
+                    data_categories=data_categories,
                     experimental_strategies=[schema.ExperimentalStrategies(file_count=value, experimental_strategy=key) for key,value in info['experimental_strategy'].items()],
                     file_size=info['file_size']),
                 primary_site=[info['primary_site']]))
@@ -497,7 +503,8 @@ class Data(object):
             # create data categories
             data_categories_counts={}
             for case_row in current_case_files:
-                data_categories_counts[case_row['data_category']]=data_categories_counts.get(case_row['data_category'],0)+1
+                data_category, data_version, data_merged = utilities.get_data_category_software_version(case_row['data_category'])
+                data_categories_counts[data_category]=data_categories_counts.get(data_category,0)+1
             data_categories = [schema.DataCategories(case_count=value, data_category=key) for key, value in data_categories_counts.items()]
  
             # create participant summary
@@ -510,9 +517,13 @@ class Data(object):
             casefiles=[]
             all_case_files=merged_case_files.get(row['project'],[])+current_case_files
             for index, file_info in enumerate(all_case_files):
+                data_category, data_version, data_merged = utilities.get_data_category_software_version(file_info['data_category'])
+
                 casefiles.append(schema.CaseFile(
                     id=index,
-                    data_category=file_info['data_category'],
+                    data_category=data_category,
+                    data_version=data_version,
+                    data_merged=data_merged,
                     experimental_strategy=file_info['experimental_strategy'],
                     data_format=file_info['data_format'],
                     platform=file_info['platform'],
@@ -625,7 +636,8 @@ class Data(object):
             # create data categories
             data_categories_counts={}
             for case_row in current_case_files:
-                data_categories_counts[case_row['data_category']]=data_categories_counts.get(case_row['data_category'],0)+1
+                data_category, data_version, data_merged = utilities.get_data_category_software_version(case_row['data_category'])
+                data_categories_counts[data_category]=data_categories_counts.get(data_category,0)+1
             data_categories = [schema.DataCategories(case_count=value, data_category=key) for key, value in data_categories_counts.items()]
  
             # create participant summary
@@ -638,9 +650,12 @@ class Data(object):
             casefiles=[]
             all_case_files=merged_case_files.get(db_sample['project'],[])+current_case_files
             for index, file_info in enumerate(all_case_files):
+                data_category, data_version, data_merged = utilities.get_data_category_software_version(file_info['data_category'])
                 casefiles.append(schema.CaseFile(
                     id=index,
-                    data_category=file_info['data_category'],
+                    data_category=data_category,
+                    data_version=data_version,
+                    data_merged=data_merged,
                     experimental_strategy=file_info['experimental_strategy'],
                     data_format=file_info['data_format'],
                     platform=file_info['platform'],
