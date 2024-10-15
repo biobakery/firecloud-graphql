@@ -711,7 +711,7 @@ class Data(object):
         all_files = self.get_current_files()
         filtered_files = utilities.filter_hits(all_files, filters, "files", True)
         # get the size from the filtered files
-        total_size = sum([utilities.str_to_float([file.file_size], error_zero=True)[0] for file in filtered_files])
+        total_size = utilities.get_total_file_size(filtered_files)
         return schema.CartSummaryAggs(fs=schema.FileSize(value=total_size))
 
     def get_current_counts(self):
@@ -730,12 +730,16 @@ class Data(object):
         query = "SELECT COUNT(distinct program) FROM project"
         db_results_4 = self.query_database(query, fetchall=True)[0]
 
+        all_files = self.get_current_files()
+        total_size_files = str(utilities.convert_kb_to_TB(utilities.get_total_file_size(all_files)))+" TB"
+
         counts = schema.Count(
             programs=int(db_results_4[0]),
             projects=db_results[0],
             participants=int(db_results_2[0]),
             samples=db_results[2],
             dataFormats=int(db_results_3[0]),
+            totalData=total_size_files,
             rawFiles=db_results[4], 
             processedFiles=db_results[5]
         )

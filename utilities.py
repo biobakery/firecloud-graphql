@@ -5,6 +5,13 @@ import json
 import ast
 import collections
 
+def convert_kb_to_TB(total_size):
+    return round(total_size / 1024**4, 1)
+
+def get_total_file_size(filtered_files):
+    # get the total sum of files sizes
+    return sum([str_to_float([file.file_size], error_zero=True)[0] for file in filtered_files])
+
 def get_data_category_software_version(data_info):
     # From the current data category value get the software version
     # Format string into UI version

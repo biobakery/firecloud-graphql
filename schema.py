@@ -63,6 +63,7 @@ class Count(graphene.ObjectType):
     participants = graphene.String()
     samples = graphene.String()
     dataFormats = graphene.String()
+    totalData = graphene.String()
     rawFiles = graphene.String()
     processedFiles = graphene.String()
 
