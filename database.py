@@ -171,7 +171,7 @@ class Data(object):
         else:
             return False
 
-    def get_current_projects(self, filters=None):
+    def get_current_project_info(self,filters=None):
         query = "SELECT file_sample.id as file_id, file_sample.participant, " +\
                  "file_sample.file_size, file_sample.data_category, " +\
                  "file_sample.experimental_strategy, file_sample.project, project.id as project_id, project.primary_site, " +\
@@ -274,6 +274,11 @@ class Data(object):
 
         connection.close()
 
+        return project_info,total_participants
+
+    def get_current_projects(self, filters=None):
+        # first gather all of the organized project information
+        project_info,total_participants=self.get_current_project_info(filters)
 
         projects = []
         for id, info in project_info.items():
@@ -296,6 +301,50 @@ class Data(object):
                 primary_site=[info['primary_site']]))
 
         return projects
+
+    def get_current_programs(self, filters=None):
+        # first gather all of the origanized project information
+        project_info,total_participants=self.get_current_project_info(filters)
+
+        # now reorganize the information to programs
+        program_info = {}
+        for id, info in project_info.items():
+            program_name=info['program']
+            if not program_name in program_info:
+                program_info[program_name]={"total_participants":0, "file_count":0, "data_category":{}, "experimental_strategy": {}, "file_size": 0, "primary_site": []}
+
+            program_info[program_name]["total_participants"]=program_info[program_name]["total_participants"]+total_participants.get(info['name'])
+            program_info[program_name]["file_count"]=program_info[program_name]["file_count"]+info['file_count']
+
+            program_info[program_name]["data_category"].update(info['data_category'])
+            program_info[program_name]["experimental_strategy"].update(info['experimental_strategy'])
+
+            program_info[program_name]["file_size"]=program_info[program_name]["file_size"]+info['file_size']
+
+            program_info[program_name]["primary_site"].append(info['primary_site'])
+
+
+        programs = []
+        for id, info in program_info.items():
+            # create a set of data categories as counts, after reformatting the category key
+            data_categories=[]
+            software_versions=[]
+            for key,value in info['data_category'].items():
+                category, data_version, data_merged = utilities.get_data_category_software_version(key)
+                data_categories+=[schema.DataCategories(case_count=value, data_category=category)]
+
+            programs.append(schema.ProgramNode(
+                id=id,
+                name=id,
+                summary=schema.Summary(case_count=info["total_participants"],
+                    file_count=info["file_count"],
+                    data_categories=data_categories,
+                    experimental_strategies=[schema.ExperimentalStrategies(file_count=value, experimental_strategy=key) for key,value in info["experimental_strategy"].items()],
+                    file_size=info["file_size"]),
+                # only use one of the primary site values
+                primary_site=[info["primary_site"][0]]))
+
+        return programs
 
     @staticmethod
     def get_generic_file_name(file_id, extension):

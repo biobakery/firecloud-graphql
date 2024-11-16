@@ -109,6 +109,14 @@ class Project(graphene.ObjectType):
     summary = graphene.Field(Summary)
     primary_site = graphene.List(graphene.String)
 
+class ProgramNode(graphene.ObjectType):
+    class Meta:
+        interfaces = (graphene.relay.Node,)
+
+    name = graphene.String()
+    summary = graphene.Field(Summary)
+    primary_site = graphene.List(graphene.String)
+
 class Demographic(graphene.ObjectType):
     id = graphene.String()
 
@@ -275,6 +283,14 @@ class File(graphene.ObjectType):
 
     def resolve_file_name(self, info):
         return self.generic_file_name
+
+class ProgramConnection(graphene.relay.Connection):
+    class Meta:
+        node = ProgramNode
+    total = graphene.Int()
+
+    def resolve_total(self, info):
+        return len(self.iterable)
 
 class ProjectConnection(graphene.relay.Connection):
     class Meta:
@@ -579,6 +595,7 @@ class Repository(graphene.ObjectType):
 class ProjectAggregations(graphene.ObjectType):
     primary_site = graphene.Field(Aggregations)
     program__name = graphene.Field(Aggregations)
+    name = graphene.Field(Aggregations)
     project_id = graphene.Field(Aggregations)
     summary__experimental_strategies__experimental_strategy = graphene.Field(Aggregations)
     summary__data_categories__data_category = graphene.Field(Aggregations)
@@ -604,6 +621,27 @@ class Projects(graphene.ObjectType):
         project_aggregations = info.context.get("user_data").get_project_aggregations(filtered_projects) 
         return project_aggregations
 
+class Programs(graphene.ObjectType):
+    aggregations = graphene.Field(ProjectAggregations, 
+        filters=FiltersArgument(),
+        aggregations_filter_themselves=graphene.Boolean())
+    hits = graphene.relay.ConnectionField(ProgramConnection,
+        first=graphene.Int(),
+        offset=graphene.Int(),
+        sort=graphene.List(Sort),
+        filters=FiltersArgument())
+
+    def resolve_hits(self, info, first=None, offset=None, sort=None, filters=None):
+        programs = info.context.get("user_data").get_current_programs(filters)
+        filtered_programs = utilities.filter_hits(programs, filters, "programs", True)
+        return filtered_programs
+
+    def resolve_aggregations(self, info, filters=None, aggregations_filter_themselves=None):
+        programs = info.context.get("user_data").get_current_programs()
+        filtered_programs = utilities.filter_hits(programs, filters, "programs", True)
+        program_aggregations = info.context.get("user_data").get_project_aggregations(filtered_programs) 
+        return program_aggregations
+
 class FileSize(graphene.ObjectType):
     value = graphene.Float()
 
@@ -622,6 +660,7 @@ class Root(graphene.ObjectType):
     count = graphene.Field(Count)
     repository = graphene.Field(Repository)
     projects = graphene.Field(Projects)
+    programs = graphene.Field(Programs)
     cart_summary = graphene.Field(CartSummary)
 
     def resolve_user(self, info):
@@ -635,6 +674,9 @@ class Root(graphene.ObjectType):
 
     def resolve_projects(self, info):
         return Projects(self)
+
+    def resolve_programs(self, info):
+        return Programs(self)
 
     def resolve_cart_summary(self, info):
         return CartSummary(self)
